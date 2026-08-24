@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "servers.schema.json",
+  "title": "data/servers.json",
+  "description": "Canonical server state. Machine-written by `npm run ingest`. Every field is optional except `name`, so a truncated dump can never null out a section that simply was not present.",
+  "type": "object",
+  "propertyNames": { "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$" },
+  "additionalProperties": { "$ref": "#/$defs/server" },
+
+  "$defs": {
+    "server": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "role": { "type": "string" },
+        "ip": { "type": "string", "format": "ipv4" },
+        "provider": { "type": "string" },
+        "notes": { "type": "string" },
+
+        "specs": { "$ref": "#/$defs/specs" },
+        "state": { "$ref": "#/$defs/state" },
+
+        "users": { "type": "array", "items": { "$ref": "#/$defs/user" } },
+        "services": { "type": "array", "items": { "$ref": "#/$defs/service" } },
+        "containers": { "type": "array", "items": { "$ref": "#/$defs/container" } },
+        "ports": { "type": "array", "items": { "$ref": "#/$defs/port" } },
+        "vhosts": { "type": "array", "items": { "$ref": "#/$defs/vhost" } },
+        "cron": { "type": "array", "items": { "$ref": "#/$defs/cronEntry" } },
+
+        "databases": {
+          "type": "object",
+          "description": "Keyed by database name, e.g. \"Yamini\". Written by ingest/mongo-stats.js.",
+          "additionalProperties": { "$ref": "#/$defs/database" }
+        },
+
+        "web": { "$ref": "#/$defs/web" },
+        "docker": { "$ref": "#/$defs/docker" },
+        "logs": { "$ref": "#/$defs/logs" },
+
+        "firstSeen": { "type": "string", "format": "date" },
+        "lastIngest": { "type": ["string", "null"], "format": "date-time" },
+        "sourceFile": { "type": ["string", "null"] }
+      }
+    },
+
+    "specs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cpu": { "type": "integer", "minimum": 1, "description": "nproc" },
+        "cpuModel": { "type": "string", "description": "lscpu \"Model name\"" },
+        "arch": { "type": "string" },
+        "virt": { "type": "string", "description": "hostnamectl Virtualization, e.g. kvm" },
+        "ram": { "type": "string", "description": "As printed by free -h, e.g. \"15Gi\"" },
+        "ramBytes": { "type": "integer", "minimum": 0 },
+        "disk": { "type": "string", "description": "Total size of / as printed by df -h, e.g. \"193G\"" },
+        "diskBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "state": {
+      "type": "object",
+      "description": "Volatile, replaced wholesale on each ingest of a dump that carries the section.",
+      "additionalProperties": false,
+      "properties": {
+        "os": { "type": "string", "description": "hostnamectl \"Operating System\"" },
+        "kernel": { "type": "string", "description": "Running kernel, from uname -r" },
+        "kernelInstalled": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "All installed kernel packages. Running != newest triggers an auto-issue."
+        },
+        "rebootPending": { "type": "boolean", "description": "/var/run/reboot-required exists, or running kernel != newest installed" },
+
+        "uptime": { "type": "string", "description": "Human form, e.g. \"112 days\"" },
+        "uptimeSeconds": { "type": "integer", "minimum": 0 },
+        "bootedAt": { "type": "string", "format": "date-time" },
+        "load": {
+          "type": "array",
+          "items": { "type": "number", "minimum": 0 },
+          "minItems": 3,
+          "maxItems": 3
+        },
+
+        "memTotal": { "type": "string" },
+        "memUsed": { "type": "string" },
+        "memAvailable": { "type": "string" },
+        "memUsedPct": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "swapTotal": { "type": "string" },
+        "swapUsed": { "type": "string" },
+
+        "diskTotal": { "type": "string" },
+        "diskUsed": { "type": "string" },
+        "diskAvail": { "type": "string" },
+        "diskUsedPct": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Of / only. Sparklined on the server card." },
+        "mounts": { "type": "array", "items": { "$ref": "#/$defs/mount" } },
+
+        "firewall": { "type": "string", "enum": ["active", "inactive", "unknown"] },
+        "firewallDefault": { "type": "string", "description": "e.g. \"deny (incoming), allow (outgoing)\"" },
+        "firewallRules": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "mount": {
+      "type": "object",
+      "required": ["mount"],
+      "additionalProperties": false,
+      "properties": {
+        "mount": { "type": "string" },
+        "fs": { "type": "string" },
+        "size": { "type": "string" },
+        "used": { "type": "string" },
+        "avail": { "type": "string" },
+        "usePct": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+
+    "user": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "uid": { "type": "integer" },
+        "shell": { "type": "string" },
+        "sudo": { "type": "boolean" },
+        "lastLogin": { "type": "string" }
+      }
+    },
+
+    "service": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "state": {
+          "type": "string",
+          "enum": ["running", "exited", "failed", "inactive", "activating", "deactivating", "unknown"]
+        },
+        "sub": { "type": "string", "description": "systemd SUB column, verbatim" },
+        "enabled": { "type": "string", "enum": ["enabled", "disabled", "static", "masked", "generated", "unknown"] },
+        "desc": { "type": "string" },
+        "port": { "type": ["integer", "null"], "minimum": 1, "maximum": 65535, "description": "Correlated from ss -tulnp where the process matches" }
+      }
+    },
+
+    "container": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "image": { "type": "string" },
+        "state": {
+          "type": "string",
+          "enum": ["running", "exited", "created", "restarting", "paused", "dead", "removing", "unknown"]
+        },
+        "status": { "type": "string", "description": "docker ps STATUS verbatim, e.g. \"Up 5 days (healthy)\"" },
+        "ports": { "type": "string", "description": "docker ps PORTS verbatim, e.g. \"127.0.0.1:5678->5678/tcp\"" },
+        "createdAt": { "type": "string" },
+        "ageDays": { "type": "integer", "minimum": 0, "description": "Created-state containers older than 7 days raise a low auto-issue" },
+        "size": { "type": "string" }
+      }
+    },
+
+    "port": {
+      "type": "object",
+      "required": ["port"],
+      "additionalProperties": false,
+      "properties": {
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "proto": { "type": "string", "enum": ["tcp", "udp"] },
+        "bind": { "type": "string", "description": "Verbatim bind address: 0.0.0.0, 127.0.0.1, [::], a specific IP" },
+        "proc": { "type": "string" },
+        "pid": { "type": "integer", "minimum": 1 },
+        "exposed": { "type": "boolean", "description": "true when bind is 0.0.0.0 or [::]. Database ports with exposed=true raise a critical auto-issue." }
+      }
+    },
+
+    "vhost": {
+      "type": "object",
+      "required": ["domain"],
+      "additionalProperties": false,
+      "properties": {
+        "domain": { "type": "string", "minLength": 1 },
+        "proxyTo": { "type": "string", "description": "Upstream, e.g. \"127.0.0.1:8002\"" },
+        "root": { "type": "string", "description": "Static docroot, when it is not a proxy" },
+        "ssl": { "type": "boolean" },
+        "certName": { "type": "string" },
+        "certExpiryDays": { "type": ["integer", "null"], "description": "< 30 raises a high auto-issue" },
+        "redirectTo": { "type": "string" },
+        "source": {
+          "type": "string",
+          "enum": ["nginx", "traefik", "apache", "caddy", "cloudflared", "other", "unknown"],
+          "description": "Which proxy declares this hostname. srv1340120 serves most hostnames from Traefik, not nginx."
+        }
+      }
+    },
+
+    "cronEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user": { "type": "string" },
+        "schedule": { "type": "string", "description": "Five-field cron expression, or a systemd OnCalendar= value" },
+        "cmd": { "type": "string", "description": "REDACTED before it is ever written here" },
+        "hasSecret": { "type": "boolean", "description": "true when redaction fired on this line. Raises a high auto-issue." },
+        "secretKinds": { "type": "array", "items": { "type": "string" }, "description": "Pattern names that matched, e.g. [\"mongo-uri-creds\"]. Never the value." },
+        "source": { "type": "string", "description": "e.g. \"crontab -u root\", \"/etc/crontab\", \"systemd-timer\"" },
+        "unit": { "type": "string", "description": "Timer unit name when source is systemd-timer" }
+      }
+    },
+
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine": { "type": "string", "enum": ["mongodb", "mysql", "mariadb", "postgres", "redis", "sqlite", "other"] },
+        "version": { "type": "string" },
+        "host": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "collections": { "type": "array", "items": { "$ref": "#/$defs/collection" } }
+      }
+    },
+
+    "collection": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "docs": { "type": "integer", "minimum": 0, "description": "Referenced from project stats as $mongo.<db>.<collection>.docs" },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "indexes": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "web": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "servers": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["nginx", "apache", "traefik", "caddy", "other"] }
+        },
+        "sitesEnabled": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "isSymlink": { "type": "boolean", "description": "false raises a medium auto-issue" },
+              "target": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "docker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string" },
+        "containersTotal": { "type": "integer", "minimum": 0 },
+        "containersRunning": { "type": "integer", "minimum": 0 },
+        "images": { "type": "integer", "minimum": 0 },
+        "volumes": { "type": "integer", "minimum": 0 },
+        "diskUsage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "images": { "type": "string" },
+            "containers": { "type": "string" },
+            "volumes": { "type": "string" },
+            "buildCache": { "type": "string" },
+            "reclaimable": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "logs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "journalSize": { "type": "string" },
+        "largest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string" },
+              "size": { "type": "string" },
+              "sizeBytes": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

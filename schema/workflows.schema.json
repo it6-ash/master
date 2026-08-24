@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workflows.schema.json",
+  "title": "data/workflows.json",
+  "description": "Canonical n8n workflow state, keyed by workflow id. Machine-written by ingest/n8n-list.js.",
+  "type": "object",
+  "propertyNames": { "pattern": "^[A-Za-z0-9_-]{8,36}$" },
+  "additionalProperties": { "$ref": "#/$defs/workflow" },
+
+  "$defs": {
+    "workflow": {
+      "type": "object",
+      "required": ["name", "active"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "active": {
+          "type": "boolean",
+          "description": "Present in the full list but absent from the --active=true list means false."
+        },
+        "server": { "type": "string", "description": "Must be a key in data/servers.json" },
+        "group": {
+          "type": "string",
+          "enum": ["Yamini", "Attribution", "HR", "Sales QA", "KW GBT", "Web chat", "Ungrouped"],
+          "description": "Assigned by the name-pattern rules in the brief, §8b"
+        },
+        "noise": {
+          "type": "boolean",
+          "description": "Imported demo templates: names matching ^\\d+- or empty\\d|My workflow. Filterable out of the dashboard."
+        },
+        "firstSeen": { "type": "string", "format": "date" },
+        "lastSeen": { "type": "string", "format": "date" },
+        "missingSince": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Set when a previously seen id stops appearing in the list. Never deleted, so the dashboard can say \"disappeared\"."
+        },
+        "history": {
+          "type": "array",
+          "description": "Append-only, one entry per observed state CHANGE (not per ingest). Powers \"deactivated 3 days ago\".",
+          "items": {
+            "type": "object",
+            "required": ["date", "active"],
+            "additionalProperties": false,
+            "properties": {
+              "date": { "type": "string", "format": "date" },
+              "active": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

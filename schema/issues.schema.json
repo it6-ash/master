@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "issues.schema.json",
+  "title": "data/issues.json",
+  "description": "Hand-written and auto-detected issues. Entries with source=auto are regenerated on every ingest; source=manual entries are never touched by machinery.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/issue" },
+
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "required": ["id", "severity", "title", "source", "opened"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Stable slug. For auto issues it is derived from rule + subject so re-ingest updates rather than duplicates."
+        },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+        "title": { "type": "string", "minLength": 1 },
+        "body": { "type": "string" },
+        "project": { "type": ["string", "null"], "description": "Must match a project id in content/projects/" },
+        "server": { "type": ["string", "null"], "description": "Must be a key in data/servers.json" },
+        "source": { "type": "string", "enum": ["manual", "auto"] },
+        "rule": {
+          "type": "string",
+          "description": "Required when source=auto. The §9 rule that fired, e.g. db-port-exposed, ufw-inactive, unit-failed, cert-expiring, kernel-stale, disk-high, container-stuck-created, cron-secret, sites-enabled-not-symlink.",
+          "enum": [
+            "db-port-exposed",
+            "ufw-inactive",
+            "unit-failed",
+            "cert-expiring",
+            "kernel-stale",
+            "disk-high",
+            "container-stuck-created",
+            "cron-secret",
+            "sites-enabled-not-symlink"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "description": "The observed fact that fired the rule. Redacted like everything else in data/."
+        },
+        "opened": { "type": "string", "format": "date" },
+        "resolved": { "type": ["string", "null"], "format": "date" }
+      }
+    }
+  }
+}

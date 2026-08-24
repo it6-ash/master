@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project-frontmatter.schema.json",
+  "title": "content/projects/<slug>.md — frontmatter",
+  "description": "The machine-readable contract at the top of each project doc. Everything below the frontmatter is prose and is rendered as-is.",
+  "type": "object",
+  "required": ["id", "name", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Must equal the filename slug. Must be unique across content/projects/."
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "server": {
+      "type": ["string", "null"],
+      "description": "Must be a key in data/servers.json. An unknown value fails validate."
+    },
+    "status": { "type": "string", "enum": ["live", "partial", "broken", "idle"] },
+    "url": {
+      "type": "string",
+      "description": "Free text subtitle shown under the project name, e.g. \"WhatsApp AI · n8n + MongoDB\". Not required to be a URL."
+    },
+    "href": { "type": "string", "description": "Actual link, if the project has a reachable front end" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" },
+    "order": { "type": "integer", "description": "Manual sort weight in the project grid. Lower sorts first." },
+    "stats": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["value", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": ["string", "number"],
+            "description": "A literal, or a reference resolved from ingested data at build time. References look like $mongo.<db>.<collection>.docs, $wf.<id>.active, $wf.group.<Group>.active, $server.<id>.state.diskUsedPct."
+          },
+          "label": { "type": "string" },
+          "state": {
+            "type": "string",
+            "enum": ["live", "data", "idle", "broken"],
+            "description": "Optional colour hint, e.g. the \"0 to CRM\" tile is broken"
+          }
+        }
+      }
+    },
+    "workflows": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,36}$" },
+      "description": "n8n workflow ids owned by this project. Cross-linked both ways in the dashboard."
+    },
+    "services": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "systemd unit or container names on `server` that this project runs on"
+    },
+    "updated": { "type": "string", "format": "date" }
+  }
+}

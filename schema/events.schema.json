@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events.schema.json",
+  "title": "Change events emitted by src/diff.js",
+  "description": "Feeds the \"What changed\" panel. Payload keys vary by type, so additional properties are permitted; `type` and `at` are not.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/event" },
+
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": ["type", "at"],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "service.appeared",
+            "service.disappeared",
+            "service.failed",
+            "service.recovered",
+
+            "port.appeared",
+            "port.closed",
+            "port.exposed",
+            "port.unexposed",
+
+            "container.appeared",
+            "container.disappeared",
+            "container.state",
+
+            "disk.jump",
+            "disk.threshold",
+
+            "kernel.updated",
+            "reboot.pending",
+            "firewall.changed",
+
+            "cert.expiring",
+            "cert.renewed",
+            "vhost.appeared",
+            "vhost.disappeared",
+
+            "workflow.appeared",
+            "workflow.disappeared",
+            "workflow.activated",
+            "workflow.deactivated",
+
+            "project.appeared",
+            "project.disappeared",
+
+            "db.growth",
+            "server.stale"
+          ]
+        },
+        "at": { "type": "string", "format": "date", "description": "Date of the newer snapshot" },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low", "info"],
+          "description": "Colour coding in the What changed panel"
+        },
+        "server": { "type": "string" },
+        "name": { "type": "string" },
+        "id": { "type": "string" },
+        "domain": { "type": "string" },
+        "port": { "type": "integer" },
+        "days": { "type": "integer" },
+        "from": { "type": ["string", "number", "boolean", "null"] },
+        "to": { "type": ["string", "number", "boolean", "null"] },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "snapshot.schema.json",
+  "title": "data/snapshots/<server>/<ISO>.json",
+  "description": "Written BEFORE merging into data/servers.json, on every ingest. diff.js compares the two most recent snapshots for a server.",
+  "type": "object",
+  "required": ["server", "takenAt", "record"],
+  "additionalProperties": false,
+  "properties": {
+    "server": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$" },
+    "takenAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Ingest time, not dump-capture time. Also encoded in the filename."
+    },
+    "capturedAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "When the dump itself was taken, if the dump says so. Preferred over takenAt for ordering when present."
+    },
+    "sourceFile": { "type": "string" },
+    "sourceSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Of the raw file. Ingest is idempotent: an unchanged sha for the same server writes no new snapshot."
+    },
+    "parser": { "type": "string", "enum": ["vps-dump", "n8n-list", "mongo-stats"] },
+    "parserVersion": { "type": "string" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Sections skipped or malformed. Parsers warn and carry on; they never throw."
+    },
+    "record": {
+      "$ref": "servers.schema.json#/$defs/server",
+      "description": "The server record exactly as parsed from this one dump, before merge."
+    }
+  }
+}

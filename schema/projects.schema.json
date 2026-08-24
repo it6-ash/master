@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "projects.schema.json",
+  "title": "data/projects.json",
+  "description": "Derived. Regenerated on every build by merging content/projects/*.md frontmatter with resolved stat references. Never hand-edit; edit the Markdown.",
+  "type": "object",
+  "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]*$" },
+  "additionalProperties": { "$ref": "#/$defs/project" },
+
+  "$defs": {
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "status", "sourceFile"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "server": { "type": ["string", "null"] },
+        "status": { "type": "string", "enum": ["live", "partial", "broken", "idle"] },
+        "url": { "type": "string" },
+        "href": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "summary": { "type": "string" },
+        "order": { "type": "integer" },
+        "updated": { "type": "string", "format": "date" },
+
+        "stats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "value": { "type": ["string", "number"], "description": "Resolved. References already substituted." },
+              "label": { "type": "string" },
+              "state": { "type": "string", "enum": ["live", "data", "idle", "broken"] },
+              "ref": { "type": "string", "description": "The original $reference, kept so the dashboard can show provenance" },
+              "unresolved": { "type": "boolean", "description": "true when a $reference had no matching ingested data" }
+            }
+          }
+        },
+
+        "workflows": { "type": "array", "items": { "type": "string" } },
+        "services": { "type": "array", "items": { "type": "string" } },
+
+        "flows": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of flow blocks found in the doc. The parsed ASTs are held in memory at build time, not persisted."
+        },
+        "sourceFile": { "type": "string" }
+      }
+    }
+  }
+}

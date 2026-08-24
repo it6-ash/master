@@ -1,0 +1,24 @@
+[
+  {
+    "id": "yamini-no-cratio-writeback",
+    "severity": "critical",
+    "title": "Yamini's verdicts never reach Cratio",
+    "body": "The AI qualification verdicts produced by the Yamini agent are written to MongoDB (Yamini.customerChats) and shown on the overview dashboard, but nothing writes them back to Cratio CRM. The four AI Bot fields on the Cratio lead record have been null since Aug 2025. Sales therefore never sees the qualification, which makes the whole pipeline read-only in practice. This is the flagship broken path in the estate.",
+    "project": "yamini",
+    "server": "srv1340120",
+    "source": "manual",
+    "opened": "2026-08-18",
+    "resolved": null
+  },
+  {
+    "id": "meta-capi-contradicts-architecture-brief",
+    "severity": "medium",
+    "title": "Meta CAPI is inactive while Google Enhanced Conversions is live — the reverse of the architecture brief",
+    "body": "The architecture brief describes Meta CAPI as the live attribution path and Google Enhanced Conversions as planned. The n8n state is the opposite: the Meta CAPI pipelines are inactive and Google Enhanced Conversions is active. Recorded here as a contradiction rather than resolved silently — one of the two sources is wrong and it needs a human decision which.",
+    "project": null,
+    "server": "srv1340120",
+    "source": "manual",
+    "opened": "2026-08-24",
+    "resolved": null
+  }
+]

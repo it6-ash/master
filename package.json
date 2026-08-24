@@ -1,0 +1,21 @@
+{
+  "name": "kw-estate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Living dashboard for KW Group infrastructure. Paste raw dumps into raw/, get a rebuilt single-file dashboard in dist/.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "ingest": "node src/ingest/index.js",
+    "build": "node src/build.js",
+    "watch": "node src/watch.js",
+    "diff": "node src/diff.js",
+    "validate": "node src/validate.js",
+    "new-project": "node src/new-project.js",
+    "test": "node --test"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

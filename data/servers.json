@@ -1,0 +1,28 @@
+{
+  "srv1340120": {
+    "name": "srv1340120",
+    "role": "Apps & Automation",
+    "ip": "72.62.228.194",
+    "provider": "Hostinger",
+    "notes": "The important one. n8n, MongoDB, LeadQ dashboards, HR portal. Multi-tenant: ports 80/443 are owned by Traefik inside the n8n docker-compose stack, not by the host nginx.",
+    "lastIngest": null,
+    "sourceFile": null
+  },
+  "srv1870078": {
+    "name": "srv1870078",
+    "role": "Second n8n (idle)",
+    "ip": "200.141.9.83",
+    "provider": "Hostinger",
+    "notes": "A second n8n instance doing nothing. Candidate for decommissioning.",
+    "lastIngest": null,
+    "sourceFile": null
+  },
+  "srv1900820": {
+    "name": "srv1900820",
+    "role": "Websites",
+    "ip": "200.234.35.172",
+    "provider": "Hostinger",
+    "lastIngest": null,
+    "sourceFile": null
+  }
+}

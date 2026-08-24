@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log*
+*.log
+
+# raw/ is the paste drop-zone. Dumps arrive UNREDACTED and have historically
+# contained live credentials (see README "Secrets"). Never commit them.
+# Redacted copies live in test/fixtures/ and those ARE committed.
+raw/*
+!raw/.gitkeep
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
