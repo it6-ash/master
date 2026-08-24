@@ -12,16 +12,36 @@ Stage order and checkpoints follow the build brief.
 | Stage | Deliverable | Status |
 |---|---|---|
 | 1 | Repo scaffold, `package.json`, schemas, `validate` | **done** |
-| 2 | `ingest/vps-dump.js` + tests against real dumps | blocked — needs the dumps |
-| 3 | `ingest/n8n-list.js`, `mongo-stats.js`, format detection | blocked — needs the exports |
+| 2 | `ingest/vps-dump.js` + tests against real dumps | **done** |
+| 3 | `ingest/n8n-list.js`, `mongo-stats.js`, format detection | partial — see below |
 | 4 | `diff.js` + auto-issue rules | not started |
 | 5 | Flow DSL auto-layout + animated SVG renderer | parser done, layout/render not started |
 | 6 | Full HTML build | not started |
 | 7 | Watch mode, `new-project`, README | not started |
 
-`npm run ingest`, `build`, `watch`, `diff` and `new-project` exist as commands
-but exit 2 with a note until their stage lands. `npm run validate` and
-`npm test` are live now.
+`npm run validate` and `npm test` are live. `ingest`, `build`, `watch`, `diff`
+and `new-project` exist as commands but exit 2 with a note until their stage
+lands.
+
+**On stage 3:** `kw-collect.sh` schema 2.0 already embeds the n8n workflow list
+(`===SECTION:N8N===`) and the Mongo collection counts
+(`---mongo_collections---`), and `vps-dump.js` parses both. Standalone
+`n8n-list.js` / `mongo-stats.js` are still worth having for pasting an export on
+its own, but they are no longer on the critical path.
+
+## The collector
+
+`kw-collect.sh` is the read-only estate collector. It emits the
+`===SECTION:NAME===` / `---subsection---` format `vps-dump.js` consumes, and
+redacts credentials at source before the dump ever leaves the server.
+
+```bash
+scp kw-collect.sh root@<server>:/root/
+ssh root@<server> 'bash /root/kw-collect.sh'
+scp root@<server>:/root/kw-collect-*.txt ./raw/
+```
+
+The parser is pinned to collector schema 2.0 and warns if it meets another.
 
 ## Commands
 

@@ -1,0 +1,1150 @@
+===MANIFEST===
+schema=2.0
+collected_at=2026-08-24T12:03:33Z
+hostname=srv1340120.hstgr.cloud
+collector=kw-collect.sh
+
+===SECTION:HOST===
+
+---hostnamectl---
+ Static hostname: srv1340120
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: 9c15f549150342c3b155107efeb05510
+         Boot ID: 80c5b2e7a99a49139eb9469c0047950d
+  Virtualization: kvm
+Operating System: Ubuntu 24.04.4 LTS
+          Kernel: Linux 6.8.0-110-generic
+    Architecture: x86-64
+ Hardware Vendor: QEMU
+  Hardware Model: Standard PC _i440FX + PIIX, 1996_
+Firmware Version: rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org
+   Firmware Date: Tue 2014-04-01
+    Firmware Age: 12y 4month 3w 2d
+
+---uname---
+Linux srv1340120 6.8.0-110-generic #110-Ubuntu SMP PREEMPT_DYNAMIC Thu Mar 19 15:09:20 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+---uptime---
+ 12:03:33 up 115 days, 20:31,  1 user,  load average: 0.71, 0.79, 0.58
+
+---os_release---
+NAME="Ubuntu"
+VERSION="24.04.4 LTS (Noble Numbat)"
+
+---timezone---
+               Local time: Mon 2026-08-24 12:03:33 UTC
+           Universal time: Mon 2026-08-24 12:03:33 UTC
+                 RTC time: Mon 2026-08-24 12:03:33
+                Time zone: Etc/UTC (UTC, +0000)
+
+===SECTION:CPU_MEM_DISK===
+
+---nproc---
+4
+
+---cpu_model---
+CPU(s):                                  4
+Vendor ID:                               AuthenticAMD
+Model name:                              AMD EPYC 7543P 32-Core Processor
+Thread(s) per core:                      1
+Core(s) per socket:                      4
+
+---memory---
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       3.6Gi       2.4Gi        55Mi         9Gi        11Gi
+Swap:             0B          0B          0B
+
+---swap---
+
+---disk---
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       193G   35G  158G  19% /
+/dev/sda16      881M  206M  614M  26% /boot
+/dev/sda15      105M  6.2M   99M   6% /boot/efi
+overlay         193G   35G  158G  19% /var/lib/docker/rootfs/overlayfs/7d82b075ae09e460a5986b6b6be92b07216de4d0811bad9bc51bf30a1498ea1b
+overlay         193G   35G  158G  19% /var/lib/docker/rootfs/overlayfs/897e5080aabe46ed19e1a502b6bd635d55e6aebe97ec8b87259e494f6589d197
+overlay         193G   35G  158G  19% /var/lib/docker/rootfs/overlayfs/77cd5de28bb34ce03243a72f70668de3813743f0a8004ffc2535f6bbc88cb586
+overlay         193G   35G  158G  19% /var/lib/docker/rootfs/overlayfs/8b2892203e5dcce526b3011d06a94cc1af24363af07e7e807fbd3fba6b359b7e
+overlay         193G   35G  158G  19% /var/lib/docker/rootfs/overlayfs/90df92a4ab82bb2dcdb1f5bae7224185aca102b5693515f2c5c0dab73c2dc1ad
+overlay         193G   35G  158G  19% /var/lib/docker/rootfs/overlayfs/cc64b35183f1217aaeca9a126b1614fd83f517b2fa3c7d1def64f109e6557949
+
+---inodes---
+Filesystem       Inodes  IUsed    IFree IUse% Mounted on
+/dev/sda1      26083328 743862 25339466    3% /
+/dev/sda16        58496    604    57892    2% /boot
+/dev/sda15            0      0        0     - /boot/efi
+overlay        26083328 743862 25339466    3% /var/lib/docker/rootfs/overlayfs/7d82b075ae09e460a5986b6b6be92b07216de4d0811bad9bc51bf30a1498ea1b
+
+---top_dirs---
+39G	/
+22G	/var
+16G	/var/lib
+11G	/root
+5.3G	/usr
+3.8G	/var/log
+3.0G	/root/wp-backup
+2.9G	/usr/lib
+2.1G	/var/www
+1.2G	/usr/bin
+905M	/root/n8n-backup-2026-08-24
+803M	/opt
+616M	/usr/share
+485M	/opt/kw-gbt
+311M	/usr/src
+239M	/opt/kw-manashi
+221M	/usr/libexec
+212M	/boot
+178M	/var/cache
+172M	/home/claude-deploy
+172M	/home
+86M	/usr/include
+75M	/opt/lead-api
+68M	/root/.cache
+37M	/usr/sbin
+
+---big_files---
+4.1G	/root/n8n-db-2026-08-17.sqlite
+3.5G	/var/log/mongodb/mongod.log
+2.6G	/root/kwbluepearldelhi.com.zip
+2.4G	/var/lib/docker/volumes/n8n_data/_data/database.sqlite
+1.3G	/var/www/kwsite/.git/objects/pack/pack-e41ab5e33e7834ce97130a376c14930dc76d7401.pack
+905M	/root/n8n-backup-2026-08-24/n8n_data.tar.gz
+345M	/root/kwbluepearldelhi_db.sql
+295M	/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/7db6653f6804003b37929943998584f13d1788dea632aec0d6d3d5d3e65a3c75
+244M	/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/1784c472fcd8aa0d764d6ad8acb2b53cb5508bc9856d48c1f1e6cc19b47e85d8
+236M	/var/www/media/testimonial.mp4
+
+===SECTION:NETWORK===
+
+---interfaces---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0             UP             72.62.228.194/24 2a02:4780:12:53a8::1/48 fe80::16e8:d4ff:feb9:82d8/64 
+br-0c297d7963e6  UP             172.18.0.1/16 fe80::8094:78ff:fec5:c10/64 
+docker0          UP             172.17.0.1/16 fe80::a427:e1ff:fe9e:fe6f/64 
+veth296b12c@if2  UP             fe80::14d9:4eff:fece:1ec6/64 
+br-ea311c6b4fcd  UP             172.19.0.1/16 fe80::c026:15ff:fecd:eb95/64 
+veth825030c@if2  UP             fe80::d47e:f1ff:fec2:e2ea/64 
+veth71df942@if2  UP             fe80::5c57:fbff:fe24:2337/64 
+veth463de96@if2  UP             fe80::9c6a:b3ff:fe75:d2c4/64 
+br-e2b7b69b903a  UP             172.20.0.1/16 fe80::5457:20ff:fef8:18c4/64 
+veth1235539@if2  UP             fe80::b088:3dff:fe61:55cb/64 
+veth5c6d129@if2  UP             fe80::d444:7eff:fefb:ace7/64 
+
+---routes---
+default via 72.62.228.254 dev eth0 proto static 
+72.62.228.0/24 dev eth0 proto kernel scope link src 72.62.228.194 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 
+172.18.0.0/16 dev br-0c297d7963e6 proto kernel scope link src 172.18.0.1 
+172.19.0.0/16 dev br-ea311c6b4fcd proto kernel scope link src 172.19.0.1 
+172.20.0.0/16 dev br-e2b7b69b903a proto kernel scope link src 172.20.0.1 
+
+---listening---
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                                                                                                                                        
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=2439184,fd=16))                                                                                                 
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=2439184,fd=14))                                                                                                 
+udp   UNCONN 0      0                  *:55569            *:*    users:(("cloudflared",pid=725,fd=8))                                                                                                          
+udp   UNCONN 0      0                  *:40281            *:*    users:(("cloudflared",pid=725,fd=9))                                                                                                          
+udp   UNCONN 0      0                  *:57899            *:*    users:(("cloudflared",pid=725,fd=6))                                                                                                          
+udp   UNCONN 0      0                  *:59219            *:*    users:(("cloudflared",pid=725,fd=7))                                                                                                          
+tcp   LISTEN 0      2048         0.0.0.0:8001       0.0.0.0:*    users:(("uvicorn",pid=2478490,fd=16))                                                                                                         
+tcp   LISTEN 0      2048         0.0.0.0:8002       0.0.0.0:*    users:(("uvicorn",pid=592750,fd=16))                                                                                                          
+tcp   LISTEN 0      2048         0.0.0.0:8100       0.0.0.0:*    users:(("uvicorn",pid=2478397,fd=14))                                                                                                         
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=2439184,fd=17))                                                                                                 
+tcp   LISTEN 0      2048       127.0.0.1:8050       0.0.0.0:*    users:(("gunicorn",pid=2478439,fd=5),("gunicorn",pid=2478436,fd=5),("gunicorn",pid=2478433,fd=5))                                             
+tcp   LISTEN 0      511        127.0.0.1:4100       0.0.0.0:*    users:(("node",pid=1345279,fd=33))                                                                                                            
+tcp   LISTEN 0      200        127.0.0.1:5432       0.0.0.0:*    users:(("postgres",pid=2458970,fd=7))                                                                                                         
+tcp   LISTEN 0      4096       127.0.0.1:5678       0.0.0.0:*    users:(("docker-proxy",pid=3339860,fd=8))                                                                                                     
+tcp   LISTEN 0      4096       127.0.0.1:27017      0.0.0.0:*    users:(("mongod",pid=2145741,fd=14))                                                                                                          
+tcp   LISTEN 0      2048       127.0.0.1:3001       0.0.0.0:*    users:(("postgrest",pid=652336,fd=20))                                                                                                        
+tcp   LISTEN 0      4096       127.0.0.1:3000       0.0.0.0:*    users:(("docker-proxy",pid=1801481,fd=8))                                                                                                     
+tcp   LISTEN 0      511        127.0.0.1:3100       0.0.0.0:*    users:(("next-server (v1",pid=1345493,fd=18))                                                                                                 
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=2439184,fd=15))                                                                                                 
+tcp   LISTEN 0      4096       127.0.0.1:20241      0.0.0.0:*    users:(("cloudflared",pid=725,fd=3))                                                                                                          
+tcp   LISTEN 0      2048       127.0.0.1:8200       0.0.0.0:*    users:(("gunicorn",pid=2478438,fd=3),("gunicorn",pid=2478437,fd=3),("gunicorn",pid=2478435,fd=3))                                             
+tcp   LISTEN 0      4096       127.0.0.1:8842       0.0.0.0:*    users:(("docker-proxy",pid=4091480,fd=8))                                                                                                     
+tcp   LISTEN 0      4096       127.0.0.1:8791       0.0.0.0:*    users:(("docker-proxy",pid=3271758,fd=8))                                                                                                     
+tcp   LISTEN 0      5          127.0.0.1:8765       0.0.0.0:*    users:(("python3",pid=2478372,fd=3))                                                                                                          
+tcp   LISTEN 0      128        127.0.0.1:9000       0.0.0.0:*    users:(("python3",pid=2478345,fd=3))                                                                                                          
+tcp   LISTEN 0      5            0.0.0.0:8899       0.0.0.0:*    users:(("python3",pid=2478347,fd=3))                                                                                                          
+tcp   LISTEN 0      511          0.0.0.0:443        0.0.0.0:*    users:(("nginx",pid=1683935,fd=7),("nginx",pid=1683934,fd=7),("nginx",pid=1683933,fd=7),("nginx",pid=1683932,fd=7),("nginx",pid=1683930,fd=7))
+tcp   LISTEN 0      511          0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=1683935,fd=8),("nginx",pid=1683934,fd=8),("nginx",pid=1683933,fd=8),("nginx",pid=1683932,fd=8),("nginx",pid=1683930,fd=8))
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=2478338,fd=3),("systemd",pid=1,fd=130))                                                                                    
+tcp   LISTEN 0      200            [::1]:5432          [::]:*    users:(("postgres",pid=2458970,fd=6))                                                                                                         
+tcp   LISTEN 0      4096            [::]:22            [::]:*    users:(("sshd",pid=2478338,fd=4),("systemd",pid=1,fd=131))                                                                                    
+
+---ufw---
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), allow (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+80                         ALLOW IN    Anywhere                  
+443                        ALLOW IN    Anywhere                  
+22/tcp (OpenSSH)           ALLOW IN    Anywhere                  
+8443                       ALLOW IN    Anywhere                  
+8002/tcp                   ALLOW IN    Anywhere                  
+22/tcp                     ALLOW IN    Anywhere                  
+80/tcp                     ALLOW IN    Anywhere                  
+443/tcp                    ALLOW IN    Anywhere                  
+8100/tcp                   DENY IN     Anywhere                  
+Anywhere                   ALLOW IN    172.17.0.0/16             
+Anywhere                   ALLOW IN    172.18.0.0/16             
+80 (v6)                    ALLOW IN    Anywhere (v6)             
+443 (v6)                   ALLOW IN    Anywhere (v6)             
+22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)             
+8443 (v6)                  ALLOW IN    Anywhere (v6)             
+8002/tcp (v6)              ALLOW IN    Anywhere (v6)             
+22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+80/tcp (v6)                ALLOW IN    Anywhere (v6)             
+443/tcp (v6)               ALLOW IN    Anywhere (v6)             
+8100/tcp (v6)              DENY IN     Anywhere (v6)             
+
+
+---iptables_pol---
+Chain INPUT (policy DROP)
+Chain FORWARD (policy ACCEPT)
+Chain OUTPUT (policy ACCEPT)
+
+---fail2ban---
+
+===SECTION:SSH===
+
+---effective---
+port 22
+maxauthtries 6
+permitrootlogin yes
+pubkeyauthentication yes
+passwordauthentication yes
+x11forwarding yes
+permitemptypasswords no
+
+---config_files---
+/etc/ssh/sshd_config:130:PermitRootLogin yes
+/etc/ssh/sshd_config.d/50-cloud-init.conf:1:PasswordAuthentication yes
+/etc/ssh/sshd_config.d/60-cloudimg-settings.conf:1:PasswordAuthentication no
+
+---recent_ok---
+2026-08-24T04:38:16.133534+00:00 srv1340120 sshd[3217220]: Accepted publickey for root from 169.254.0.1 port 37200 ssh2: RSA SHA256:UUkqfSh7Q7ewL16CLeRV0bq/RKOgeLEgwIgRr8Py8lA
+2026-08-24T11:04:12.158189+00:00 srv1340120 sshd[3323220]: Accepted publickey for root from 169.254.0.1 port 43578 ssh2: RSA SHA256:RYE/aTHYMM5LgWyylf+DHpvXe7ScIveZTYJgs0+3NYk
+2026-08-24T11:34:52.040347+00:00 srv1340120 sshd[3331681]: Accepted publickey for root from 169.254.0.1 port 58894 ssh2: RSA SHA256:jE+Jy+mvRB4Fw9zkS2fw9xl97r0013y/5DYb5ZJ4MqM
+2026-08-24T11:51:28.085136+00:00 srv1340120 sshd[3336842]: Accepted publickey for root from 169.254.0.1 port 56162 ssh2: RSA SHA256:d2zjJDDjCOcqBJvBAI0IF3cJg/Mffvb3jInLQY/PDJE
+
+---failed_count---
+failed_password_current_log=39
+
+---top_attackers---
+     80 93.183.83.99
+     69 207.180.230.71
+     60 116.110.147.130
+     54 116.110.5.25
+     53 116.110.11.84
+     49 171.231.193.230
+     46 116.110.223.67
+     44 171.243.150.90
+     42 148.251.141.101
+     39 89.117.25.134
+
+===SECTION:SERVICES===
+
+---running---
+  cloudflared.service         loaded active running cloudflared
+  containerd.service          loaded active running containerd container runtime
+  cron.service                loaded active running Regular background program processing daemon
+  dashboard.service           loaded active running Lead Qualification Dashboard
+  dashboard2.service          loaded active running LeadQ Dashboard V2
+  dbus.service                loaded active running D-Bus System Message Bus
+  docker.service              loaded active running Docker Application Container Engine
+  fwupd.service               loaded active running Firmware update daemon
+  getty@tty1.service          loaded active running Getty on tty1
+  kw-gbt-api.service          loaded active running KW-GBT API (Express + Socket.IO + MongoDB change streams)
+  kw-gbt-web.service          loaded active running KW-GBT web (Next.js 15 frontend)
+  kw-manashi.service          loaded active running KW Manashi — Resume Screener
+  kwatch-proxy.service        loaded active running KWatch PostgREST proxy (strips /rest/v1)
+  kwatch-webhook.service      loaded active running KWatch GitHub Webhook
+  kwatch.service              loaded active running KWatch Flask app
+  kwsite.service              loaded active running KW Site Visit Tool
+  media-server.service        loaded active running Media Static File Server
+  ModemManager.service        loaded active running Modem Manager
+  mongod.service              loaded active running MongoDB Database Server
+  multipathd.service          loaded active running Device-Mapper Multipath Device Controller
+  nginx.service               loaded active running A high performance web server and a reverse proxy server
+  polkit.service              loaded active running Authorization Manager
+  postgresql@16-main.service  loaded active running PostgreSQL Cluster 16-main
+  postgrest.service           loaded active running PostgREST API
+  qemu-guest-agent.service    loaded active running QEMU Guest Agent
+  rsyslog.service             loaded active running System Logging Service
+  serial-getty@ttyS0.service  loaded active running Serial Getty on ttyS0
+  ssh.service                 loaded active running OpenBSD Secure Shell server
+  systemd-journald.service    loaded active running Journal Service
+  systemd-logind.service      loaded active running User Login Management
+  systemd-networkd.service    loaded active running Network Configuration
+  systemd-resolved.service    loaded active running Network Name Resolution
+  systemd-timesyncd.service   loaded active running Network Time Synchronization
+  systemd-udevd.service       loaded active running Rule-based Manager for Device Events and Files
+  udisks2.service             loaded active running Disk Manager
+  unattended-upgrades.service loaded active running Unattended Upgrades Shutdown
+  upower.service              loaded active running Daemon for power management
+  user@0.service              loaded active running User Manager for UID 0
+
+---enabled---
+apparmor.service                       enabled enabled
+apport.service                         enabled enabled
+blk-availability.service               enabled enabled
+cloud-config.service                   enabled enabled
+cloud-final.service                    enabled enabled
+cloud-init-local.service               enabled enabled
+cloud-init.service                     enabled enabled
+cloudflared.service                    enabled enabled
+console-setup.service                  enabled enabled
+containerd.service                     enabled enabled
+cron.service                           enabled enabled
+dashboard.service                      enabled enabled
+dashboard2.service                     enabled enabled
+dmesg.service                          enabled enabled
+docker.service                         enabled enabled
+e2scrub_reap.service                   enabled enabled
+fastapi_app.service                    enabled enabled
+finalrd.service                        enabled enabled
+getty@.service                         enabled enabled
+grub-common.service                    enabled enabled
+grub-initrd-fallback.service           enabled enabled
+keyboard-setup.service                 enabled enabled
+kw-gbt-api.service                     enabled enabled
+kw-gbt-web.service                     enabled enabled
+kw-manashi.service                     enabled enabled
+kwatch-proxy.service                   enabled enabled
+kwatch-webhook.service                 enabled enabled
+kwatch.service                         enabled enabled
+kwsite.service                         enabled enabled
+lead-api.service                       enabled enabled
+lvm2-monitor.service                   enabled enabled
+media-server.service                   enabled enabled
+ModemManager.service                   enabled enabled
+mongod.service                         enabled enabled
+multipathd.service                     enabled enabled
+networkd-dispatcher.service            enabled enabled
+nginx.service                          enabled enabled
+open-iscsi.service                     enabled enabled
+open-vm-tools.service                  enabled enabled
+pollinate.service                      enabled enabled
+postgresql.service                     enabled enabled
+postgrest.service                      enabled enabled
+rsyslog.service                        enabled enabled
+secureboot-db.service                  enabled enabled
+setvtrgb.service                       enabled enabled
+snapd.apparmor.service                 enabled enabled
+snapd.autoimport.service               enabled enabled
+snapd.core-fixup.service               enabled enabled
+snapd.recovery-chooser-trigger.service enabled enabled
+snapd.seeded.service                   enabled enabled
+snapd.service                          enabled enabled
+snapd.system-shutdown.service          enabled enabled
+ssl-cert.service                       enabled enabled
+sysstat.service                        enabled enabled
+systemd-networkd-wait-online.service   enabled enabled
+systemd-networkd.service               enabled enabled
+systemd-pstore.service                 enabled enabled
+systemd-resolved.service               enabled enabled
+systemd-timesyncd.service              enabled enabled
+thermald.service                       enabled enabled
+ua-reboot-cmds.service                 enabled enabled
+ubuntu-advantage.service               enabled enabled
+udisks2.service                        enabled enabled
+ufw.service                            enabled enabled
+unattended-upgrades.service            enabled enabled
+vgauth.service                         enabled enabled
+
+---failed---
+● fastapi_app.service loaded failed failed Gunicorn instance to serve FastAPI Dashboard
+● lead-api.service    loaded failed failed Lead API
+
+---unit_details---
+
+==unit:cloudflared-update.service==
+Description=Update cloudflared
+ExecStart=/bin/bash -c '/usr/bin/cloudflared update; code=$?; if [ $code -eq 11 ]; then systemctl restart cloudflared; exit 0; fi; exit $code'
+
+==unit:cloudflared.service==
+Description=cloudflared
+ExecStart=/usr/bin/cloudflared --no-autoupdate --config /etc/cloudflared/config.yml tunnel run
+Restart=on-failure
+
+==unit:dashboard.service==
+Description=Lead Qualification Dashboard
+User=root
+WorkingDirectory=/var/www/Lead-Qualification-Agent-Dashboard
+ExecStart=/var/www/Lead-Qualification-Agent-Dashboard/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8001
+Restart=always
+
+==unit:dashboard2.service==
+Description=LeadQ Dashboard V2
+User=root
+WorkingDirectory=/var/www/Dashborad_Overview
+ExecStart=/var/www/Dashborad_Overview/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8002
+Restart=always
+
+==unit:dbus-org.freedesktop.ModemManager1.service==
+Description=Modem Manager
+ExecStart=/usr/sbin/ModemManager
+Restart=on-abort
+User=root
+
+==unit:dbus-org.freedesktop.resolve1.service==
+Description=Network Name Resolution
+ExecStart=!!/usr/lib/systemd/systemd-resolved
+Restart=always
+User=systemd-resolve
+
+==unit:dbus-org.freedesktop.thermald.service==
+Description=Thermal Daemon Service
+ExecStart=/usr/sbin/thermald --systemd --dbus-enable --adaptive
+Restart=on-failure
+
+==unit:dbus-org.freedesktop.timesync1.service==
+Description=Network Time Synchronization
+ExecStart=!!/usr/lib/systemd/systemd-timesyncd
+Restart=always
+User=systemd-timesync
+
+==unit:fastapi_app.service==
+Description=Gunicorn instance to serve FastAPI Dashboard
+User=root
+Group=www-data
+WorkingDirectory=/var/www/Lead-Qualification-Agent-Dashboard
+ExecStart=/var/www/Lead-Qualification-Agent-Dashboard/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind 127.0.0.1:8001
+
+==unit:iscsi.service==
+Description=Login to default iSCSI targets
+ExecStart=/usr/sbin/iscsiadm -m node --loginall=automatic
+ExecStart=/usr/lib/open-iscsi/activate-storage.sh
+
+==unit:kw-gbt-api.service==
+Description=KW-GBT API (Express + Socket.IO + MongoDB change streams)
+User=claude-deploy
+Group=claude-deploy
+WorkingDirectory=/opt/kw-gbt
+EnvironmentFile=/etc/kw-gbt/api.env
+ExecStart=/usr/bin/env npm run start:api
+Restart=always
+
+==unit:kw-gbt-web.service==
+Description=KW-GBT web (Next.js 15 frontend)
+User=claude-deploy
+Group=claude-deploy
+WorkingDirectory=/opt/kw-gbt
+ExecStart=/usr/bin/env npm run start --workspace @kw/web -- -H 127.0.0.1 -p 3100
+Restart=always
+
+==unit:kw-manashi.service==
+Description=KW Manashi — Resume Screener
+User=claude-deploy
+WorkingDirectory=/opt/kw-manashi
+EnvironmentFile=/opt/kw-manashi/.env
+ExecStart=/opt/kw-manashi/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8100 --workers 1
+Restart=on-failure
+
+==unit:kwatch-proxy.service==
+Description=KWatch PostgREST proxy (strips /rest/v1)
+ExecStart=/var/www/kwatch/venv/bin/python3 /var/www/kwatch/postgrest_proxy.py
+Restart=always
+User=root
+
+==unit:kwatch-webhook.service==
+Description=KWatch GitHub Webhook
+ExecStart=/var/www/kwatch/venv/bin/python3 /var/www/kwatch/webhook.py
+WorkingDirectory=/var/www/kwatch
+Restart=always
+User=root
+
+==unit:kwatch.service==
+Description=KWatch Flask app
+User=root
+WorkingDirectory=/var/www/kwatch
+EnvironmentFile=/var/www/kwatch/.env
+ExecStart=/var/www/kwatch/venv/bin/gunicorn --bind 127.0.0.1:8050 --workers 2 --timeout 180 app:app
+Restart=always
+
+==unit:kwsite.service==
+Description=KW Site Visit Tool
+WorkingDirectory=/var/www/kwsite
+ExecStart=/var/www/kwsite/venv/bin/gunicorn -w 2 -b 127.0.0.1:8200 app:app
+Restart=always
+User=root
+
+==unit:lead-api.service==
+Description=Lead API
+User=root
+WorkingDirectory=/opt/lead-api
+ExecStart=/opt/lead-api/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=always
+
+==unit:media-server.service==
+Description=Media Static File Server
+ExecStart=/usr/bin/python3 -m http.server 8899 --directory /var/www/media
+Restart=always
+User=root
+
+==unit:postgrest.service==
+Description=PostgREST API
+ExecStart=/usr/local/bin/postgrest /etc/postgrest.conf
+Restart=always
+User=postgres
+
+==unit:syslog.service==
+Description=System Logging Service
+ExecStart=/usr/sbin/rsyslogd -n -iNONE
+Restart=on-failure
+
+==unit:vmtoolsd.service==
+Description=Service for virtual machines hosted on VMware
+ExecStart=/usr/bin/vmtoolsd
+
+---timers---
+Mon 2026-08-24 12:10:00 UTC          5min Mon 2026-08-24 12:00:01 UTC 4min 39s ago sysstat-collect.timer          sysstat-collect.service
+Mon 2026-08-24 13:55:05 UTC      1h 50min Mon 2026-08-24 12:00:33 UTC  4min 7s ago fwupd-refresh.timer            fwupd-refresh.service
+Mon 2026-08-24 15:56:56 UTC      3h 52min Sun 2026-08-23 15:56:56 UTC      20h ago update-notifier-download.timer update-notifier-download.service
+Mon 2026-08-24 16:07:01 UTC       4h 2min Sun 2026-08-23 16:07:01 UTC      19h ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Mon 2026-08-24 17:39:24 UTC      5h 34min Sun 2026-08-23 18:57:01 UTC      17h ago apt-daily.timer                apt-daily.service
+Mon 2026-08-24 22:22:56 UTC           10h Mon 2026-08-24 00:47:06 UTC      11h ago certbot.timer                  certbot.service
+Mon 2026-08-24 23:01:32 UTC           10h Mon 2026-08-24 07:01:33 UTC  5h 3min ago motd-news.timer                motd-news.service
+Tue 2026-08-25 00:00:00 UTC           11h Mon 2026-08-24 00:00:00 UTC      12h ago dpkg-db-backup.timer           dpkg-db-backup.service
+Tue 2026-08-25 00:00:00 UTC           11h Mon 2026-08-24 00:00:00 UTC      12h ago logrotate.timer                logrotate.service
+Tue 2026-08-25 00:07:00 UTC           12h Mon 2026-08-24 00:07:01 UTC      11h ago sysstat-summary.timer          sysstat-summary.service
+Tue 2026-08-25 05:49:19 UTC           17h Mon 2026-08-24 01:44:33 UTC      10h ago man-db.timer                   man-db.service
+Tue 2026-08-25 06:59:44 UTC           18h Mon 2026-08-24 06:59:56 UTC  5h 4min ago apt-daily-upgrade.timer        apt-daily-upgrade.service
+Sun 2026-08-30 03:10:35 UTC        5 days Sun 2026-08-23 03:10:33 UTC 1 day 8h ago e2scrub_all.timer              e2scrub_all.service
+Mon 2026-08-31 01:07:03 UTC        6 days Mon 2026-08-24 00:10:46 UTC      11h ago fstrim.timer                   fstrim.service
+Sun 2026-09-06 04:00:00 UTC 1 week 5 days Mon 2026-08-24 06:30:33 UTC 5h 34min ago update-notifier-motd.timer     update-notifier-motd.service
+-                                       - -                                      - apport-autoreport.timer        apport-autoreport.service
+-                                       - -                                      - snapd.snap-repair.timer        snapd.snap-repair.service
+-                                       - -                                      - ua-timer.timer                 ua-timer.service
+
+===SECTION:DOCKER===
+
+---version---
+29.2.1
+
+---containers---
+traefik-iyg2-traefik-1	traefik:latest	restarting	Restarting (1) 38 seconds ago		2026-08-24 12:03:05 +0000 UTC
+n8n-n8n-1	docker.n8n.io/n8nio/n8n	running	Up 7 minutes	127.0.0.1:5678->5678/tcp	2026-08-24 11:48:40 +0000 UTC
+google-ads-mcp	google-ads-mcp-google-ads-mcp	running	Up 4 weeks	127.0.0.1:8842->8842/tcp	2026-07-24 11:24:03 +0000 UTC
+kwskills-app	kwskills-app	running	Up 5 weeks	127.0.0.1:3000->3000/tcp	2026-07-18 10:29:44 +0000 UTC
+cratio-mcp	cratio-mcp:latest	running	Up 6 weeks	127.0.0.1:8791->8000/tcp	2026-07-11 06:49:18 +0000 UTC
+kwskills-db	postgres:17-alpine	running	Up 2 months (healthy)	5432/tcp	2026-06-16 05:27:40 +0000 UTC
+n8n-traefik-1	9004e1cd1e33	created	Created		2026-05-01 06:35:43 +0000 UTC
+n8n-kw-dashboard-1	python:3.11-slim	running	Up 3 months		2026-05-01 06:35:43 +0000 UTC
+
+---images---
+docker.n8n.io/n8nio/n8n:2.35.6	2.26GB	3 days ago
+traefik:latest	253MB	4 days ago
+google-ads-mcp-google-ads-mcp:latest	553MB	4 weeks ago
+kwskills-app:latest	1.62GB	5 weeks ago
+cratio-mcp:latest	262MB	6 weeks ago
+alpine:latest	13MB	2 months ago
+postgres:17-alpine	400MB	3 months ago
+python:3.11-slim	188MB	4 months ago
+docker.n8n.io/n8nio/n8n:latest	1.95GB	5 months ago
+
+---system_df---
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          10        8         8.992GB   6.731GB (74%)
+Containers      8         7         109MB     20.48kB (0%)
+Local Volumes   4         4         2.662GB   0B (0%)
+Build Cache     24        0         2.217GB   0B
+
+---volumes---
+kwskills_pgdata
+n8n_data
+traefik-iyg2_traefik-letsencrypt
+traefik_data
+
+---volume_users---
+kwskills_pgdata	kwskills-db
+n8n_data	n8n-n8n-1
+traefik-iyg2_traefik-letsencrypt	traefik-iyg2-traefik-1
+traefik_data	n8n-traefik-1
+
+---compose---
+NAME                STATUS              CONFIG FILES
+google-ads-mcp      running(1)          /opt/google-ads-connector/docker-compose.yml
+kwskills            running(2)          /opt/kw-skills/docker-compose.yml
+n8n                 running(2)          /docker/n8n/docker-compose.yml
+traefik-iyg2        restarting(1)       /docker/traefik-iyg2/docker-compose.yml
+
+---stats---
+traefik-iyg2-traefik-1	0.00%	0B / 0B	0B / 0B
+n8n-n8n-1	0.67%	432.5MiB / 15.62GiB	91.1MB / 17.1MB
+google-ads-mcp	0.30%	142.4MiB / 15.62GiB	0B / 836kB
+kwskills-app	0.00%	292.6MiB / 1.5GiB	11.5MB / 2.71MB
+cratio-mcp	0.32%	235.3MiB / 15.62GiB	127kB / 160kB
+kwskills-db	0.00%	30.11MiB / 512MiB	4.93MB / 71.3MB
+n8n-kw-dashboard-1	0.72%	54.91MiB / 15.62GiB	2.07MB / 51.2MB
+
+===SECTION:WEB===
+
+---version---
+nginx version: nginx/1.24.0 (Ubuntu)
+
+---vhosts---
+# server_names_hash_bucket_size 64;
+# server_name_in_redirect off;
+#		listen     localhost:110;
+#		listen     localhost:143;
+server_name mcp-cratio.leadq.co.in;
+proxy_pass http://127.0.0.1:8791/mcp;
+listen 443 ssl; # managed by Certbot
+listen 80;
+server_name mcp-cratio.leadq.co.in;
+listen 80;
+server_name leadq.co.in www.leadq.co.in;
+listen 443 ssl http2;
+server_name leadq.co.in www.leadq.co.in;
+proxy_pass http://127.0.0.1:8001;
+listen 80;
+server_name overview.leadq.co.in;
+listen 443 ssl http2;
+server_name overview.leadq.co.in;
+proxy_pass http://127.0.0.1:8002;
+server_name mcp-google-ads.leadq.co.in;
+proxy_pass http://127.0.0.1:8842;   # must match MCP_PORT / compose port
+listen 443 ssl; # managed by Certbot
+listen 80;
+server_name mcp-google-ads.leadq.co.in;
+listen 80;
+server_name hrportal.leadq.co.in;
+listen 443 ssl http2;
+server_name hrportal.leadq.co.in;
+proxy_pass http://127.0.0.1:8100;
+listen 80;
+server_name hrportal.leadq.co.in;
+listen 443 ssl http2;
+server_name hrportal.leadq.co.in;
+server_name gbt.leadq.co.in;
+# `certbot --nginx` rewrites this block in place: it adds `listen 443 ssl`
+proxy_pass http://kw_gbt_api;
+proxy_pass http://kw_gbt_api;
+proxy_pass http://kw_gbt_api;
+proxy_pass http://kw_gbt_web;
+listen 443 ssl; # managed by Certbot
+listen 80;
+server_name gbt.leadq.co.in;
+# This vhost only matches server_name skills.leadq.co.in — it does not affect
+server_name skills.leadq.co.in;
+proxy_pass http://127.0.0.1:3000;
+listen 443 ssl; # managed by Certbot
+listen 80;
+server_name skills.leadq.co.in;
+listen 80;
+server_name kwatch.leadq.co.in;
+listen 443 ssl http2;
+server_name kwatch.leadq.co.in;
+proxy_pass http://127.0.0.1:8050;
+listen 80;
+server_name KW-Site-visit.leadq.co.in;
+listen 443 ssl http2;
+server_name KW-Site-visit.leadq.co.in;
+proxy_pass http://127.0.0.1:8200;
+listen 80;
+server_name manashi.leadq.co.in;
+root /var/www/html;
+listen 443 ssl http2;
+server_name manashi.leadq.co.in;
+listen 80;
+server_name srv1340120.hstgr.cloud;
+server_name n8n.srv1340120.hstgr.cloud;
+proxy_pass http://127.0.0.1:5678;
+listen 443 ssl; # managed by Certbot
+listen 80;
+server_name n8n.srv1340120.hstgr.cloud;
+
+---sites_enabled---
+total 16
+drwxr-xr-x 2 root root 4096 Aug 19 06:52 .
+drwxr-xr-x 8 root root 4096 Aug 20 06:52 ..
+lrwxrwxrwx 1 root root   42 Jul  8 10:09 cratio-mcp.conf -> /etc/nginx/sites-available/cratio-mcp.conf
+lrwxrwxrwx 1 root root   36 Feb 22  2026 dashboard -> /etc/nginx/sites-available/dashboard
+lrwxrwxrwx 1 root root   46 Jul 24 11:15 google-ads-mcp.conf -> /etc/nginx/sites-available/google-ads-mcp.conf
+lrwxrwxrwx 1 root root   35 May  1 06:48 hrportal -> /etc/nginx/sites-available/hrportal
+-rw-r--r-- 1 root root  314 May  5 04:48 hrportal.bak.20260505-044819
+lrwxrwxrwx 1 root root   33 Aug 19 06:52 kw-gbt -> /etc/nginx/sites-available/kw-gbt
+lrwxrwxrwx 1 root root   36 Jun 16 05:31 kw-skills -> /etc/nginx/sites-available/kw-skills
+lrwxrwxrwx 1 root root   33 Apr 18 04:46 kwatch -> /etc/nginx/sites-available/kwatch
+lrwxrwxrwx 1 root root   33 May 29 07:39 kwsite -> /etc/nginx/sites-available/kwsite
+-rw-r--r-- 1 root root  550 May  5 05:24 manashi
+lrwxrwxrwx 1 root root   32 Apr 21 06:12 media -> /etc/nginx/sites-available/media
+lrwxrwxrwx 1 root root   30 May  2 05:45 n8n -> /etc/nginx/sites-available/n8n
+
+---not_symlinks---
+/etc/nginx/sites-enabled/hrportal.bak.20260505-044819
+/etc/nginx/sites-enabled/manashi
+
+---certs---
+  Certificate Name: gbt.leadq.co.in
+    Domains: gbt.leadq.co.in
+    Expiry Date: 2026-11-17 05:54:01+00:00 (VALID: 84 days)
+  Certificate Name: kw-site-visit.leadq.co.in
+    Domains: kw-site-visit.leadq.co.in
+    Expiry Date: 2026-10-26 09:18:12+00:00 (VALID: 62 days)
+  Certificate Name: leadq.co.in
+    Domains: leadq.co.in hrportal.leadq.co.in www.leadq.co.in
+    Expiry Date: 2026-09-28 10:19:27+00:00 (VALID: 34 days)
+  Certificate Name: manashi.leadq.co.in
+    Domains: manashi.leadq.co.in
+    Expiry Date: 2026-10-02 15:34:02+00:00 (VALID: 39 days)
+  Certificate Name: mcp-cratio.leadq.co.in
+    Domains: mcp-cratio.leadq.co.in
+    Expiry Date: 2026-10-06 09:10:46+00:00 (VALID: 42 days)
+  Certificate Name: mcp-google-ads.leadq.co.in
+    Domains: mcp-google-ads.leadq.co.in
+    Expiry Date: 2026-10-22 10:17:32+00:00 (VALID: 58 days)
+  Certificate Name: n8n.srv1340120.hstgr.cloud
+    Domains: n8n.srv1340120.hstgr.cloud
+    Expiry Date: 2026-09-29 04:18:25+00:00 (VALID: 35 days)
+  Certificate Name: skills.leadq.co.in
+    Domains: skills.leadq.co.in
+    Expiry Date: 2026-11-13 10:28:36+00:00 (VALID: 80 days)
+
+---cloudflared---
+tunnel: 844f16dd-7cdd-4d7d-8c94-4647c9ddc3f0
+credentials-file: /root/.cloudflared/844f16dd-7cdd-4d7d-8c94-4647c9ddc3f0.json
+
+ingress:
+  - hostname: kwatch.leadq.co.in
+    service: http://127.0.0.1:8050
+  - service: http_status:404
+
+===SECTION:DATABASES===
+mysql=inactive
+absent
+mariadb=inactive
+absent
+postgresql=active
+redis-server=inactive
+absent
+mongod=active
+
+---postgres_dbs---
+ kw_manashi |            
+            |            
+ kwatch     |            
+            |            
+            |            
+ postgres   |            
+ template0  |            
+            |            
+ template1  |            
+            |            
+
+---mongo_collections---
+Yamini	customerChats	27368
+Yamini	allowedUsers	5
+Yamini	authLogs	130
+
+===SECTION:N8N===
+container=n8n-n8n-1
+
+---all_workflows---
+CGjSu6Enk5oPngL6|1-Clone_Viral_TikToks_with_AI_Avatars___Auto_Post_to_9_Platforms_using_Perplexity___Blotato
+ssXTKiWQzvM8XaHj|10-Generate___Auto_Post_Social_Videos_to_Multiple_Platforms_with_GPT_4_and_Kling_AI
+AJcl5Fq5ND2bqoro|100-Automated_Stock_Analysis_Reports_with_Technical___News_Sentiment_using_GPT_4o
+8UpqTxZE8W7papQu|11-Auto_Publish_Social_Videos_to_9_Platforms_via_Google_Sheets_and_Blotato
+1PDBTJsZ1pNgzeQ0|12-Automate_WhatsApp_Booking_System_with_GPT_4_Assistant__Cal_com_and_SMS_Reminders
+BRHUxVlU8lpqoEwW|13-Convert_YouTube_Videos_to_Shorts_with_Klap___Auto_Post_to_Multiple_Social_Platforms
+dvCmBSenNjiJlh1J|14-Generate_SEO_Optimized_WordPress_Content_with_AI_Powered_Perplexity_Research
+62MN6oqxOs3levjh|15-AI_Youtube_Trend_Finder_Based_On_Niche
+uAEfLPaShxPUoLSw|16-personalized-ai-tech-newsletter-using-rss,-openai-and-gmail
+ip9QrWYS9byvDaRV|17-gmail-ai-auto-responder_-create-draft-replies-to-incoming-emails
+HKHtYpK4qR2dlwHe|18-automated-ai-content-creation-&-instagram-publishing-from-google-sheets-
+FIdLhfE1md7YYU2c|19-ai-marketing-report-(google-analytics-&-ads,-meta-ads),-sent-via-email_telegram
+zwo0bDvYzyO0iZY1|2-Generate___Auto_post_AI_Videos_to_Social_Media_with_Veo3_and_Blotato
+FLcj4EWmaPvsQmpj|20-building-your-first-whatsapp-chatbot
+ILMUPuNWbBEtoWTk|21-scrape-and-summarize-webpages-with-ai
+Y2MJTGvUzvOCkozQ|22-Automate_Multi_Platform_Social_Media_Content_Creation
+D9SZmib0atDn3Qno|23-fully-automated-ai-video-generation-&-multi-platform-publishing
+7sHYts3pBkYe3Kon|24-simple-telegram-ai-chatbot
+7D9mWt3zJePCco3Q|25-scrape-business-emails-from-google-maps-without-the-use-of-any-third-party-apis
+OiHsGnrs0QJyemfO|26-a***OPENAI_KEY***
+cDkui7UtHcN4JJBo|27-flux-ai-image-generator
+Ybas1LAHGiMWtSM5|28-generate-instagram-content-from-top-trends-with-ai-image-generation
+Ufd0oZjrQuUixrU2|29-ai-researcher-for-sales
+3mG8pAcZfH6AiWtP|3-Generate_AI_Viral_Videos_with_Seedance_and_Upload_to_TikTok__YouTube___Instagram
+OGn6dGGPCNUqvzJP|30-transcribe-audio-files,-summarize-with-gpt-4-and-store-in-notion
+S3Yx1gWQAJYy7mYM|Lead Qualification Pipeline - CRM → Ringg AI → Scoring → DB
+X0uSjcINb8pNndoU|32-notion-ai-assistant-generator
+EeroWXsAytgZm3ee|33-Automate Multi-Platform Social Media Content Creation
+oUG64DakWCzEe1Wv|34-ai-automated-hr-workflow-for-cv-analysis-and-candidate-evaluation
+99yXL5T7suCrTvYB|35-ai-agent-google-calendar-assistant-using-openai
+MvNmMAAtuakYjEfQ|36-personalize-marketing-emails-using-customer-data-and-ai
+4ZwAofqjnHnShiDL|37-ai-generated-linkedin-posts-with-openai,-google-sheets-&-email-approval-workflow
+u0Br3FJn0P2P7BY2|38-automate-sales-cold-calling-pipeline-with-apify,-gpt-4o,-and-whatsapp
+2TIXtqSAWxX1QjP9|39-upload-to-instagram-and-tiktok-from-google-drive
+swSsUPvmiHAqz07J|4-Scrape_business_leads_from_Google_Maps_using_OpenAI_and_Google_Sheets__Use_for_free
+AevCEffvMg3JjcQC|40-Telegram_Messaging_Agent_for_Text_Audio_Images
+8o6MezK5LYNn7CBL|41-analyze-any-website-with-openai-and-get-on-page-seo-audit
+0MCRs1IboWc6GRUd|42-search-linkedin-companies,-score-with-ai-and-add-them-to-google-sheet-crm
+sGD3TeuFpZNxUB6s|43-sync-outlook-calendar-events-to-notion
+yrAIdTytSsUczphy|44-WooCommerce AI Chatbot Workflow for Post Sales Support
+zDsWN5ePbHLxyXRf|45-AI-Powered WooCommerce Support Agent
+4wscpGzlhWwSwJdX|46-Enhance Customer Chat Buffer Messages with Twilio and Redis
+rgR2jrzNgxoSOkI7|47-AI_Powered_WooCommerce_Support_Agent
+px2ufO6KTxKcAMGC|48-Appointment_Scheduling_with_Twilio__Cal_com__and_AI
+AyB7JjSTzAwt9myC|49-Respond to WhatsApp Messages with AI
+fdummfmXRr5tXHRR|5-Automate_Product_Training___Customer_Support_via_WhatsApp__GPT_4___Google_Sheets
+O1vQmi3bXIqJ8dCb|50-Amazon_Product_Search_Scraper_with_BrightData__GPT_4__and_Google_Sheets
+i36e0Jd36SjBAaUa|51-Extract_Amazon_Best_Seller_Electronic_Info_with_Bright_Data_and_Google_Gemini
+0iaqtcZ2nm2ARTHt|52-Analyze_Reddit_Posts_with_AI_to_Identify_Business_Opportunities
+dkILwdJwtinnWZ97|53-Invoice_data_extraction_with_LlamaParse_and_OpenAI
+ayIVK6sa3ymy7lU7|54-Automatic_Background_Removal_for_Images_in_Google_Drive
+FhOqTJ2lAtR6MRWp|55-Real_Estate_Lead_Generation_with_BatchData_Skip_Tracing___CRM_Integration
+w5TYszsGokwF3cjn|56-Create_Animated_Stories_using_GPT_4o_mini__Midjourney__Kling_and_Creatomate_API
+ytKgfEaDImS0HBTU|57-Twitter_Virtual_AI_Influencer
+5D7MXjr4LQdypZqk|58-Post_New_YouTube_Videos_to_X
+Ntql6WamxvFSvBQW|59-Create_LinkedIn_Contributions_with_AI_and_Notify_Users_On_Slack
+Y4t0DOPGdYXQFoyx|6-Auto_create_and_publish_AI_social_videos_with_Telegram__GPT_4_and_Blotato
+q76O5UMoA8Btm5yQ|60-Generate_Graphic_Wallpaper_with_Midjourney__GPT_4o_mini_and_Canvas_APIs
+X1efkOass1xPVcCw|61-Transform_Gmail_Newsletters_into_Insightful_LinkedIn_Posts_Using_OpenAI
+ObCSdDVajfhBYY4A|62-Automated_Generation_of_AI_Advertising_Photos_for_Product_Marketing
+hsMut1IvWs7WmrlR|63-Build_Your_Own_Counseling_Chatbot_on_LINE_to_Support_Mental_Health_Conversations
+T3VNbFLsRZEQjhAo|64-Integrating_AI_with_Open_Meteo_API_for_Enhanced_Weather_Forecasting
+J2zsV8reeuJaPLNr|65-Extract_and_process_information_directly_from_PDF_using_Claude_and_Gemini
+IBbRJV2G7DyFN020|66-Automatic_Shopify_Order_Fulfillment_Process
+077bV810y5Q4jUZ5|67-Automatic_Shopify_Order_Fulfillment_Process
+e7YOBL7bWtBgsz6B|68-Collect_LinkedIn_Profiles_with_AI_Processing_using_SerpAPI__OpenAI__and_NocoDB
+BlH769YZbjQ0rT4I|69-Automate_New_Customer_Onboarding_with_HubSpot__Google_Calendar__and_AI_Powered_Gmail
+tm0g3UZ3Tl0ZxMb0|7-Automate_Blog_Content_Creation_with_GPT_4__Perplexity___WordPress
+kzmOC4VXnTZe0PiO|70-Summarise_MS_Teams_Channel_Activity_for_Weekly_Reports_with_AI
+NfyiIZRuRiwTl1no|71-Breakdown_Documents_into_Study_Notes_using_Templating_MistralAI_and_Qdrant
+zIJ0SQy81T36FRIu|72-Breakdown_Documents_into_Study_Notes_using_Templating_MistralAI_and_Qdrant
+pegNjHaDbrHH5X43|73-Auto_Categorize_blog_posts_in_wordpress_using_A_I_
+7WUUv3Cneyug0nd3|74-Invoice_data_extraction_with_LlamaParse_and_OpenAI
+ozphMdSSQrt1NPv2|75-Actioning_Your_Meeting_Next_Steps_using_Transcripts_and_AI
+zUWf79L0yzlMdCMK|76-Automate_Sales_Meeting_Prep_with_AI___APIFY_Sent_To_WhatsApp
+XS6osnLbJDbsmeLe|77-Automate_Customer_Support_Issue_Resolution_using_AI_Text_Classifier
+kmzPOEewpVzQMOd9|78-Automated_Resume_Review_System_Using_OpenAI___Google_Sheets
+4Bs80edTasB3Dwxy|79-Automate_LinkedIn_Candidates_Sourcing_with_Google_X_ray_Boolean_Search
+Ok1bO3wdBvjttlhF|8-Automate_Lead_Qualification_with_RetellAI_Phone_Agent__OpenAI_GPT___Google_Sheet
+pNrfCo3EeTXnvTIr|80-Scrape_Indeed_Job_Listings_for_Hiring_Signals_Using_Bright_Data_and_LLMs
+3T4zuEH0Ysf6mThU|81-Control_your_discord_server_with_natural_language_via_GPT4o_and_MCP_Client
+eyXPtwAYcbebUEkJ|82-Google_Calendar_Reminder_System_with_GPT_4o_and_Telegram
+pHL12UGf8Tt5IBIS|83-Build_a_Document_QA_System_with_RAG_using_Milvus__Cohere__and_OpenAI_for_Google_Drive
+0aWdCuqrqJEfmvgX|84-Gmail_MCP_Server___Your_All_in_One_AI_Email_Toolkit
+YfVJeScFyVKodWwA|85-Get_notified_when_your_competitors_change_their_pricing_with_Airtop_and_Slack
+tjmj6VvZdpWuJYQD|86-Zoom_AI_Meeting_Assistant_creates_mail_summary__ClickUp_tasks_and_follow_up_call
+CjloFf9OZBafHB9o|87-HR_Job_Posting_and_Evaluation_with_AI
+uvF34jcQCb3yOIVC|88-Daily_Podcast_Summary
+SzxB0IQBRthioBDR|89-Translate_Telegram_audio_messages_with_AI__55_supported_languages_
+2vsMJm8sVOmqtBjR|9-Automate_Blog_Content_Creation_with_Notion_MCP__DeepSeek_AI__and_WordPress
+HEd07Mg7zIbBp2ti|90-Daily_AI_News_Translation___Summary_with_GPT_4_and_Telegram_Delivery
+aJ0ZM1g2Z1dFhZnm|91-turn-google-sheets-ideas-into-ai-videos-with-gpt-4o-and-fal.ai-veo-3
+TcVKslh4l9CriUx0|92-Daily_AI_News_Translation___Summary_with_GPT_4_and_Telegram_Delivery
+KLlvvroNA04WBiE6|93-content-farming---_-ai-powered-blog-automation-for-wordpress-
+JzBBDAfhcex4YIH6|94-multiple-websites-monitoring-with-notifications-including-phone-calls
+bTiwxsf3heQmsDcA|95-build-custom-workflows-automatically-with-gpt-4o,-rag,-and-web-search
+zoCQQgL9Ag9bLYWW|96-scrape-tiktok-influencer-profiles-with-bright-data-api-to-google-sheets
+FNvLFgtHlZ65P3O0|97-ai-prompt-generator-workflow
+xqyQlvHel6vXea5R|98-Private___Local_Ollama_Self_Hosted_AI_Assistant
+RU6ZaTA3nCZeWdy9|99-Automated_Stock_Analysis_Reports_with_Technical___News_Sentiment_using_GPT_4o
+1OmPVKibN1EwKRCCLEb9G|WhatsApp Chat Agent
+Lpe4XnpwnsuzH4H4Zwvk1|CRM Lead Agent
+zKgpO4-u-yu_-aVSCRgEj|Lead Qualification Agent
+bRQRKFKlDQGeA5yR|Summarize the news
+_aZTVwAACkfsTan1J39YB|My workflow
+FQRXSTgz8uSs6WQrQ9_Fs|Isha Working
+uiswfg58jNjzKqNb|Call Auditor
+EZo3IsptHq0d89C4|My workflow 2
+hrZnFq3WccVtHH3d|SR's Combined Qualification Agent
+NWs0Zl6UrXShOIAr|My workflow 3
+jYZ7aolsbsPiPV0m|Media prompt
+a5FUYX4vVXPTACsn|Call Recording Analyser
+QOxVyLRx80QNkKfS|D6 WhatsApp Weekly Broadcast
+Sxy3kN781MAZw71n|WhatsApp BP Inbound AI Reply
+CPHGQjU1rybnc65K|empty4
+dA0Cu0TRBOdmwheD|KW WhatsApp — Main (Single Webhook + Manual Test)
+SYPcFVe16uzuCett|KW WhatsApp — Main (Single Webhook + Manual Test)
+kgNZoQxCOyDeSfbd|CV Filter Automation - KW Group
+kQ5T9A1C207XZaUa|hr screening system community1
+BrgHeiVKtO0vUc5X|empty3
+bnD70eUGTY1dc863|KW CV Screening Pipeline v7
+bd8s6I7ahQnw7kbs|WhatsApp D6 Inbound AI Reply
+Evemr7Ol2PwftvVL|empty2
+rsGNjWvAzXTxbil0|WhatsApp Inbound AI Reply
+dSPTj5H7hK4vSulG|BP WhatsApp Weekly Broadcast
+zNyAPupAI9GE1UYX|KW Group – YAMINI WhatsApp AI Support
+HejtDTtRsrkATYxv|Whatsapp Auto Reply with Followback
+Fal5e8n3wZNQZphC|GB Delhi 6
+0xu8h5EZYGvngPbF|GB Blue Pearl
+k1Of0lacOqve3jmE|web-chat-kwbp
+kvkhGWVUHPt5Yvip|web-chat-kwd6
+naCuMZDRpdx5oufD|KW: Cratio -> Meta CAPI (daily, by Updated Time)
+wFKeTOHeTxandces|Cratio pull API → Meta CAPI (scheduled, lead_id match)
+YpRmGANNPbwR1iun|4 · KW Google Enhanced Conversions · DAILY (with GCLID)
+ppXd4bTAUtLaBwB7|KW 3 · Qualification & CRM Writeback
+
+---active_workflows---
+1OmPVKibN1EwKRCCLEb9G|WhatsApp Chat Agent
+Lpe4XnpwnsuzH4H4Zwvk1|CRM Lead Agent
+zKgpO4-u-yu_-aVSCRgEj|Lead Qualification Agent
+QOxVyLRx80QNkKfS|D6 WhatsApp Weekly Broadcast
+Sxy3kN781MAZw71n|WhatsApp BP Inbound AI Reply
+bd8s6I7ahQnw7kbs|WhatsApp D6 Inbound AI Reply
+dSPTj5H7hK4vSulG|BP WhatsApp Weekly Broadcast
+Fal5e8n3wZNQZphC|GB Delhi 6
+0xu8h5EZYGvngPbF|GB Blue Pearl
+k1Of0lacOqve3jmE|web-chat-kwbp
+kvkhGWVUHPt5Yvip|web-chat-kwd6
+YpRmGANNPbwR1iun|4 · KW Google Enhanced Conversions · DAILY (with GCLID)
+
+---db_size---
+2509012992
+
+---data_dir---
+total 2G     
+drwxr-xr-x    3 node     node        4.0K Feb 10  2026 binaryData
+-rw-------    1 node     node          56 Feb  6  2026 config
+-rw-r--r--    1 node     node           0 Aug 24 11:57 crash.journal
+-rw-r--r--    1 node     node        2.3G Aug 24 11:57 database.sqlite
+-rw-r--r--    1 node     node       32.0K Aug 24 12:04 database.sqlite-shm
+-rw-r--r--    1 node     node        3.2M Aug 24 12:04 database.sqlite-wal
+-rw-r--r--    1 node     node       12.2M Aug 24 11:57 n8nEventLog-1.log
+-rw-r--r--    1 node     node        8.2K Aug 24 11:55 n8nEventLog-2.log
+-rw-r--r--    1 node     node       12.2M Aug 24 11:48 n8nEventLog-3.log
+-rw-r--r--    1 node     node      111.9K Aug 24 12:04 n8nEventLog.log
+drwxr-xr-x    2 node     node        4.0K Feb  6  2026 nodes
+drwxr-xr-x    2 node     node       12.0K Aug 17 10:41 wfbackup
+
+===SECTION:PROJECTS===
+
+---opt---
+total 36
+drwxr-xr-x  9 root          root          4096 Aug 19 06:47 .
+drwxr-xr-x 24 root          root          4096 Aug 24 12:03 ..
+drwx--x--x  4 root          root          4096 Feb  4  2026 containerd
+drwxr-xr-x  2 root          root          4096 Jul  8 10:02 cratio-connector
+drwxr-xr-x  2 root          root          4096 Jul 24 11:23 google-ads-connector
+drwxr-xr-x  8 claude-deploy claude-deploy 4096 Aug 19 10:38 kw-gbt
+drwxr-xr-x  9 claude-deploy claude-deploy 4096 Jun  9 07:22 kw-manashi
+drwxr-xr-x 10 claude-deploy claude-deploy 4096 Jul 15 05:09 kw-skills
+drwx---rwx  4 root          root          4096 Apr 20 11:35 lead-api
+
+---var_www---
+total 44
+drwxr-xr-x  8 root root  4096 May 29 07:28 .
+drwxr-xr-x 14 root root  4096 Feb 21  2026 ..
+drwxr-xr-x  6 root root  4096 Aug 17 11:20 Dashborad_Overview
+drwxr-xr-x  5 root root  4096 Jun  3 06:46 Lead-Qualification-Agent-Dashboard
+drwxr-xr-x  3 root root  4096 Apr 18 05:00 html
+drwxr-xr-x  8 root root  4096 Jun 23 05:34 kwatch
+drwxr-xr-x  9 root root 16384 Jun  3 05:28 kwsite
+drwxr-xr-x  2 root root  4096 Apr 21 06:52 media
+
+---home---
+total 16
+drwxr-xr-x  4 root          root          4096 Apr 15 04:30 .
+drwxr-xr-x 24 root          root          4096 Aug 24 12:03 ..
+drwxr-x---  8 claude-deploy claude-deploy 4096 Aug 19 06:51 claude-deploy
+drwxr-x---  3 ubuntu        ubuntu        4096 Feb  4  2026 ubuntu
+
+---root_dir---
+total 7317268
+drwx------ 17 root root       4096 Aug 24 12:03 .
+drwxr-xr-x 24 root root       4096 Aug 24 12:03 ..
+drwx------  7 root root       4096 Apr 18 05:30 .acme.sh
+-rw-------  1 root root     148995 Aug 24 11:51 .bash_history
+-rw-r--r--  1 root root       3137 Apr 18 05:29 .bashrc
+drwx------  3 root root       4096 Feb 12  2026 .cache
+drwx------  2 root root       4096 Apr 18 06:13 .cloudflared
+drwx------  3 root root       4096 Feb  6  2026 .config
+drwx------  3 root root       4096 Jul 24 11:08 .docker
+-rw-r--r--  1 root root         98 May  8 09:26 .gitconfig
+drwxr-xr-x  3 root root       4096 Apr 18 09:37 .github
+drwx------  2 root root       4096 Jul 31 06:55 .gunicorn
+-rw-------  1 root root        192 May 31 07:33 .lesshst
+drwxr-xr-x  3 root root       4096 Feb 12  2026 .local
+drwx------  3 root root       4096 Apr 20 07:24 .mongodb
+-rw-r--r--  1 root root        161 Apr 22  2024 .profile
+-rw-r--r--  1 root root         66 May 30 10:56 .selected_editor
+drwx------  2 root root       4096 Aug 24 11:52 .ssh
+drwxr-xr-x  3 root root       4096 Apr 20 10:55 atlas-backup
+drwxr-xr-x  3 root root       4096 Aug 24 11:39 backups
+-rw-r--r--  1 root root       3191 Aug 24 11:42 compose-backup-2026-08-24.yml
+-rw-r--r--  1 root root       3406 Aug 24 12:00 compose-preupgrade-2026-08-24.yml
+-rw-r--r--  1 root root      15015 Jul 24 10:34 google-ads-connector-delhi6.zip
+-rw-r--r--  1 root root        964 Apr 20 07:21 h
+-rw-r--r--  1 root root      49152 Aug 24 12:04 kw-collect-srv1340120-2026-08-24T1203.txt
+-rw-r--r--  1 root root 2730661240 Feb 27 06:08 kwbluepearldelhi.com.zip
+-rw-r--r--  1 root root  361685128 Feb 27 07:25 kwbluepearldelhi_db.sql
+drwxr-xr-x  2 root root       4096 Aug 24 11:44 n8n-backup-2026-08-24
+-rw-------  1 root root         56 Aug 17 10:41 n8n-config-2026-08-17.bak
+-rw-r--r--  1 root root 4400164864 Aug 17 10:41 n8n-db-2026-08-17.sqlite
+drwxr-xr-x  5 root root       4096 Apr 18 04:17 venv
+-rw-r--r--  1 root root      24999 May 29 06:56 vps-snapshot-2026-05-29.txt
+drwxr-xr-x  3 root root       4096 Feb 27 06:11 wp-backup
+
+---sizes---
+1.5G	/var/www/kwsite
+485M	/opt/kw-gbt
+239M	/opt/kw-manashi
+236M	/var/www/media
+172M	/home/claude-deploy
+154M	/var/www/kwatch
+93M	/var/www/Dashborad_Overview
+82M	/var/www/Lead-Qualification-Agent-Dashboard
+75M	/opt/lead-api
+4.3M	/opt/kw-skills
+76K	/opt/google-ads-connector
+32K	/home/ubuntu
+24K	/opt/cratio-connector
+20K	/var/www/html
+12K	/opt/containerd
+
+---git_repos---
+/opt/kw-manashi
+/opt/kw-skills
+/opt/kw-gbt
+/var/www/kwatch
+/var/www/Lead-Qualification-Agent-Dashboard
+/var/www/Dashborad_Overview
+/var/www/kwsite
+
+---git_remotes---
+/opt/kw-manashi	git@github-kw:mdo39-ash/kw_manashi.git
+/opt/kw-skills	none
+/opt/kw-gbt	none
+/var/www/kwatch	https://ManishKumar9494:***GITHUB_TOKEN***@github.com/ManishKumar9494/Protocor.git
+/var/www/Lead-Qualification-Agent-Dashboard	https://github.com/Priyanshu-SR/Lead-Qualification-Agent-Dashboard.git
+/var/www/Dashborad_Overview	https://github.com/Priyanshu-SR/Dashborad_Overview.git
+/var/www/kwsite	https://***GITHUB_TOKEN***@github.com/ManishKumar9494/KW-Site-visit.git
+
+---env_files---
+/opt/cratio-connector/.env
+/opt/lead-api/.env
+/opt/kw-manashi/.env
+/opt/google-ads-connector/.env
+/opt/kw-skills/.env
+/var/www/kwatch/.env
+/var/www/Lead-Qualification-Agent-Dashboard/.env
+
+---stale_files---
+/var/www/Dashborad_Overview/main.py.bak.2026-08-17-1120
+/opt/kw-manashi/.env.bak.20260423
+/opt/kw-manashi/credentials/gdrive_service_account.BROKEN.bak
+/etc/nginx/sites-enabled/hrportal.bak.20260505-044819
+
+===SECTION:CRON===
+
+---root_crontab---
+0 2 * * 0 mongodump --uri="mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=admin" --out=/root/backups/$(date +\%Y-\%m-\%d)
+
+---user_crontabs---
+==user:root==
+0 2 * * 0 mongodump --uri="mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=admin" --out=/root/backups/$(date +\%Y-\%m-\%d)
+==user:claude-deploy==
+15 2 * * * /usr/local/bin/kw-manashi-backup.sh >> /var/log/kw-manashi-backup.log 2>&1
+* * * * * /usr/local/bin/kw-manashi-autodeploy.sh >> /var/log/kw-manashi-autodeploy.log 2>&1
+* * * * * /usr/local/bin/kw-skills-autodeploy.sh >> /var/log/kw-skills-autodeploy.log 2>&1
+0 3 * * * curl -fsS -X POST -H "Authorization: Bearer ***REDACTED***" http://127.0.0.1:3000/api/cron/extract-transcripts >> /var/log/kw-skills-cron.log 2>&1
+* * * * * /usr/local/bin/kw-gbt-autodeploy.sh >> /var/log/kw-gbt-autodeploy.log 2>&1
+
+---cron_d---
+==/etc/cron.d/certbot==
+# /etc/cron.d/certbot: crontab entries for the certbot package
+#
+# Upstream recommends attempting renewal twice a day
+#
+# Eventually, this will be an opportunity to validate certificates
+# haven't been revoked, etc.  Renewal will only occur if expiration
+# is within 30 days.
+#
+# Important Note!  This cronjob will NOT be executed if you are
+# running systemd as your init system.  If you are running systemd,
+# the cronjob.timer function takes precedence over this cronjob.  For
+# more details, see the systemd.timer manpage, or use systemctl show
+# certbot.timer.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+0 */12 * * * root test -x /usr/bin/certbot -a \! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew --no-random-sleep-on-renew
+==/etc/cron.d/docker-builder-prune==
+20 3 * * 5 root docker builder prune -f > /dev/null 2>&1
+==/etc/cron.d/docker-image-prune==
+36 0 * * * root docker image prune -af --filter "until=24h" > /dev/null 2>&1
+==/etc/cron.d/e2scrub_all==
+30 3 * * 0 root test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron
+10 3 * * * root test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r
+==/etc/cron.d/sysstat==
+# The first element of the path is a directory where the debian-sa1
+# script is located
+PATH=/usr/lib/sysstat:/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Activity reports every 10 minutes everyday
+5-55/10 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1
+
+# Additional run at 23:59 to rotate the statistics file
+59 23 * * * root command -v debian-sa1 > /dev/null && debian-sa1 60 2
+
+===SECTION:LOGS===
+
+---journal_size---
+Archived and active journals take up 215.6M in the file system.
+
+---var_log_total---
+3.8G	/var/log
+
+---largest_logs---
+total 32M
+-rw-r-----  1 syslog        adm             7.2M Aug 23 00:00 auth.log.1
+-rw-r-----  1 syslog        adm             7.2M Aug 23 00:00 syslog.1
+-rw-r-----  1 syslog        adm             3.0M Aug 24 12:04 syslog
+-rw-r-----  1 syslog        adm             1.9M Aug 24 12:04 auth.log
+-rw-rw----  1 root          utmp            1.8M Jul 31 05:01 btmp.1
+-rw-r-----  1 syslog        adm             1.6M Aug 24 12:04 kern.log
+-rw-r-----  1 syslog        adm             1.6M Aug 24 12:04 ufw.log
+-rw-r-----  1 syslog        adm             1.5M Aug 23 00:00 kern.log.1
+-rw-r-----  1 syslog        adm             962K Aug 23 00:00 ufw.log.1
+-rw-r-----  1 syslog        adm             490K Aug  2 00:00 auth.log.4.gz
+-rw-r-----  1 syslog        adm             488K Aug  9 00:00 auth.log.3.gz
+
+---oversized---
+3.5G	/var/log/mongodb/mongod.log
+
+---recent_errors---
+Aug 20 03:20:01 srv1340120 sshd[1618335]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 21 08:22:24 srv1340120 sshd[2065330]: error: session_signal_req: session signalling requires privilege separation
+Aug 21 08:22:29 srv1340120 sshd[2065330]: error: session_signal_req: session signalling requires privilege separation
+Aug 21 12:35:16 srv1340120 sshd[2145508]: error: session_signal_req: session signalling requires privilege separation
+Aug 21 12:35:21 srv1340120 sshd[2145508]: error: session_signal_req: session signalling requires privilege separation
+Aug 21 22:23:22 srv1340120 sshd[2331911]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 21 22:38:08 srv1340120 sshd[2335989]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 21 22:39:06 srv1340120 sshd[2336244]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 22 08:48:12 srv1340120 sshd[2503031]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 00:32:09 srv1340120 sshd[2760130]: fatal: userauth_passwd: ***REDACTED*** packet: invalid format [preauth]
+Aug 23 00:33:50 srv1340120 sshd[2760584]: fatal: userauth_passwd: ***REDACTED*** packet: invalid format [preauth]
+Aug 24 08:08:41 srv1340120 sshd[3217220]: error: session_signal_req: session signalling requires privilege separation
+Aug 24 08:08:46 srv1340120 sshd[3217220]: error: session_signal_req: session signalling requires privilege separation
+Aug 24 11:05:20 srv1340120 sshd[3323220]: error: session_signal_req: session signalling requires privilege separation
+Aug 24 11:05:25 srv1340120 sshd[3323220]: error: session_signal_req: session signalling requires privilege separation
+
+===SECTION:PACKAGES===
+
+---running_kernel---
+6.8.0-110-generic
+
+---installed_kernels---
+linux-image-6.8.0-110-generic
+linux-image-6.8.0-138-generic
+linux-image-generic
+linux-image-virtual
+
+---reboot_required---
+*** System restart required ***
+
+---apt_cache---
+142M	/var/cache/apt
+
+---upgradable---
+66
+
+===END===

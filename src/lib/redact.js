@@ -13,7 +13,13 @@
  * is a minor annoyance; a token committed to git is not.
  */
 
-export const PLACEHOLDER_RE = /\[REDACTED:[a-z0-9-]+\]/;
+/**
+ * Our own marker, plus the ones kw-collect.sh writes at source
+ * (***REDACTED***, ***GITHUB_TOKEN***, ***OPENAI_KEY***, …). Recognising the
+ * collector's markers keeps us from "re-redacting" text that is already safe,
+ * which would otherwise make every committed fixture look like it leaks.
+ */
+export const PLACEHOLDER_RE = /\[REDACTED:[a-z0-9-]+\]|\*{3}[A-Z][A-Z0-9_]*\*{3}/;
 
 /** Values that look assigned-secret-shaped but never are. */
 const NON_SECRETS = new Set([
@@ -24,6 +30,15 @@ const NON_SECRETS = new Set([
 ]);
 
 const keep = (v) => NON_SECRETS.has(String(v).toLowerCase()) || PLACEHOLDER_RE.test(String(v));
+
+/**
+ * True if `text` already carries a redaction marker — ours or the collector's.
+ *
+ * Needed because "we redacted nothing" and "there is no secret here" are
+ * different statements. A crontab line the collector already sanitised still
+ * describes a credential, and must still be flagged hasSecret.
+ */
+export const isRedacted = (text) => PLACEHOLDER_RE.test(String(text ?? ''));
 
 /**
  * Each pattern owns a global regex and a replacer that preserves surrounding
@@ -39,7 +54,7 @@ export const PATTERNS = [
     // scheme://user:password@host — mongodb://, postgres://, amqp://, https:// …
     kind: 'uri-credentials',
     re: /\b([a-z][a-z0-9+.-]*:\/\/)([^\s:/@]{1,64}):([^\s@/]{1,256})@/gi,
-    replace: (m, scheme, user) => `${scheme}${user}:[REDACTED:uri-credentials]@`,
+    replace: (m, scheme, user, pass) => (keep(pass) ? m : `${scheme}${user}:[REDACTED:uri-credentials]@`),
   },
   {
     kind: 'aws-access-key',

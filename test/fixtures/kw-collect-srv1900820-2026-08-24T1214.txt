@@ -1,0 +1,646 @@
+===MANIFEST===
+schema=2.0
+collected_at=2026-08-24T12:14:41Z
+hostname=srv1900820.hstgr.cloud
+collector=kw-collect.sh
+
+===SECTION:HOST===
+
+---hostnamectl---
+ Static hostname: srv1900820
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: 8beabbd9ec104f51bf1fc25f99fccb90
+         Boot ID: 29e9768742e34b4094172c7dbd81488d
+  Virtualization: kvm
+Operating System: Ubuntu 24.04.4 LTS
+          Kernel: Linux 6.8.0-137-generic
+    Architecture: x86-64
+ Hardware Vendor: QEMU
+  Hardware Model: Standard PC _i440FX + PIIX, 1996_
+Firmware Version: rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org
+   Firmware Date: Tue 2014-04-01
+    Firmware Age: 12y 4month 3w 2d
+
+---uname---
+Linux srv1900820 6.8.0-137-generic #137-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 17 20:28:23 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+---uptime---
+ 12:14:41 up 11 days,  2:51,  1 user,  load average: 0.07, 0.19, 0.24
+
+---os_release---
+NAME="Ubuntu"
+VERSION="24.04.4 LTS (Noble Numbat)"
+
+---timezone---
+               Local time: Mon 2026-08-24 12:14:41 UTC
+           Universal time: Mon 2026-08-24 12:14:41 UTC
+                 RTC time: Mon 2026-08-24 12:14:42
+                Time zone: Etc/UTC (UTC, +0000)
+
+===SECTION:CPU_MEM_DISK===
+
+---nproc---
+4
+
+---cpu_model---
+CPU(s):                                  4
+Vendor ID:                               AuthenticAMD
+Model name:                              AMD EPYC 9355P 32-Core Processor
+Thread(s) per core:                      1
+Core(s) per socket:                      4
+
+---memory---
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       3.1Gi       6.7Gi        58Mi       6.2Gi        12Gi
+Swap:             0B          0B          0B
+
+---swap---
+
+---disk---
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       193G  8.3G  185G   5% /
+/dev/sda16      881M  116M  704M  15% /boot
+/dev/sda15      105M  6.2M   99M   6% /boot/efi
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/444d2e7c74722191cc3413330290d52c5d6eb2c054f7aa55b83ce708e3de1c8b
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/354c59545db555e847fe5a31c1ff1f4f2355f82b0866d00fac1c6e4a62661f8c
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/a5365845b7d59d68d7c088d2db162cdfacc3533d8fcbb92b51b2564695c0263c
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/d9694259a2de8c606e82d41e20f2b2e0c3d4f66622392b300f300d747e6ff1b9
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/5812bc17db2f0624f7af4f1302372b45bb3c9d2949843ae0b753fc9c1d3b6c98
+overlay         193G  8.3G  185G   5% /var/lib/docker/rootfs/overlayfs/6686969a16551fe9a90299b0ef3fd956d80d7fb464f81e5f723ea515912e7ac3
+
+---inodes---
+Filesystem       Inodes IUsed    IFree IUse% Mounted on
+/dev/sda1      26083328 89336 25993992    1% /
+/dev/sda16        58496   604    57892    2% /boot
+/dev/sda15            0     0        0     - /boot/efi
+overlay        26083328 89336 25993992    1% /var/lib/docker/rootfs/overlayfs/444d2e7c74722191cc3413330290d52c5d6eb2c054f7aa55b83ce708e3de1c8b
+
+---top_dirs---
+11G	/
+8.8G	/var
+7.8G	/var/lib
+1.2G	/usr
+516M	/var/log
+422M	/usr/lib
+366M	/usr/bin
+363M	/var/www
+311M	/opt
+241M	/opt/kwdelhi6
+238M	/usr/share
+145M	/usr/libexec
+138M	/var/cache
+122M	/boot
+71M	/opt/kw-blue-pearl
+30M	/usr/sbin
+11M	/boot/grub
+6.6M	/etc
+6.2M	/boot/efi
+1.4M	/run
+1.2M	/var/backups
+1.1M	/etc/apparmor.d
+756K	/etc/fail2ban
+664K	/etc/ssh
+560K	/etc/ssl
+
+---big_files---
+2.8G	/var/lib/docker/containers/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7-json.log
+
+===SECTION:NETWORK===
+
+---interfaces---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0             UP             200.234.35.172/24 2a02:4780:63:4860::1/48 fe80::8ce8:d4ff:fec2:1114/64 
+docker0          DOWN           172.17.0.1/16 fe80::18d3:b7ff:fe40:501c/64 
+br-51f1fda36cb2  UP             172.18.0.1/16 fe80::48c5:13ff:fe5c:b178/64 
+veth10fb024@if2  UP             fe80::80c4:1bff:fe71:8e6e/64 
+br-5a25e4996ab0  DOWN           172.19.0.1/16 fe80::4c1d:bcff:fe63:9324/64 
+br-78244f8e94e5  UP             172.20.0.1/16 fe80::60d8:83ff:fed7:d350/64 
+veth3eac4cd@if2  UP             fe80::682a:cff:fe3b:fa53/64 
+br-6798b135095b  UP             172.21.0.1/16 fe80::fc0f:73ff:fe08:236d/64 
+veth49afea9@if2  UP             fe80::d86c:57ff:fe1f:83d9/64 
+vethb5bf593@if2  UP             fe80::4c94:2fff:fe31:3a14/64 
+vethf5ce4a5@if2  UP             fe80::6483:30ff:feec:52e/64 
+veth5dc6599@if2  UP             fe80::489a:47ff:fea7:39b/64 
+veth59abbf8@if2  UP             fe80::5c9c:f1ff:fe52:9490/64 
+
+---routes---
+default via 200.234.35.254 dev eth0 proto static 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+172.18.0.0/16 dev br-51f1fda36cb2 proto kernel scope link src 172.18.0.1 
+172.19.0.0/16 dev br-5a25e4996ab0 proto kernel scope link src 172.19.0.1 linkdown 
+172.20.0.0/16 dev br-78244f8e94e5 proto kernel scope link src 172.20.0.1 
+172.21.0.0/16 dev br-6798b135095b proto kernel scope link src 172.21.0.1 
+200.234.35.0/24 dev eth0 proto kernel scope link src 200.234.35.172 
+
+---listening---
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                                                                                                                                            
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=5823,fd=16))                                                                                                        
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=5823,fd=14))                                                                                                        
+udp   UNCONN 0      0          127.0.0.1:1721       0.0.0.0:*    users:(("monarx-agent",pid=3548411,fd=8))                                                                                                         
+tcp   LISTEN 0      4096       127.0.0.1:65529      0.0.0.0:*    users:(("monarx-agent",pid=3548411,fd=14))                                                                                                        
+tcp   LISTEN 0      4096       127.0.0.1:8080       0.0.0.0:*    users:(("docker-proxy",pid=3360893,fd=8))                                                                                                         
+tcp   LISTEN 0      4096       127.0.0.1:8081       0.0.0.0:*    users:(("docker-proxy",pid=3336174,fd=8))                                                                                                         
+tcp   LISTEN 0      4096       127.0.0.1:8082       0.0.0.0:*    users:(("docker-proxy",pid=2248650,fd=8))                                                                                                         
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=5823,fd=15))                                                                                                        
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=5823,fd=17))                                                                                                        
+tcp   LISTEN 0      511          0.0.0.0:443        0.0.0.0:*    users:(("nginx",pid=1451014,fd=8),("nginx",pid=1451013,fd=8),("nginx",pid=1451012,fd=8),("nginx",pid=1451011,fd=8),("nginx",pid=637801,fd=8))     
+tcp   LISTEN 0      511          0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=1451014,fd=9),("nginx",pid=1451013,fd=9),("nginx",pid=1451012,fd=9),("nginx",pid=1451011,fd=9),("nginx",pid=637801,fd=9))     
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=9423,fd=3),("systemd",pid=1,fd=181))                                                                                           
+tcp   LISTEN 0      511             [::]:443           [::]:*    users:(("nginx",pid=1451014,fd=7),("nginx",pid=1451013,fd=7),("nginx",pid=1451012,fd=7),("nginx",pid=1451011,fd=7),("nginx",pid=637801,fd=7))     
+tcp   LISTEN 0      511             [::]:80            [::]:*    users:(("nginx",pid=1451014,fd=10),("nginx",pid=1451013,fd=10),("nginx",pid=1451012,fd=10),("nginx",pid=1451011,fd=10),("nginx",pid=637801,fd=10))
+tcp   LISTEN 0      4096            [::]:22            [::]:*    users:(("sshd",pid=9423,fd=4),("systemd",pid=1,fd=189))                                                                                           
+
+---ufw---
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp (OpenSSH)           ALLOW IN    Anywhere                  
+80                         ALLOW IN    Anywhere                  
+443                        ALLOW IN    Anywhere                  
+22/tcp                     ALLOW IN    Anywhere                  
+Anywhere                   DENY IN     27.79.41.230              
+22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)             
+80 (v6)                    ALLOW IN    Anywhere (v6)             
+443 (v6)                   ALLOW IN    Anywhere (v6)             
+22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+
+
+---iptables_pol---
+Chain INPUT (policy DROP)
+Chain FORWARD (policy DROP)
+Chain OUTPUT (policy ACCEPT)
+
+---fail2ban---
+Status
+|- Number of jail:	1
+`- Jail list:	sshd
+-- jail sshd --
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed:	0
+|  |- Total failed:	92
+|  `- Journal matches:	_SYSTEMD_UNIT=sshd.service + _COMM=sshd
+`- Actions
+   |- Currently banned:	0
+   |- Total banned:	2
+   `- Banned IP list:	
+
+===SECTION:SSH===
+
+---effective---
+port 22
+maxauthtries 6
+permitrootlogin without-password
+pubkeyauthentication yes
+passwordauthentication no
+x11forwarding yes
+permitemptypasswords no
+
+---config_files---
+/etc/ssh/sshd_config:65:PasswordAuthentication no
+/etc/ssh/sshd_config:130:PermitRootLogin prohibit-password
+/etc/ssh/sshd_config.d/50-cloud-init.conf:1:PasswordAuthentication no
+/etc/ssh/sshd_config.d/60-cloudimg-settings.conf:1:PasswordAuthentication no
+
+---recent_ok---
+2026-08-24T12:14:38.082160+00:00 srv1900820 sshd[3650317]: Accepted publickey for root from 169.254.0.1 port 52612 ssh2: RSA SHA256:dVK9iUxqX//WZ7QUTs/WJfXn1RYWLBKfG+QDBBvHOKE
+
+---failed_count---
+failed_password_current_log=0
+0
+
+---top_attackers---
+    873 190.153.22.201
+    873 182.78.92.90
+    143 136.113.90.212
+     96 103.140.250.254
+     79 116.110.147.130
+     60 116.110.5.25
+     56 171.231.193.230
+     46 27.79.41.230
+     36 217.154.241.42
+     35 171.231.190.43
+
+===SECTION:SERVICES===
+
+---running---
+  containerd.service          loaded active running containerd container runtime
+  cron.service                loaded active running Regular background program processing daemon
+  dbus.service                loaded active running D-Bus System Message Bus
+  docker.service              loaded active running Docker Application Container Engine
+  fail2ban.service            loaded active running Fail2Ban Service
+  getty@tty1.service          loaded active running Getty on tty1
+  monarx-agent.service        loaded active running Monarx Agent - Security Scanner
+  nginx.service               loaded active running A high performance web server and a reverse proxy server
+  polkit.service              loaded active running Authorization Manager
+  qemu-guest-agent.service    loaded active running QEMU Guest Agent
+  rsyslog.service             loaded active running System Logging Service
+  serial-getty@ttyS0.service  loaded active running Serial Getty on ttyS0
+  ssh.service                 loaded active running OpenBSD Secure Shell server
+  systemd-hostnamed.service   loaded active running Hostname Service
+  systemd-journald.service    loaded active running Journal Service
+  systemd-logind.service      loaded active running User Login Management
+  systemd-networkd.service    loaded active running Network Configuration
+  systemd-resolved.service    loaded active running Network Name Resolution
+  systemd-timedated.service   loaded active running Time & Date Service
+  systemd-timesyncd.service   loaded active running Network Time Synchronization
+  systemd-udevd.service       loaded active running Rule-based Manager for Device Events and Files
+  unattended-upgrades.service loaded active running Unattended Upgrades Shutdown
+  user@0.service              loaded active running User Manager for UID 0
+
+---enabled---
+apparmor.service               enabled enabled
+blk-availability.service       enabled enabled
+cloud-config.service           enabled enabled
+cloud-final.service            enabled enabled
+cloud-init-local.service       enabled enabled
+cloud-init.service             enabled enabled
+console-setup.service          enabled enabled
+containerd.service             enabled enabled
+cron.service                   enabled enabled
+dmesg.service                  enabled enabled
+docker.service                 enabled enabled
+e2scrub_reap.service           enabled enabled
+fail2ban.service               enabled enabled
+finalrd.service                enabled enabled
+getty@.service                 enabled enabled
+grub-common.service            enabled enabled
+grub-initrd-fallback.service   enabled enabled
+keyboard-setup.service         enabled enabled
+lvm2-monitor.service           enabled enabled
+monarx-agent.service           enabled enabled
+networkd-dispatcher.service    enabled enabled
+nginx.service                  enabled enabled
+rsyslog.service                enabled enabled
+secureboot-db.service          enabled enabled
+setvtrgb.service               enabled enabled
+sysstat.service                enabled enabled
+systemd-networkd.service       enabled enabled
+systemd-pstore.service         enabled enabled
+systemd-resolved.service       enabled enabled
+systemd-timesyncd.service      enabled enabled
+ua-reboot-cmds.service         enabled enabled
+ubuntu-advantage.service       enabled enabled
+ufw.service                    enabled enabled
+unattended-upgrades.service    enabled enabled
+
+---failed---
+
+---unit_details---
+
+==unit:dbus-org.freedesktop.resolve1.service==
+Description=Network Name Resolution
+ExecStart=!!/usr/lib/systemd/systemd-resolved
+Restart=always
+User=systemd-resolve
+
+==unit:dbus-org.freedesktop.timesync1.service==
+Description=Network Time Synchronization
+ExecStart=!!/usr/lib/systemd/systemd-timesyncd
+Restart=always
+User=systemd-timesync
+
+==unit:syslog.service==
+Description=System Logging Service
+ExecStart=/usr/sbin/rsyslogd -n -iNONE
+Restart=on-failure
+
+---timers---
+Mon 2026-08-24 12:20:00 UTC   5min Mon 2026-08-24 12:10:01 UTC 4min 49s ago sysstat-collect.timer          sysstat-collect.service
+Mon 2026-08-24 12:33:48 UTC  18min Mon 2026-08-24 03:17:55 UTC       8h ago certbot.timer                  certbot.service
+Tue 2026-08-25 00:00:00 UTC    11h Mon 2026-08-24 00:00:01 UTC      12h ago dpkg-db-backup.timer           dpkg-db-backup.service
+Tue 2026-08-25 00:00:00 UTC    11h Mon 2026-08-24 00:00:01 UTC      12h ago logrotate.timer                logrotate.service
+Tue 2026-08-25 00:07:00 UTC    11h Mon 2026-08-24 00:07:01 UTC      12h ago sysstat-summary.timer          sysstat-summary.service
+Tue 2026-08-25 03:27:22 UTC    15h Mon 2026-08-24 10:38:07 UTC 1h 36min ago apt-daily.timer                apt-daily.service
+Tue 2026-08-25 04:57:43 UTC    16h Mon 2026-08-24 01:05:57 UTC      11h ago man-db.timer                   man-db.service
+Tue 2026-08-25 06:28:33 UTC    18h Mon 2026-08-24 06:22:28 UTC 5h 52min ago apt-daily-upgrade.timer        apt-daily-upgrade.service
+Tue 2026-08-25 09:31:23 UTC    21h Mon 2026-08-24 09:31:23 UTC 2h 43min ago update-notifier-download.timer update-notifier-download.service
+Tue 2026-08-25 09:40:47 UTC    21h Mon 2026-08-24 09:40:47 UTC 2h 34min ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Fri 2026-08-28 07:18:44 UTC 3 days Thu 2026-08-20 06:46:53 UTC   4 days ago update-notifier-motd.timer     update-notifier-motd.service
+Sun 2026-08-30 03:10:35 UTC 5 days Sun 2026-08-23 03:11:01 UTC 1 day 9h ago e2scrub_all.timer              e2scrub_all.service
+Mon 2026-08-31 00:39:43 UTC 6 days Mon 2026-08-24 00:03:57 UTC      12h ago fstrim.timer                   fstrim.service
+
+===SECTION:DOCKER===
+
+---version---
+29.7.2
+
+---containers---
+kwdelhi6-web-1	kwdelhi6-web	running	Up 47 hours	127.0.0.1:8082->8000/tcp	2026-08-22 12:56:06 +0000 UTC
+kwgroup-app-1	kwgroup-app	running	Up 6 days	3000/tcp	2026-08-18 05:13:12 +0000 UTC
+kw-blue-pearl-web-1	kw-blue-pearl-web	running	Up 6 days	127.0.0.1:8081->3000/tcp	2026-08-18 04:24:20 +0000 UTC
+kw-blue-pearl-db-1	postgres:16-alpine	running	Up 10 days (healthy)	5432/tcp	2026-08-14 06:29:26 +0000 UTC
+kwdelhi6-db-1	postgres:16-alpine	running	Up 10 days (healthy)	5432/tcp	2026-08-13 12:48:26 +0000 UTC
+kwgroup-web-1	nginx:1.27-alpine	running	Up 6 days	127.0.0.1:8080->80/tcp	2026-08-13 10:37:07 +0000 UTC
+kwgroup-db-1	postgres:16-alpine	running	Up 11 days (healthy)	5432/tcp	2026-08-13 10:37:07 +0000 UTC
+
+---images---
+kwdelhi6-web:latest	241MB	47 hours ago
+kwgroup-app:latest	1.11GB	6 days ago
+kw-blue-pearl-web:latest	325MB	6 days ago
+postgres:16-alpine	420MB	6 weeks ago
+nginx:1.27-alpine	74.5MB	16 months ago
+
+---system_df---
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          5         5         2.17GB    0B (0%)
+Containers      7         7         294.5MB   0B (0%)
+Local Volumes   5         5         146MB     0B (0%)
+Build Cache     32        0         755.4MB   189.4MB
+
+---volumes---
+kw-blue-pearl_db-data
+kw-blue-pearl_media
+kwdelhi6_pgdata
+kwgroup_kw_pgdata
+kwgroup_kw_uploads
+
+---volume_users---
+kw-blue-pearl_db-data	kw-blue-pearl-db-1
+kw-blue-pearl_media	kw-blue-pearl-web-1
+kwdelhi6_pgdata	kwdelhi6-db-1
+kwgroup_kw_pgdata	kwgroup-db-1
+kwgroup_kw_uploads	kwgroup-app-1,kwgroup-web-1
+
+---compose---
+NAME                STATUS              CONFIG FILES
+kw-blue-pearl       running(2)          /opt/kw-blue-pearl/docker-compose.yml
+kwdelhi6            running(2)          /opt/kwdelhi6/docker-compose.yml
+kwgroup             running(3)          /var/www/kwgroup/docker-compose.yml
+
+---stats---
+kwdelhi6-web-1	0.01%	36.37MiB / 15.62GiB	0B / 0B
+kwgroup-app-1	102.57%	1.841GiB / 15.62GiB	4.44MB / 29.3GB
+kw-blue-pearl-web-1	0.00%	54.53MiB / 15.62GiB	135kB / 0B
+kw-blue-pearl-db-1	0.00%	31.32MiB / 15.62GiB	467kB / 55MB
+kwdelhi6-db-1	0.36%	31.28MiB / 15.62GiB	602kB / 57.1MB
+kwgroup-web-1	4.48%	29.67MiB / 15.62GiB	283kB / 4.1kB
+kwgroup-db-1	0.00%	37.38MiB / 15.62GiB	909kB / 57.2MB
+
+===SECTION:WEB===
+
+---version---
+nginx version: nginx/1.24.0 (Ubuntu)
+
+---vhosts---
+# server_names_hash_bucket_size 64;
+# server_name_in_redirect off;
+#		listen     localhost:110;
+#		listen     localhost:143;
+server_name kwbluepearl.com www.kwbluepearl.com;
+proxy_pass http://127.0.0.1:8081;   # the kwbp web container
+listen [::]:443 ssl; # managed by Certbot
+listen 443 ssl; # managed by Certbot
+listen 80;
+listen [::]:80;
+server_name kwbluepearl.com www.kwbluepearl.com;
+# server_name matches, so other projects' vhosts are untouched.
+server_name ghaziabadcommercialshops.org www.ghaziabadcommercialshops.org;
+proxy_pass http://127.0.0.1:8082;
+listen [::]:443 ssl; # managed by Certbot
+listen 443 ssl; # managed by Certbot
+# server_name and the certbot -d list. certbot --nginx adds the 443 block.
+server_name kwgroup.in www.kwgroup.in;
+proxy_pass http://127.0.0.1:8080;   # = WEB_PORT of the compose "web" service
+listen [::]:443 ssl ipv6only=on; # managed by Certbot
+listen 443 ssl; # managed by Certbot
+listen 80;
+listen [::]:80;
+server_name kwgroup.in www.kwgroup.in;
+listen 80 default_server;
+listen [::]:80 default_server;
+# listen 443 ssl default_server;
+# listen [::]:443 ssl default_server;
+root /var/www/html;
+server_name _;
+#	listen 80;
+#	listen [::]:80;
+#	server_name example.com;
+#	root /var/www/example.com;
+
+---sites_enabled---
+total 8
+drwxr-xr-x 2 root root 4096 Aug 13 12:26 .
+drwxr-xr-x 8 root root 4096 Aug 20 06:46 ..
+lrwxrwxrwx 1 root root   34 Aug 13 11:08 default -> /etc/nginx/sites-available/default
+
+---not_symlinks---
+
+---certs---
+  Certificate Name: ghaziabadcommercialshops.org
+    Domains: ghaziabadcommercialshops.org www.ghaziabadcommercialshops.org
+    Expiry Date: 2026-11-11 11:50:37+00:00 (VALID: 78 days)
+  Certificate Name: kwbluepearl.com
+    Domains: kwbluepearl.com www.kwbluepearl.com
+    Expiry Date: 2026-11-11 11:18:15+00:00 (VALID: 78 days)
+  Certificate Name: kwgroup.in
+    Domains: kwgroup.in www.kwgroup.in
+    Expiry Date: 2026-11-11 10:46:01+00:00 (VALID: 78 days)
+
+---cloudflared---
+no cloudflared config
+
+===SECTION:DATABASES===
+mysql=inactive
+absent
+mariadb=inactive
+absent
+postgresql=inactive
+absent
+redis-server=inactive
+absent
+mongod=inactive
+absent
+
+---postgres_dbs---
+
+---mongo_collections---
+mongo client path not found
+
+===SECTION:N8N===
+no n8n container
+
+===SECTION:PROJECTS===
+
+---opt---
+total 20
+drwxr-xr-x  5 root root 4096 Aug 14 05:54 .
+drwxr-xr-x 21 root root 4096 Aug 24 12:13 ..
+drwx--x--x  4 root root 4096 Aug 13 09:24 containerd
+drwxr-xr-x  8 root root 4096 Aug 17 12:25 kw-blue-pearl
+drwxr-xr-x  6 root root 4096 Aug 22 12:56 kwdelhi6
+
+---var_www---
+total 16
+drwxr-xr-x  4 root   root   4096 Aug 13 11:08 .
+drwxr-xr-x 13 root   root   4096 Aug 13 10:15 ..
+drwxr-xr-x  2 root   root   4096 Aug 13 11:08 html
+drwxr-xr-x 12 deploy deploy 4096 Aug 18 05:12 kwgroup
+
+---home---
+total 12
+drwxr-xr-x  3 root   root   4096 Aug 13 10:15 .
+drwxr-xr-x 21 root   root   4096 Aug 24 12:13 ..
+drwxr-x---  5 deploy deploy 4096 Aug 13 12:20 deploy
+
+---root_dir---
+total 96
+drwx------  7 root root  4096 Aug 24 12:14 .
+drwxr-xr-x 21 root root  4096 Aug 24 12:13 ..
+-rw-------  1 root root 26183 Aug 22 13:00 .bash_history
+-rw-r--r--  1 root root  3106 Apr 22  2024 .bashrc
+drwx------  2 root root  4096 Aug 13 09:26 .cache
+drwx------  3 root root  4096 Aug 13 09:23 .config
+drwx------  3 root root  4096 Aug 13 11:19 .docker
+-rw-------  1 root root    20 Aug 22 11:34 .lesshst
+drwx------  3 root root  4096 Aug 13 10:32 .local
+-rw-r--r--  1 root root   161 Apr 22  2024 .profile
+drwx------  2 root root  4096 Aug 24 12:14 .ssh
+-rw-r--r--  1 root root   159 Aug 21 10:32 jail.local.broken
+-rw-r--r--  1 root root 20480 Aug 24 12:14 kw-collect-srv1900820-2026-08-24T1214.txt
+
+---sizes---
+363M	/var/www/kwgroup
+241M	/opt/kwdelhi6
+71M	/opt/kw-blue-pearl
+444K	/home/deploy
+12K	/var/www/html
+12K	/opt/containerd
+
+---git_repos---
+/opt/kwdelhi6
+/opt/kw-blue-pearl
+/var/www/kwgroup
+
+---git_remotes---
+/opt/kwdelhi6	git@github-meerut:it6-ash/meerut.git
+/opt/kw-blue-pearl	git@github.com:it6-ash/kwbp.git
+/var/www/kwgroup	none
+
+---env_files---
+/opt/kwdelhi6/.env
+/opt/kw-blue-pearl/.env
+/var/www/kwgroup/.env
+
+---stale_files---
+/opt/kwdelhi6/.env.bak.2026-08-21-0854
+/opt/kwdelhi6/meerut.html.bak
+
+===SECTION:CRON===
+
+---root_crontab---
+*/2 * * * * /opt/kw-blue-pearl/deploy/autopull.sh >> /var/log/kw-blue-pearl-deploy.log 2>&1
+*/2 * * * * /opt/kwdelhi6/deploy/autopull.sh >> /var/log/kwdelhi6-deploy.log 2>&1
+
+---user_crontabs---
+==user:root==
+*/2 * * * * /opt/kw-blue-pearl/deploy/autopull.sh >> /var/log/kw-blue-pearl-deploy.log 2>&1
+*/2 * * * * /opt/kwdelhi6/deploy/autopull.sh >> /var/log/kwdelhi6-deploy.log 2>&1
+
+---cron_d---
+==/etc/cron.d/certbot==
+# /etc/cron.d/certbot: crontab entries for the certbot package
+#
+# Upstream recommends attempting renewal twice a day
+#
+# Eventually, this will be an opportunity to validate certificates
+# haven't been revoked, etc.  Renewal will only occur if expiration
+# is within 30 days.
+#
+# Important Note!  This cronjob will NOT be executed if you are
+# running systemd as your init system.  If you are running systemd,
+# the cronjob.timer function takes precedence over this cronjob.  For
+# more details, see the systemd.timer manpage, or use systemctl show
+# certbot.timer.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+0 */12 * * * root test -x /usr/bin/certbot -a \! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew --no-random-sleep-on-renew
+==/etc/cron.d/docker-builder-prune==
+20 0 * * 5 root docker builder prune -f > /dev/null 2>&1
+==/etc/cron.d/docker-image-prune==
+34 1 * * * root docker image prune -af --filter "until=24h" > /dev/null 2>&1
+==/etc/cron.d/e2scrub_all==
+30 3 * * 0 root test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron
+10 3 * * * root test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r
+==/etc/cron.d/monarx-update==
+51 8 * * 1 root apt-get update -qq && apt-get install -y -qq monarx-agent monarx-protect monarx-protect-autodetect > /dev/null 2>&1
+==/etc/cron.d/sysstat==
+# The first element of the path is a directory where the debian-sa1
+# script is located
+PATH=/usr/lib/sysstat:/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Activity reports every 10 minutes everyday
+5-55/10 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1
+
+# Additional run at 23:59 to rotate the statistics file
+59 23 * * * root command -v debian-sa1 > /dev/null && debian-sa1 60 2
+
+===SECTION:LOGS===
+
+---journal_size---
+Archived and active journals take up 181.2M in the file system.
+
+---var_log_total---
+516M	/var/log
+
+---largest_logs---
+total 81M
+-rw-r-----  1 syslog adm              54M Aug 23 00:00 syslog.1
+-rw-r-----  1 syslog adm              13M Aug 24 12:14 syslog
+-rw-r-----  1 syslog adm             6.0M Aug 22 23:59 kern.log.1
+-rw-r-----  1 syslog adm             3.3M Aug 23 00:00 auth.log.1
+-rw-r-----  1 syslog adm             1.5M Aug 24 12:14 kern.log
+-rw-rw----  1 root   utmp            954K Aug 24 09:55 btmp
+-rw-r-----  1 syslog adm             949K Aug 16 00:00 syslog.2.gz
+-rw-r-----  1 syslog adm             620K Aug 24 12:14 auth.log
+-rw-r-----  1 syslog adm             232K Aug 15 23:59 kern.log.2.gz
+-rw-r--r--  1 root   root            175K Aug 21 14:06 kw-blue-pearl-deploy.log
+-rw-r-----  1 syslog adm             139K Aug 16 00:00 auth.log.2.gz
+
+---oversized---
+137M	/var/log/nginx/access.log.1
+
+---recent_errors---
+Aug 22 11:56:41 srv1900820 sshd[2206455]: error: session_signal_req: session signalling requires privilege separation
+Aug 22 11:56:46 srv1900820 sshd[2206455]: error: session_signal_req: session signalling requires privilege separation
+Aug 22 13:00:05 srv1900820 sshd[2250059]: error: session_signal_req: session signalling requires privilege separation
+Aug 22 13:00:10 srv1900820 sshd[2250059]: error: session_signal_req: session signalling requires privilege separation
+Aug 23 00:00:34 srv1900820 rsyslogd[9439]: file '/var/log/ufw.log': open error: Permission denied [v8.2312.0 try https://www.rsyslog.com/e/2433 ]
+Aug 23 03:26:25 srv1900820 sshd[2678157]: error: Protocol major versions differ: 2 vs. 1
+Aug 23 06:11:55 srv1900820 sshd[2759649]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 11:46:16 srv1900820 sshd[2924328]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 11:49:10 srv1900820 sshd[2925741]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 11:51:51 srv1900820 sshd[2927048]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 11:51:53 srv1900820 sshd[2927089]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 12:11:48 srv1900820 sshd[2936960]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 12:31:12 srv1900820 sshd[2946529]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 12:50:20 srv1900820 sshd[2955962]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 13:33:04 srv1900820 sshd[2977616]: error: kex_exchange_identification: read: Connection reset by peer
+
+===SECTION:PACKAGES===
+
+---running_kernel---
+6.8.0-137-generic
+
+---installed_kernels---
+linux-image-6.8.0-137-generic
+linux-image-6.8.0-138-generic
+linux-image-virtual
+
+---reboot_required---
+*** System restart required ***
+
+---apt_cache---
+122M	/var/cache/apt
+
+---upgradable---
+11
+
+===END===

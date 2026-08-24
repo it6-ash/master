@@ -31,13 +31,33 @@
 
         "databases": {
           "type": "object",
-          "description": "Keyed by database name, e.g. \"Yamini\". Written by ingest/mongo-stats.js.",
+          "description": "Keyed by database name, e.g. \"Yamini\". From the DATABASES section, or ingest/mongo-stats.js.",
           "additionalProperties": { "$ref": "#/$defs/database" }
+        },
+        "databaseEngines": {
+          "type": "object",
+          "description": "systemctl state per engine, e.g. {\"mongod\":\"active\",\"mysql\":\"absent\"}. \"absent\" means the unit is not installed.",
+          "additionalProperties": { "type": "string", "enum": ["active", "inactive", "failed", "activating", "absent", "unknown"] }
         },
 
         "web": { "$ref": "#/$defs/web" },
         "docker": { "$ref": "#/$defs/docker" },
         "logs": { "$ref": "#/$defs/logs" },
+        "ssh": { "$ref": "#/$defs/ssh" },
+        "n8n": { "$ref": "#/$defs/n8n" },
+        "storage": { "$ref": "#/$defs/storage" },
+        "packages": { "$ref": "#/$defs/packages" },
+
+        "projects": {
+          "type": "array",
+          "description": "Deployment directories found under /opt, /var/www and /home. Feeds the project.appeared / project.disappeared change events.",
+          "items": { "$ref": "#/$defs/deployDir" }
+        },
+        "staleFiles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "*.bak / *.old / *.orig left lying around in config and deploy trees."
+        },
 
         "firstSeen": { "type": "string", "format": "date" },
         "lastIngest": { "type": ["string", "null"], "format": "date-time" },
@@ -143,7 +163,11 @@
         "sub": { "type": "string", "description": "systemd SUB column, verbatim" },
         "enabled": { "type": "string", "enum": ["enabled", "disabled", "static", "masked", "generated", "unknown"] },
         "desc": { "type": "string" },
-        "port": { "type": ["integer", "null"], "minimum": 1, "maximum": 65535, "description": "Correlated from ss -tulnp where the process matches" }
+        "port": { "type": ["integer", "null"], "minimum": 1, "maximum": 65535, "description": "Read from the unit's ExecStart, else correlated from ss -tulnp where the process matches" },
+        "user": { "type": "string", "description": "systemd User=" },
+        "workingDir": { "type": "string" },
+        "envFile": { "type": "string", "description": "systemd EnvironmentFile= — the path only. The file's CONTENTS are never read." },
+        "restart": { "type": "string" }
       }
     },
 
@@ -245,7 +269,7 @@
       "properties": {
         "servers": {
           "type": "array",
-          "items": { "type": "string", "enum": ["nginx", "apache", "traefik", "caddy", "other"] }
+          "items": { "type": "string", "enum": ["nginx", "apache", "traefik", "caddy", "cloudflared", "other"] }
         },
         "sitesEnabled": {
           "type": "array",
@@ -272,6 +296,24 @@
         "containersRunning": { "type": "integer", "minimum": 0 },
         "images": { "type": "integer", "minimum": 0 },
         "volumes": { "type": "integer", "minimum": 0 },
+        "orphanVolumes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Volumes no container references. Usually reclaimable disk."
+        },
+        "compose": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "status": { "type": "string", "description": "e.g. \"running(2)\", \"restarting(1)\"" },
+              "configFile": { "type": "string" }
+            }
+          }
+        },
         "diskUsage": {
           "type": "object",
           "additionalProperties": false,
@@ -291,19 +333,93 @@
       "additionalProperties": false,
       "properties": {
         "journalSize": { "type": "string" },
+        "varLogTotal": { "type": "string" },
+        "recentErrors": { "type": "integer", "minimum": 0, "description": "Count of lines from journalctl -p err, not their content." },
         "largest": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pathSize" }
+        }
+      }
+    },
+
+    "pathSize": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "size": { "type": "string", "description": "Human form as printed, e.g. \"3.5G\"" },
+        "sizeBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where the disk actually went. Useful when diskUsedPct jumps.",
+      "properties": {
+        "topDirs": { "type": "array", "items": { "$ref": "#/$defs/pathSize" } },
+        "bigFiles": { "type": "array", "items": { "$ref": "#/$defs/pathSize" } }
+      }
+    },
+
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "upgradable": { "type": "integer", "minimum": 0 },
+        "aptCache": { "type": "string" }
+      }
+    },
+
+    "ssh": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Collected because the dump carries it. NOTE: the brief's §9 auto-issue table has no SSH rule, so none of this currently raises an issue.",
+      "properties": {
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "permitRootLogin": { "type": "boolean" },
+        "passwordAuthentication": { "type": "boolean" },
+        "pubkeyAuthentication": { "type": "boolean" },
+        "failedPasswords": { "type": "integer", "minimum": 0, "description": "Count in the current auth.log only — resets on rotation, so treat as a rate, not a total." },
+        "topAttackers": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["path"],
+            "required": ["ip"],
             "additionalProperties": false,
             "properties": {
-              "path": { "type": "string" },
-              "size": { "type": "string" },
-              "sizeBytes": { "type": "integer", "minimum": 0 }
+              "ip": { "type": "string", "format": "ipv4" },
+              "count": { "type": "integer", "minimum": 0 }
             }
           }
         }
+      }
+    },
+
+    "n8n": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The n8n instance on this host. The workflows themselves live in data/workflows.json.",
+      "properties": {
+        "container": { "type": "string" },
+        "workflowCount": { "type": "integer", "minimum": 0 },
+        "activeCount": { "type": "integer", "minimum": 0 },
+        "dbSizeBytes": { "type": "integer", "minimum": 0, "description": "database.sqlite. Growth here is the usual cause of a disk jump." }
+      }
+    },
+
+    "deployDir": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "size": { "type": "string" },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "git": { "type": "boolean" },
+        "remote": { "type": "string", "description": "origin URL, redacted if it embeds a token" },
+        "hasEnv": { "type": "boolean", "description": "A .env exists. Its contents are never read." }
       }
     }
   }

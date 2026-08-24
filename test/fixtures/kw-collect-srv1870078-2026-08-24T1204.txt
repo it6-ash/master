@@ -1,0 +1,501 @@
+===MANIFEST===
+schema=2.0
+collected_at=2026-08-24T12:04:28Z
+hostname=srv1870078.hstgr.cloud
+collector=kw-collect.sh
+
+===SECTION:HOST===
+
+---hostnamectl---
+ Static hostname: srv1870078
+       Icon name: computer-vm
+         Chassis: vm 🖴
+      Machine ID: 5558e3b05e1e4853b83068e66bf6d515
+         Boot ID: 2e8c5588f1794353a1d21dc9f547c7a0
+  Virtualization: kvm
+Operating System: Ubuntu 24.04.4 LTS
+          Kernel: Linux 6.8.0-134-generic
+    Architecture: x86-64
+ Hardware Vendor: QEMU
+  Hardware Model: Standard PC _i440FX + PIIX, 1996_
+Firmware Version: rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org
+   Firmware Date: Tue 2014-04-01
+    Firmware Age: 12y 4month 3w 2d
+
+---uname---
+Linux srv1870078 6.8.0-134-generic #134-Ubuntu SMP PREEMPT_DYNAMIC Fri Jun 26 18:43:11 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+---uptime---
+ 12:04:28 up 23 days,  6:25,  1 user,  load average: 0.00, 0.00, 0.00
+
+---os_release---
+NAME="Ubuntu"
+VERSION="24.04.4 LTS (Noble Numbat)"
+
+---timezone---
+               Local time: Mon 2026-08-24 12:04:28 UTC
+           Universal time: Mon 2026-08-24 12:04:28 UTC
+                 RTC time: Mon 2026-08-24 12:04:28
+                Time zone: Etc/UTC (UTC, +0000)
+
+===SECTION:CPU_MEM_DISK===
+
+---nproc---
+2
+
+---cpu_model---
+CPU(s):                                  2
+Vendor ID:                               AuthenticAMD
+Model name:                              AMD EPYC 9355P 32-Core Processor
+Thread(s) per core:                      1
+Core(s) per socket:                      2
+
+---memory---
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       1.2Gi       589Mi       964Ki       6.3Gi       6.6Gi
+Swap:             0B          0B          0B
+
+---swap---
+
+---disk---
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        96G  7.0G   89G   8% /
+/dev/sda16      881M  116M  704M  15% /boot
+/dev/sda15      105M  6.2M   99M   6% /boot/efi
+overlay          96G  7.0G   89G   8% /var/lib/docker/rootfs/overlayfs/9822229eecbb6dc68ea17cf16c693258bfb7fd382a9995aa0fe4b2146a1063b5
+overlay          96G  7.0G   89G   8% /var/lib/docker/rootfs/overlayfs/8d4a834be5e3edcb6b4fbd054a8252c80429df7bcdc23c43b49f658e8c61ecb3
+
+---inodes---
+Filesystem       Inodes  IUsed    IFree IUse% Mounted on
+/dev/sda1      12976128 237146 12738982    2% /
+/dev/sda16        58496    604    57892    2% /boot
+/dev/sda15            0      0        0     - /boot/efi
+overlay        12976128 237146 12738982    2% /var/lib/docker/rootfs/overlayfs/9822229eecbb6dc68ea17cf16c693258bfb7fd382a9995aa0fe4b2146a1063b5
+
+---top_dirs---
+12G	/
+11G	/var
+9.9G	/var/lib
+1.2G	/usr
+411M	/usr/lib
+347M	/usr/bin
+242M	/usr/share
+207M	/var/log
+125M	/var/cache
+122M	/boot
+103M	/usr/libexec
+29M	/usr/sbin
+11M	/boot/grub
+6.2M	/boot/efi
+5.4M	/etc
+1.6M	/var/backups
+1.1M	/etc/apparmor.d
+952K	/run
+668K	/etc/ssh
+564K	/etc/ssl
+480K	/run/udev
+260K	/etc/cloud
+200K	/etc/console-setup
+184K	/run/systemd
+156K	/etc/lvm
+
+---big_files---
+3.2G	/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/23/fs/home/node/core
+491M	/var/lib/docker/volumes/n8n-vfa2_n8n_data/_data/database.sqlite
+302M	/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/a35ce2150cc6c4855ef115cd5f268e09d3b3ec943cea9a9ee2886b0f6e6aa4ad
+
+===SECTION:NETWORK===
+
+---interfaces---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0             UP             200.141.9.83/24 2a02:4780:63:bae8::1/48 fe80::84e8:d4ff:fec1:98fe/64 
+docker0          DOWN           172.17.0.1/16 
+br-ffb8af8ce8d2  UP             172.16.0.1/24 fe80::e483:f8ff:fe8a:3506/64 
+vethdcb881a@if2  UP             fe80::ac38:37ff:fe18:3c33/64 
+
+---routes---
+default via 200.141.9.254 dev eth0 proto static 
+172.16.0.0/24 dev br-ffb8af8ce8d2 proto kernel scope link src 172.16.0.1 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+200.141.9.0/24 dev eth0 proto kernel scope link src 200.141.9.83 
+
+---listening---
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                                                 
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=52407,fd=16))            
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=52407,fd=14))            
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=52407,fd=15))            
+tcp   LISTEN 0      4096         0.0.0.0:32769      0.0.0.0:*    users:(("docker-proxy",pid=64364,fd=8))                
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=18968,fd=3),("systemd",pid=1,fd=74))
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=52407,fd=17))            
+tcp   LISTEN 0      4096               *:443              *:*    users:(("traefik",pid=1306,fd=7))                      
+tcp   LISTEN 0      4096               *:80               *:*    users:(("traefik",pid=1306,fd=4))                      
+tcp   LISTEN 0      4096            [::]:32769         [::]:*    users:(("docker-proxy",pid=64370,fd=8))                
+tcp   LISTEN 0      4096            [::]:22            [::]:*    users:(("sshd",pid=18968,fd=4),("systemd",pid=1,fd=75))
+
+---ufw---
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                  
+80                         ALLOW IN    Anywhere                  
+443                        ALLOW IN    Anywhere                  
+22/tcp (v6)                ALLOW IN    Anywhere (v6)             
+80 (v6)                    ALLOW IN    Anywhere (v6)             
+443 (v6)                   ALLOW IN    Anywhere (v6)             
+
+
+---iptables_pol---
+Chain INPUT (policy DROP)
+Chain FORWARD (policy DROP)
+Chain OUTPUT (policy ACCEPT)
+
+---fail2ban---
+
+===SECTION:SSH===
+
+---effective---
+port 22
+maxauthtries 6
+permitrootlogin yes
+pubkeyauthentication yes
+passwordauthentication yes
+x11forwarding yes
+permitemptypasswords no
+
+---config_files---
+/etc/ssh/sshd_config:130:PermitRootLogin yes
+/etc/ssh/sshd_config.d/60-cloudimg-settings.conf:1:PasswordAuthentication no
+/etc/ssh/sshd_config.d/50-cloud-init.conf:1:PasswordAuthentication yes
+
+---recent_ok---
+2026-08-24T04:24:31.318919+00:00 srv1870078 sshd[131791]: Accepted publickey for root from 169.254.0.1 port 34156 ssh2: RSA SHA256:DyqfBKoTehPHnMTINl4tuNLwsfykV/FZZjEXW2MofeI
+2026-08-24T04:24:46.071630+00:00 srv1870078 sshd[131931]: Accepted publickey for root from 169.254.0.1 port 52544 ssh2: RSA SHA256:Gy/OzBHuuLBoprH6TZ58e3hXjpcX68rBKom1VpCDzZc
+2026-08-24T12:04:11.089985+00:00 srv1870078 sshd[136330]: Accepted publickey for root from 169.254.0.1 port 58592 ssh2: RSA SHA256:dC8OcoipXvk4cvhoVIuxtNmLYmI0bWeMWj7UijxWaSM
+
+---failed_count---
+failed_password_current_log=1535
+
+---top_attackers---
+  14335 138.68.64.76
+    873 93.144.8.254
+    873 218.173.89.132
+    873 213.230.121.186
+    873 2.56.109.156
+    873 197.149.95.118
+    873 196.156.189.228
+    873 196.136.165.200
+    873 190.6.31.143
+    873 182.74.32.74
+
+===SECTION:SERVICES===
+
+---running---
+  containerd.service          loaded active running containerd container runtime
+  cron.service                loaded active running Regular background program processing daemon
+  dbus.service                loaded active running D-Bus System Message Bus
+  docker.service              loaded active running Docker Application Container Engine
+  getty@tty1.service          loaded active running Getty on tty1
+  polkit.service              loaded active running Authorization Manager
+  qemu-guest-agent.service    loaded active running QEMU Guest Agent
+  rsyslog.service             loaded active running System Logging Service
+  serial-getty@ttyS0.service  loaded active running Serial Getty on ttyS0
+  ssh.service                 loaded active running OpenBSD Secure Shell server
+  systemd-hostnamed.service   loaded active running Hostname Service
+  systemd-journald.service    loaded active running Journal Service
+  systemd-logind.service      loaded active running User Login Management
+  systemd-networkd.service    loaded active running Network Configuration
+  systemd-resolved.service    loaded active running Network Name Resolution
+  systemd-timedated.service   loaded active running Time & Date Service
+  systemd-timesyncd.service   loaded active running Network Time Synchronization
+  systemd-udevd.service       loaded active running Rule-based Manager for Device Events and Files
+  unattended-upgrades.service loaded active running Unattended Upgrades Shutdown
+  user@0.service              loaded active running User Manager for UID 0
+
+---enabled---
+apparmor.service               enabled enabled
+blk-availability.service       enabled enabled
+cloud-config.service           enabled enabled
+cloud-final.service            enabled enabled
+cloud-init-local.service       enabled enabled
+cloud-init.service             enabled enabled
+console-setup.service          enabled enabled
+containerd.service             enabled enabled
+cron.service                   enabled enabled
+dmesg.service                  enabled enabled
+docker.service                 enabled enabled
+e2scrub_reap.service           enabled enabled
+finalrd.service                enabled enabled
+getty@.service                 enabled enabled
+grub-common.service            enabled enabled
+grub-initrd-fallback.service   enabled enabled
+keyboard-setup.service         enabled enabled
+lvm2-monitor.service           enabled enabled
+networkd-dispatcher.service    enabled enabled
+rsyslog.service                enabled enabled
+secureboot-db.service          enabled enabled
+setvtrgb.service               enabled enabled
+sysstat.service                enabled enabled
+systemd-networkd.service       enabled enabled
+systemd-pstore.service         enabled enabled
+systemd-resolved.service       enabled enabled
+systemd-timesyncd.service      enabled enabled
+ua-reboot-cmds.service         enabled enabled
+ubuntu-advantage.service       enabled enabled
+ufw.service                    enabled enabled
+unattended-upgrades.service    enabled enabled
+
+---failed---
+
+---unit_details---
+
+==unit:dbus-org.freedesktop.resolve1.service==
+Description=Network Name Resolution
+ExecStart=!!/usr/lib/systemd/systemd-resolved
+Restart=always
+User=systemd-resolve
+
+==unit:dbus-org.freedesktop.timesync1.service==
+Description=Network Time Synchronization
+ExecStart=!!/usr/lib/systemd/systemd-timesyncd
+Restart=always
+User=systemd-timesync
+
+==unit:syslog.service==
+Description=System Logging Service
+ExecStart=/usr/sbin/rsyslogd -n -iNONE
+Restart=on-failure
+
+---timers---
+Mon 2026-08-24 12:10:00 UTC          5min Mon 2026-08-24 12:00:14 UTC 4min 34s ago sysstat-collect.timer          sysstat-collect.service
+Mon 2026-08-24 22:04:31 UTC            9h Mon 2026-08-24 06:04:44 UTC       6h ago apt-daily.timer                apt-daily.service
+Tue 2026-08-25 00:00:00 UTC           11h Mon 2026-08-24 00:00:14 UTC      12h ago dpkg-db-backup.timer           dpkg-db-backup.service
+Tue 2026-08-25 00:00:00 UTC           11h Mon 2026-08-24 00:00:14 UTC      12h ago logrotate.timer                logrotate.service
+Tue 2026-08-25 00:07:00 UTC           12h Mon 2026-08-24 00:07:14 UTC      11h ago sysstat-summary.timer          sysstat-summary.service
+Tue 2026-08-25 02:35:42 UTC           14h Mon 2026-08-24 02:49:30 UTC       9h ago man-db.timer                   man-db.service
+Tue 2026-08-25 05:54:14 UTC           17h Mon 2026-08-24 05:54:14 UTC       6h ago update-notifier-download.timer update-notifier-download.service
+Tue 2026-08-25 06:04:44 UTC           17h Mon 2026-08-24 06:04:44 UTC       6h ago systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service
+Tue 2026-08-25 06:09:24 UTC           18h Mon 2026-08-24 06:39:54 UTC 5h 24min ago apt-daily-upgrade.timer        apt-daily-upgrade.service
+Sun 2026-08-30 03:10:02 UTC        5 days Sun 2026-08-23 03:10:54 UTC 1 day 8h ago e2scrub_all.timer              e2scrub_all.service
+Mon 2026-08-31 01:18:54 UTC        6 days Mon 2026-08-24 00:49:14 UTC      11h ago fstrim.timer                   fstrim.service
+Sat 2026-09-05 10:37:46 UTC 1 week 4 days Mon 2026-08-24 00:06:54 UTC      11h ago update-notifier-motd.timer     update-notifier-motd.service
+-                                       - -                                      - ua-timer.timer                 ua-timer.service
+
+===SECTION:DOCKER===
+
+---version---
+29.6.1
+
+---containers---
+n8n-vfa2-n8n-1	docker.n8n.io/n8nio/n8n	running	Up 11 days	0.0.0.0:32769->5678/tcp, [::]:32769->5678/tcp	2026-08-01 05:40:27 +0000 UTC
+traefik-traefik-1	traefik:latest	running	Up 3 weeks		2026-08-01 05:39:32 +0000 UTC
+
+---images---
+traefik:latest	251MB	3 weeks ago
+docker.n8n.io/n8nio/n8n:latest	2.48GB	3 weeks ago
+
+---system_df---
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          2         2         2.728GB   0B (0%)
+Containers      2         2         2.314GB   0B (0%)
+Local Volumes   3         2         649.2MB   0B (0%)
+Build Cache     0         0         0B        0B
+
+---volumes---
+n8n-vfa2_n8n_data
+traefik-letsencrypt
+traefik_traefik-letsencrypt
+
+---volume_users---
+n8n-vfa2_n8n_data	n8n-vfa2-n8n-1
+traefik-letsencrypt	ORPHAN
+traefik_traefik-letsencrypt	traefik-traefik-1
+
+---compose---
+NAME                STATUS              CONFIG FILES
+n8n-vfa2            running(1)          /docker/n8n-vfa2/docker-compose.yml
+traefik             running(1)          /docker/traefik/docker-compose.yml
+
+---stats---
+n8n-vfa2-n8n-1	0.16%	597.8MiB / 7.755GiB	37.8MB / 41.1MB
+traefik-traefik-1	0.00%	20.86MiB / 7.755GiB	1.77MB / 20.5kB
+
+===SECTION:WEB===
+nginx not installed
+
+---certs---
+certbot not available
+
+---cloudflared---
+no cloudflared config
+
+===SECTION:DATABASES===
+mysql=inactive
+absent
+mariadb=inactive
+absent
+postgresql=inactive
+absent
+redis-server=inactive
+absent
+mongod=inactive
+absent
+
+---postgres_dbs---
+
+---mongo_collections---
+mongo client path not found
+
+===SECTION:N8N===
+container=n8n-vfa2-n8n-1
+
+---all_workflows---
+RxfLvmFe4bAvfxEs|3 · KW META Custom Audiences · D6 + Blue Pearl
+iuR5O4JIeGsD7T23|KW Group: Cratio -> Google Enhanced Conversions, Google Customer Match - MATCH LISTS
+34wzHyHojTdWHdC2|My workflow
+
+---active_workflows---
+RxfLvmFe4bAvfxEs|3 · KW META Custom Audiences · D6 + Blue Pearl
+
+---db_size---
+514314240
+
+---data_dir---
+total 619M   
+-rw-------    1 node     node          56 Aug  1 11:10 config
+-rw-r--r--    1 node     node           0 Aug 13 14:11 crash.journal
+-rw-r--r--    1 node     node      490.5M Aug 21 02:00 database.sqlite
+-rw-r--r--    1 node     node      128.0K Aug 24 17:12 database.sqlite-shm
+-rw-r--r--    1 node     node      118.1M Aug 24 17:11 database.sqlite-wal
+-rw-r--r--    1 node     node        9.3M Aug 13 14:10 n8nEventLog-1.log
+-rw-r--r--    1 node     node        1.1M Aug 24 02:00 n8nEventLog.log
+drwxr-xr-x    2 node     node        4.0K Aug  1 11:10 nodes
+drwxr-xr-x    2 node     node        4.0K Aug  1 11:10 storage
+
+===SECTION:PROJECTS===
+
+---opt---
+total 12
+drwxr-xr-x  3 root root 4096 Jul  7 07:45 .
+drwxr-xr-x 22 root root 4096 Aug 24 12:04 ..
+drwx--x--x  4 root root 4096 Jul  7 07:45 containerd
+
+---var_www---
+
+---home---
+total 8
+drwxr-xr-x  2 root root 4096 Apr 22  2024 .
+drwxr-xr-x 22 root root 4096 Aug 24 12:04 ..
+
+---root_dir---
+total 52
+drwx------  5 root root  4096 Aug 24 12:04 .
+drwxr-xr-x 22 root root  4096 Aug 24 12:04 ..
+-rw-------  1 root root  9723 Aug 24 04:32 .bash_history
+-rw-r--r--  1 root root  3106 Apr 22  2024 .bashrc
+drwx------  2 root root  4096 Aug 18 07:32 .cache
+drwx------  3 root root  4096 Aug 18 13:17 .docker
+-rw-r--r--  1 root root   161 Apr 22  2024 .profile
+drwx------  2 root root  4096 Aug 24 12:04 .ssh
+-rw-r--r--  1 root root 12288 Aug 24 12:04 kw-collect-srv1870078-2026-08-24T1204.txt
+
+---sizes---
+12K	/opt/containerd
+
+---git_repos---
+
+---git_remotes---
+
+---env_files---
+
+---stale_files---
+
+===SECTION:CRON===
+
+---root_crontab---
+
+---user_crontabs---
+
+---cron_d---
+==/etc/cron.d/docker-builder-prune==
+58 3 * * 0 root docker builder prune -f > /dev/null 2>&1
+==/etc/cron.d/docker-image-prune==
+0 0 * * * root sleep $(shuf -i 0-21600 -n 1) && docker image prune -af --filter "until=24h" > /dev/null 2>&1
+==/etc/cron.d/e2scrub_all==
+30 3 * * 0 root test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron
+10 3 * * * root test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r
+==/etc/cron.d/sysstat==
+# The first element of the path is a directory where the debian-sa1
+# script is located
+PATH=/usr/lib/sysstat:/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Activity reports every 10 minutes everyday
+5-55/10 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1
+
+# Additional run at 23:59 to rotate the statistics file
+59 23 * * * root command -v debian-sa1 > /dev/null && debian-sa1 60 2
+
+===SECTION:LOGS===
+
+---journal_size---
+Archived and active journals take up 144.3M in the file system.
+
+---var_log_total---
+207M	/var/log
+
+---largest_logs---
+total 48M
+-rw-r-----  1 syslog adm              13M Aug 23 00:00 syslog.1
+-rw-r-----  1 syslog adm              13M Aug 24 12:05 syslog
+-rw-rw----  1 root   utmp             11M Aug 24 08:38 btmp
+-rw-r-----  1 syslog adm             7.3M Aug 23 00:00 auth.log.1
+-rw-r-----  1 syslog adm             1.4M Aug 24 12:05 kern.log
+-rw-r-----  1 syslog adm             1.4M Aug 22 23:59 kern.log.1
+-rw-r-----  1 syslog adm             1.2M Aug 24 12:05 auth.log
+-rw-r-----  1 syslog adm             244K Aug  8 23:59 auth.log.3.gz
+-rw-r-----  1 syslog adm             162K Aug 16 00:00 auth.log.2.gz
+-rw-r-----  1 syslog adm             101K Aug  9 00:00 syslog.3.gz
+-rw-r-----  1 syslog adm              94K Aug 16 00:00 syslog.2.gz
+
+---oversized---
+
+---recent_errors---
+Aug 22 22:22:44 srv1870078 sshd[127672]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 00:00:29 srv1870078 rsyslogd[55944]: file '/var/log/ufw.log': open error: Permission denied [v8.2312.0 try https://www.rsyslog.com/e/2433 ]
+Aug 23 01:20:40 srv1870078 sshd[128512]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 02:47:08 srv1870078 sshd[128624]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 05:05:30 srv1870078 sshd[128912]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 08:43:56 srv1870078 sshd[129340]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 16:46:55 srv1870078 sshd[130028]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 17:04:51 srv1870078 sshd[130047]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 23 22:21:12 srv1870078 sshd[130448]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 24 00:28:40 srv1870078 sshd[130643]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 24 04:11:58 srv1870078 sshd[131497]: error: kex_exchange_identification: read: Connection reset by peer
+Aug 24 04:24:44 srv1870078 sshd[131791]: error: session_signal_req: session signalling requires privilege separation
+Aug 24 04:24:49 srv1870078 sshd[131791]: error: session_signal_req: session signalling requires privilege separation
+Aug 24 04:31:59 srv1870078 sshd[131931]: error: session_signal_req: session signalling requires privilege separation
+Aug 24 04:32:04 srv1870078 sshd[131931]: error: session_signal_req: session signalling requires privilege separation
+
+===SECTION:PACKAGES===
+
+---running_kernel---
+6.8.0-134-generic
+
+---installed_kernels---
+linux-image-6.8.0-134-generic
+linux-image-6.8.0-138-generic
+linux-image-virtual
+
+---reboot_required---
+*** System restart required ***
+
+---apt_cache---
+109M	/var/cache/apt
+
+---upgradable---
+18
+
+===END===
