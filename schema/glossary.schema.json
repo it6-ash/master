@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "glossary.schema.json",
+  "title": "data/glossary.json",
+  "description": "Term to explanation. Every entry answers both halves of the question a newcomer actually has: what is this, and why is it in the picture. Terms are matched against flow node labels and project tags, and surface as hover explanations.",
+  "type": "object",
+  "propertyNames": { "minLength": 2 },
+  "additionalProperties": {
+    "type": "object",
+    "required": ["what", "why"],
+    "additionalProperties": false,
+    "properties": {
+      "what": { "type": "string", "minLength": 3, "description": "One sentence. What the thing is." },
+      "why": { "type": "string", "minLength": 3, "description": "Why it is in this estate, and what breaks or costs money if it is misunderstood." }
+    }
+  }
+}

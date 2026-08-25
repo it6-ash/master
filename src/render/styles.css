@@ -732,6 +732,59 @@ a:hover .flow-node--linked .flow-shape { stroke: var(--primary); stroke-width: 2
 a:hover .flow-node--linked .flow-label { fill: var(--primary); }
 a:focus-visible .flow-node--linked .flow-shape { stroke: var(--primary); stroke-width: 2; }
 
+/* ---------------------------------------------------------- glossary */
+
+/* A term explains itself on hover and on focus. CSS only: a tooltip that
+   needs JavaScript stops working in print and for keyboard users. */
+.term { position: relative; cursor: help; border-bottom: 1px dotted var(--primary); }
+.term-card {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  gap: 5px;
+  width: max-content;
+  max-width: min(340px, 76vw);
+  padding: 11px 13px;
+  border-radius: var(--r-inner);
+  border: 1px solid var(--border-hover);
+  background: linear-gradient(160deg, var(--raised-start), var(--raised-end));
+  box-shadow: var(--shadow);
+  font: var(--fs-meta)/1.5 var(--sans);
+  color: var(--ink-2);
+  text-transform: none;
+  letter-spacing: 0;
+  /* display:none, not visibility:hidden. An absolutely positioned element
+     that is merely invisible still contributes to the document's scroll width,
+     which is how a 340px hover card produced 190px of horizontal overflow on a
+     390px screen. Hidden has to mean out of the layout entirely. */
+  display: none;
+}
+.term-card strong { color: var(--ink); font-weight: 650; }
+.term:hover .term-card,
+.term:focus .term-card,
+.term:focus-within .term-card { display: grid; animation: term-in 140ms var(--ease); }
+
+@keyframes term-in { from { opacity: 0; transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .term-card { animation: none !important; } }
+
+/* Near the right edge, flip so the card stays on screen. */
+.term:nth-last-child(-n+2) .term-card { left: auto; right: 0; }
+
+.glossary { display: grid; gap: 10px 18px; margin: 0 0 var(--gap-lg); max-width: 90ch; }
+.glossary dt {
+  font: 600 var(--fs-meta) var(--mono);
+  color: var(--primary);
+}
+.glossary dd { margin: 2px 0 0; color: var(--ink-2); font-size: var(--fs-meta); }
+.glossary dd strong { color: var(--ink); font-weight: 600; }
+
+/* A node the glossary can explain gets a quiet marker, so it is discoverable
+   rather than a hover you have to already know about. */
+.flow-node--explained .flow-shape { stroke-dasharray: none; }
+.flow-node--explained { cursor: help; }
+
 /* ------------------------------------------------------------ charts */
 
 .chart-grid {

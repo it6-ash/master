@@ -1,0 +1,12 @@
+{
+  "_comment": "Copy to config/hosts.json and fill in. hosts.json is git-ignored. No password goes here: use an SSH key or an agent.",
+  "defaults": {
+    "user": "root",
+    "key": "~/.ssh/id_ed25519"
+  },
+  "hosts": {
+    "srv1340120": { "host": "72.62.228.194" },
+    "srv1870078": { "host": "200.141.9.83" },
+    "srv1900820": { "host": "200.234.35.172" }
+  }
+}

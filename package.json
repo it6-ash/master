@@ -17,7 +17,8 @@
     "new-project": "node src/new-project.js",
     "test": "node --test \"test/**/*.test.js\"",
     "test:e2e": "playwright test",
-    "test:all": "npm test && npm run test:e2e"
+    "test:all": "npm test && npm run test:e2e",
+    "sync": "node src/sync.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"

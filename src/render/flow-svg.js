@@ -238,7 +238,7 @@ function nodeShape(n) {
  *   A diagram of things you cannot click is a picture, not a map.
  */
 export function renderFlowSvg(flow, {
-  id = 'flow', title = 'Flow diagram', vertical = false, links = {},
+  id = 'flow', title = 'Flow diagram', vertical = false, links = {}, glossary = {},
 } = {}) {
   const { nodes, edges, width, height } = layoutFlow(flow, { vertical });
   if (nodes.length === 0) return '<p class="muted">This flow declares no nodes.</p>';
@@ -273,7 +273,23 @@ export function renderFlowSvg(flow, {
     const sub = n.sublabel
       ? `<text class="flow-sublabel" x="${cx}" y="${n.y + n.h / 2 + 14}">${escapeHtml(clamp(n.sublabel, 26))}</text>`
       : '';
-    const group = `<g class="flow-node flow-node--${state} flow-node--${n.kind}${links[n.id] ? ' flow-node--linked' : ''}" data-node="${escapeHtml(n.id)}">
+    // Hovering a node explains what it is and why it is in the picture.
+    // A native <title> works offline, in print, and for a screen reader.
+    //
+    // Both halves of the node are consulted, not just the label: a node reading
+    // "Meta Cloud API / direct, no BSP" carries two ideas, and the second one
+    // is the interesting one.
+    const terms = [lookupTerm(n.label, glossary), lookupTerm(n.sublabel, glossary)]
+      .filter(Boolean)
+      .filter((t, i, all) => all.findIndex((x) => x.what === t.what) === i);
+
+    const tip = terms.length
+      ? `<title>${escapeHtml(terms.map((t) => `${t.what} ${t.why}`).join('\n\n'))}</title>`
+      : `<title>${escapeHtml([n.label, n.sublabel].filter(Boolean).join(' — '))}</title>`;
+    const term = terms[0];
+
+    const group = `<g class="flow-node flow-node--${state} flow-node--${n.kind}${links[n.id] ? ' flow-node--linked' : ''}${term ? ' flow-node--explained' : ''}" data-node="${escapeHtml(n.id)}">
+      ${tip}
       ${nodeShape(n)}
       <text class="flow-label" x="${cx}" y="${labelY}">${escapeHtml(clamp(n.label, 22))}</text>
       ${sub}
@@ -301,6 +317,25 @@ export function renderFlowSvg(flow, {
     ${edgeSvg}
     ${nodeSvg}
   </svg>`;
+}
+
+/**
+ * Find the glossary entry for a label. Matches the whole label first, then any
+ * term contained in it, longest first — so "Meta Cloud API" wins over "Meta"
+ * and a node labelled "MongoDB" still resolves inside "Local MongoDB".
+ */
+export const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export function lookupTerm(label, glossary) {
+  if (!label || !glossary) return null;
+  const text = String(label);
+  if (glossary[text]) return glossary[text];
+
+  const hit = Object.keys(glossary)
+    .filter((term) => new RegExp(`\\b${escapeRegExp(term)}\\b`, 'i').test(text))
+    .sort((a, b) => b.length - a.length)[0];
+
+  return hit ? glossary[hit] : null;
 }
 
 const clamp = (s, n) => (String(s).length > n ? `${String(s).slice(0, n - 1)}…` : String(s));

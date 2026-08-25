@@ -10,7 +10,7 @@
  */
 
 import { renderMarkdown, escapeHtml } from './markdown.js';
-import { renderFlowSvg } from './flow-svg.js';
+import { renderFlowSvg, escapeRegExp } from './flow-svg.js';
 import { parseFlow } from '../parse/flow-dsl.js';
 import { funnelChart, workflowChart, costChart, sparkline, statTile } from './charts.js';
 
@@ -245,7 +245,7 @@ function renderIssueCompact(issue) {
   </details>`;
 }
 
-function renderServerPanel(id, server, { projects, workflows, issues }) {
+function renderServerPanel(id, server, { projects, workflows, issues, glossary = {} }) {
   const state = server.state ?? {};
   const mine = projects.filter((p) => p.server === id);
   const wf = Object.entries(workflows).map(([wid, w]) => ({ id: wid, ...w })).filter((w) => w.server === id);
@@ -280,8 +280,8 @@ function renderServerPanel(id, server, { projects, workflows, issues }) {
   }
   const topoHtml = topo
     ? `<div class="flow-wrap"><div class="flow-scroll">${
-      renderFlowSvg(topo, { id: `t-${id}`, title: `${id} topology`, links: topoLinks })
-    }${renderFlowSvg(topo, { id: `tv-${id}`, title: `${id} topology`, vertical: true, links: topoLinks })}</div></div>`
+      renderFlowSvg(topo, { id: `t-${id}`, title: `${id} topology`, links: topoLinks, glossary })
+    }${renderFlowSvg(topo, { id: `tv-${id}`, title: `${id} topology`, vertical: true, links: topoLinks, glossary })}</div></div>`
     : '';
 
   const meterClass = (p) => (p >= 90 ? 'meter-fill--bad' : p >= 80 ? 'meter-fill--warn' : '');
@@ -533,7 +533,7 @@ function splitSections(body) {
   return sections.map((s) => ({ title: s.title, body: s.lines.join('\n').trim() }));
 }
 
-function renderProjectPanel(project, { issues, workflows, servers, allProjects }) {
+function renderProjectPanel(project, { issues, workflows, servers, allProjects, glossary = {} }) {
   let flowSeq = 0;
   const renderBody = (markdown) => renderMarkdown(markdown, {
     onFence: (lang, code) => {
@@ -546,7 +546,7 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects }
       // is a few KB, and it is the only way a ten-layer diagram is legible on a
       // phone without JavaScript re-running the layout at runtime.
       flowSeq += 1;
-      const opts = { id: `f-${project.id}-${flowSeq}`, title: `${project.name} flow` };
+      const opts = { id: `f-${project.id}-${flowSeq}`, title: `${project.name} flow`, glossary };
       return `<div class="flow-wrap"><div class="flow-scroll">${
         renderFlowSvg(flow, opts)
       }${
@@ -644,7 +644,7 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects }
       <span class="pill"><span class="dot dot--${project.status}"></span>${escapeHtml(project.status)}</span>
       ${project.server ? `<a class="pill" href="#server=${escapeHtml(project.server)}" data-open="server:${escapeHtml(project.server)}">${escapeHtml(project.server)}</a>` : ''}
       ${project.href ? `<a class="pill pill--accent" href="${escapeHtml(project.href)}" target="_blank" rel="noopener">open ↗</a>` : ''}
-      ${(project.tags ?? []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+      ${(project.tags ?? []).map((t) => explain(t, glossary)).join('')}
     </div>
 
     ${project.stats?.length ? `<div class="stats" style="margin-bottom:18px;gap:24px">${project.stats.map((s) => `<div>
@@ -670,11 +670,40 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects }
 
     ${connections ? `<h2>Connected to</h2>${connections}` : ''}
 
+    ${(() => {
+    const used = Object.keys(glossary).filter((term) => {
+      const re = new RegExp(`\\b${escapeRegExp(term)}\\b`, 'i');
+      return re.test(project.body ?? '') || (project.tags ?? []).some((t) => re.test(t));
+    });
+    if (!used.length) return '';
+    return `<h2>What these things are</h2>
+      <dl class="glossary">${used.map((term) => `
+        <dt>${escapeHtml(term)}</dt>
+        <dd><strong>${escapeHtml(glossary[term].what)}</strong> ${escapeHtml(glossary[term].why)}</dd>`).join('')}
+      </dl>`;
+  })()}
+
     ${mine.length ? `<h2>Issues · ${mine.length}</h2>${mine.map(renderIssue).join('')}` : ''}
   </section>`;
 }
 
 
+
+/* ------------------------------------------------------------ glossary */
+
+/**
+ * A tag or label that the glossary knows about becomes a hover explanation.
+ * The question a newcomer has is never just "what is this" but "why is it in
+ * the picture", so both halves ship together.
+ */
+function explain(label, glossary, className = 'tag') {
+  const term = glossary?.[label];
+  if (!term) return `<span class="${className}">${escapeHtml(label)}</span>`;
+  return `<span class="${className} term" tabindex="0" role="note">${escapeHtml(label)}<span class="term-card">
+    <strong>${escapeHtml(term.what)}</strong>
+    <span>${escapeHtml(term.why)}</span>
+  </span></span>`;
+}
 
 /* --------------------------------------------------------------- links */
 
@@ -708,7 +737,7 @@ function projectForWorkflow(id, projects) {
 function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
   const owner = projectForWorkflow(id, projects);
   const server = wf.server ? servers[wf.server] : null;
-  const siblings = Object.entries(workflows)
+  const siblings = wf.noise ? [] : Object.entries(workflows)
     .filter(([wid, w]) => wid !== id && w.group === wf.group && !w.noise)
     .sort((a, b) => (b[1].active - a[1].active) || a[1].name.localeCompare(b[1].name));
 
@@ -771,7 +800,7 @@ function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
         <h2 class="board-title"><span class="board-num">${history.length ? 4 : 3}</span>Others in ${escapeHtml(wf.group ?? 'this group')}</h2>
         <div class="board-content"><div class="table-wrap"><table>
           <thead><tr><th>Workflow</th><th>State</th><th>Project</th></tr></thead>
-          <tbody>${siblings.slice(0, 25).map(([wid, w]) => {
+          <tbody>${siblings.slice(0, 12).map(([wid, w]) => {
     const o = projectForWorkflow(wid, projects);
     return `<tr>
               <td data-label="Workflow">${linkWorkflow(wid, w.name)}</td>
@@ -894,7 +923,7 @@ function renderWorkflows(workflows, projects) {
 /* --------------------------------------------------------------- page */
 
 export function renderPage({
-  servers, projects, workflows, issues, events, history, staleness, analysis, css, builtAt,
+  servers, projects, workflows, issues, events, history, staleness, analysis, glossary, css, builtAt,
 }) {
   const openIssues = issues.filter((i) => !i.resolved);
   const globalIssues = openIssues.filter((i) => !i.project).sort(bySeverity);
@@ -1013,8 +1042,8 @@ ${css}
     </div>
   </div>
   <div class="detail-body" id="detail-body">
-    ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects })).join('')}
-    ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues })).join('')}
+    ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects, glossary })).join('')}
+    ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues, glossary })).join('')}
     ${Object.entries(workflows).map(([id, wf]) => renderWorkflowPanel(id, wf, { projects, workflows, servers, issues })).join('')}
   </div>
 </section>

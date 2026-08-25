@@ -241,6 +241,9 @@ function main() {
     });
   }
 
+  const glossaryFile = readJson(abs('data', 'glossary.json'));
+  const glossary = glossaryFile.ok ? glossaryFile.value : {};
+
   /* render */
   const html = renderPage({
     servers: serverData,
@@ -251,6 +254,7 @@ function main() {
     history,
     staleness,
     analysis,
+    glossary,
     css: readText(abs('src', 'render', 'styles.css')),
     builtAt: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC',
   });

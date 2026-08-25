@@ -14,20 +14,56 @@ Stage order and checkpoints follow the build brief.
 | 1 | Repo scaffold, `package.json`, schemas, `validate` | **done** |
 | 2 | `ingest/vps-dump.js` + tests against real dumps | **done** |
 | 3 | `ingest/n8n-list.js`, `mongo-stats.js`, format detection | partial — see below |
-| 4 | `diff.js` + auto-issue rules | not started |
-| 5 | Flow DSL auto-layout + animated SVG renderer | parser done, layout/render not started |
-| 6 | Full HTML build | not started |
-| 7 | Watch mode, `new-project`, README | not started |
+| 4 | `diff.js` + auto-issue rules | **done** |
+| 5 | Flow DSL auto-layout + animated SVG renderer | **done** |
+| 6 | Full HTML build | **done** |
+| 7 | Watch mode, `new-project`, README | watch and README done, `new-project` outstanding |
 
-`npm run validate` and `npm test` are live. `ingest`, `build`, `watch`, `diff`
-and `new-project` exist as commands but exit 2 with a note until their stage
-lands.
+Everything is live except `npm run new-project`, which still exits 2. Beyond the
+brief: `sync` (collect from all three servers over SSH), `serve`, a dual theme,
+a Playwright responsive suite, and a glossary that explains what each thing is
+and why it is in the picture.
 
 **On stage 3:** `kw-collect.sh` schema 2.0 already embeds the n8n workflow list
 (`===SECTION:N8N===`) and the Mongo collection counts
 (`---mongo_collections---`), and `vps-dump.js` parses both. Standalone
 `n8n-list.js` / `mongo-stats.js` are still worth having for pasting an export on
 its own, but they are no longer on the critical path.
+
+## Keeping it current
+
+`npm run sync` pushes `kw-collect.sh` to each server over SSH, runs it, pulls the
+dump into `raw/`, then runs the normal ingest and build. Nothing new is trusted:
+the same parser, the same redaction, the same snapshot-and-diff path a
+hand-pasted dump takes. A host that is unreachable is reported and skipped; the
+others still sync.
+
+Connection details live in `config/hosts.json`, which is **git-ignored**. Copy
+`config/hosts.example.json` and fill it in. No password belongs in that file:
+use an SSH key or an agent. With no config at all, sync falls back to the IPs
+already in `data/servers.json`, so a first run needs nothing but working SSH.
+
+To run it unattended, either leave `npm run sync -- --every 6h` running, or
+schedule the one-shot form:
+
+```bash
+# Linux, /etc/systemd/system/kw-estate.timer + .service
+ExecStart=/usr/bin/node /path/to/kw-estate/src/sync.js
+
+# Windows Task Scheduler
+schtasks /create /tn "KW Estate sync" /tr "node D:\master\src\sync.js" /sc hourly /mo 6
+```
+
+**A note on scope.** The brief was explicit that this is not a monitoring tool
+and does not poll servers. Sync is a deliberate departure, added on request. It
+needs SSH access to production from wherever it runs, which is a real security
+decision and not only a convenience. And a dashboard that refreshes itself is
+one nobody reads carefully, so the "What changed" panel matters more once this
+is on a timer, not less.
+
+Sync has been exercised end to end with `--dry-run`, which resolves all three
+hosts and prints the exact commands. The live SSH path has **not** been run
+against your servers from here.
 
 ## The collector
 
@@ -46,6 +82,13 @@ The parser is pinned to collector schema 2.0 and warns if it meets another.
 ## Commands
 
 ```bash
+npm run sync                # collect from every server, ingest, rebuild
+npm run sync -- --every 6h  # keep doing that on an interval
+npm run sync -- --dry-run   # print the SSH commands, run nothing
+npm run watch               # rebuild whenever data/ or content/ changes
+npm run watch -- --serve    # ... and serve dist/ at the same time
+npm run serve               # serve dist/ on http://localhost:4178
+
 npm run validate            # schema-check everything, exit non-zero on error
 npm run validate -- --json  # same, machine-readable
 npm test                    # unit tests (node:test, no runner dependency)

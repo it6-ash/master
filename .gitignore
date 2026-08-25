@@ -16,3 +16,6 @@ desktop.ini
 # Playwright
 test-results/
 playwright-report/
+
+# SSH targets for `npm run sync`. Never committed.
+config/hosts.json

@@ -1,0 +1,106 @@
+{
+  "KW Delhi 6": {
+    "what": "One of the two KW Group projects Yamini qualifies leads for.",
+    "why": "Leads arrive tagged D6 or BP, and the n8n router splits on that tag so each project gets its own reply templates and its own broadcast schedule."
+  },
+  "Blue Pearl": {
+    "what": "The second KW Group project Yamini handles, alongside Delhi 6.",
+    "why": "Same pipeline, separate templates and broadcasts. The split happens at the router, which is why there are BP and D6 variants of most WhatsApp workflows."
+  },
+  "Cratio": {
+    "what": "The CRM the sales floor actually works in, external to this estate.",
+    "why": "It is where a qualified lead has to land for anyone to act on it. The four AI Bot fields on a Cratio lead are the intended destination for Yamini's verdicts, and they have been null since Aug 2025."
+  },
+  "n8n": {
+    "what": "A self-hosted workflow automation tool, running in Docker on srv1340120.",
+    "why": "Every integration in the estate is an n8n workflow rather than bespoke code, which is why the workflow list is the closest thing to an architecture diagram this estate has."
+  },
+  "MongoDB": {
+    "what": "The document database holding every WhatsApp conversation, on srv1340120.",
+    "why": "Chat memory has no fixed shape and grows per turn, which suits documents. It is also the agent's memory: the reply depends on loading the prior messages back out."
+  },
+  "GPT-5 mini": {
+    "what": "The OpenAI model Yamini generates replies with.",
+    "why": "Output tokens cost 8x input on this model, so reply length is the single biggest cost lever. At ₹0.59 per conversation it is a rounding error next to a ₹1,080 Google lead."
+  },
+  "WhatsApp Cloud API": {
+    "what": "Meta's own WhatsApp API, used directly with no BSP in between.",
+    "why": "Going direct means Meta's rate card is the real cost. A BSP would add 2x to 5x on top, turning a ₹1.04 marketing message into ₹2 to ₹5."
+  },
+  "BSP": {
+    "what": "Business Solution Provider, a reseller that fronts the WhatsApp API.",
+    "why": "KW does not use one. That is a deliberate saving and worth protecting."
+  },
+  "Meta Cloud API": {
+    "what": "The inbound webhook and outbound send endpoint for WhatsApp.",
+    "why": "Every message in and out crosses it. It is the boundary between Meta's infrastructure and this estate."
+  },
+  "service message": {
+    "what": "A WhatsApp reply sent inside the 24 hours after a customer messages you.",
+    "why": "Meta charges nothing for it. Yamini's replies are all service messages, so the conversational agent costs nothing on the WhatsApp line. Only outbound broadcasts are billed."
+  },
+  "LangChain": {
+    "what": "The message format the chat history is stored in.",
+    "why": "It fixes the shape of each turn as type plus data, which is what lets the agent reload a conversation and continue it."
+  },
+  "sessionId": {
+    "what": "The phone number in E.164 without the plus, used as the conversation key.",
+    "why": "One number is one conversation forever, so memory survives across days without any session concept."
+  },
+  "leadAnalysed": {
+    "what": "A flag on a conversation record marking it as processed by the Qualification Agent.",
+    "why": "Records without it are never queued. That single missing flag is why 504 of 27,368 conversations have a verdict."
+  },
+  "IVR": {
+    "what": "The phone menu that hands callers off to WhatsApp.",
+    "why": "A second inbound source alongside ads. It is 5.5% of leads, so worth keeping but not worth optimising."
+  },
+  "Meta CAPI": {
+    "what": "Conversions API, the server-side way to report conversions back to Meta.",
+    "why": "It closes the loop so Meta can optimise ad delivery on real outcomes rather than clicks. Currently inactive, which contradicts the architecture brief."
+  },
+  "Enhanced Conversions": {
+    "what": "Google's equivalent of CAPI, sending hashed first-party data back to Google Ads.",
+    "why": "Live and running daily, which is the reverse of what the architecture brief claims."
+  },
+  "Customer Match": {
+    "what": "Uploading a customer list to Google to target or exclude those people.",
+    "why": "Built, tested and deliberately parked while Meta was prioritised."
+  },
+  "ufw": {
+    "what": "The Ubuntu firewall front end.",
+    "why": "It is the only thing between a service bound to 0.0.0.0 and the internet. All three servers now have it active; two of them did not on 18 Aug."
+  },
+  "certbot": {
+    "what": "The Let's Encrypt client that issues and renews TLS certificates.",
+    "why": "Its inventory is the ground truth for which hostnames actually have a certificate. A hostname serving 443 that certbot has never heard of is a problem."
+  },
+  "uvicorn": {
+    "what": "The ASGI server running the FastAPI dashboards.",
+    "why": "Each dashboard is a uvicorn process on a loopback port with nginx in front. Knowing the port is how a hostname gets traced to the code behind it."
+  },
+  "gunicorn": {
+    "what": "A pre-forking WSGI server, used for the Flask apps and one superseded FastAPI deployment.",
+    "why": "fastapi_app.service is a gunicorn unit targeting the same port as the uvicorn one that replaced it, which is why it fails on every boot."
+  },
+  "Traefik": {
+    "what": "A container-native reverse proxy.",
+    "why": "It used to own 80 and 443 here. It no longer does: nginx took over, and both Traefik containers are now dead weight, one stuck in Created for 115 days and one in a restart loop."
+  },
+  "cloudflared": {
+    "what": "Cloudflare Tunnel, an outbound connection that publishes a service without opening a port.",
+    "why": "kwatch.leadq.co.in reaches its app this way, so it never passes through nginx. Changing nginx will not affect it, and debugging it by reading nginx config will not work."
+  },
+  "MongoDB Atlas": {
+    "what": "MongoDB's hosted service, external to these servers.",
+    "why": "Yamini ran on it until the April migration. LeadQ still reads from it, which is the unresolved split-brain: nobody has confirmed whether anything still writes there."
+  },
+  "Batch API": {
+    "what": "OpenAI's half-price asynchronous processing tier.",
+    "why": "The qualification backlog is not time-sensitive, so it applies cleanly. It is what turns a ₹3,112 backfill into ₹1,556."
+  },
+  "prompt caching": {
+    "what": "Charging 90% less for input tokens that repeat between calls.",
+    "why": "Yamini's system prompt is byte-identical on every turn, which is the textbook case. Turning it on is a 34% saving for no behavioural change."
+  }
+}

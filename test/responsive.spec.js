@@ -267,3 +267,51 @@ test('topology nodes that map to a project are clickable', async ({ page }) => {
   await node.click();
   await expect(page.locator('#detail-title')).not.toHaveText('srv1340120');
 });
+
+/* ------------------------------------------------------------ glossary */
+
+test('a flow node explains what it is and why it is there, on hover', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=yamini`);
+
+  // Native <title> works offline, in print, and for a screen reader.
+  const tip = page.locator('[data-panel="project:yamini"] .flow-horizontal .flow-node title').first();
+  const text = await tip.textContent();
+  expect(text.length).toBeGreaterThan(20);
+});
+
+test('a node consults its sublabel too, not only its label', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=yamini`);
+  const titles = await page.locator('[data-panel="project:yamini"] .flow-horizontal title').allTextContents();
+  // The node reads 'Meta Cloud API / direct, no BSP'. Both halves carry an
+  // idea, and the second one is the interesting one.
+  expect(titles.join(' ')).toMatch(/Business Solution Provider/);
+});
+
+test('a project page glosses the terms it actually uses', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=yamini`);
+  const glossary = page.locator('[data-panel="project:yamini"] dl.glossary');
+  await expect(glossary).toHaveCount(1);
+  await expect(glossary.locator('dt', { hasText: 'Blue Pearl' })).toHaveCount(1);
+  await expect(glossary.locator('dt', { hasText: 'Cratio' })).toHaveCount(1);
+});
+
+test('a tag reveals its explanation on hover and on keyboard focus', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=yamini`);
+
+  const term = page.locator('[data-panel="project:yamini"] .term').first();
+  const card = term.locator('.term-card');
+  await expect(card).toBeHidden();
+
+  await term.hover();
+  await expect(card).toBeVisible();
+
+  await page.mouse.move(0, 0);
+  await expect(card).toBeHidden();
+
+  await term.focus();
+  await expect(card).toBeVisible();
+});
