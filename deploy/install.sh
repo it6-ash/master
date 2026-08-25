@@ -26,10 +26,11 @@ BRANCH="${BRANCH:-main}"
 DOMAIN="${DOMAIN:-estate.leadq.co.in}"
 KEY="${KEY:-/root/.ssh/id_ed25519}"
 
+# public — nginx on 80/443 with certbot and HTTP basic auth. What this estate uses.
 # tunnel — loopback only, behind the cloudflared this box already runs, gated by
-#          Cloudflare Access. No public port, no certificate to renew.
-# public — 443 with certbot and HTTP basic auth.
-MODE="${MODE:-tunnel}"
+#          Cloudflare Access. No public port and no certificate to renew, but it
+#          needs an ingress rule and an Access policy to be worth anything.
+MODE="${MODE:-public}"
 
 # Paths git may own on this box are code only. data/ and dist/ are live state
 # here and must never be merged over.
@@ -186,6 +187,14 @@ enable_vhost() {
   fi
 }
 
+# Switching modes swaps which conf is installed, so a stale one must not win.
+if [ -e /etc/nginx/sites-enabled/kw-estate ] \
+   && grep -q "127.0.0.1:8060" /etc/nginx/sites-available/kw-estate 2>/dev/null \
+   && [ "$MODE" = "public" ]; then
+  warn "replacing the tunnel vhost with the public one"
+  rm -f /etc/nginx/sites-enabled/kw-estate
+fi
+
 if [ -e /etc/nginx/sites-enabled/kw-estate ]; then
   ok "vhost already enabled"
 elif [ "$MODE" = "tunnel" ]; then
@@ -263,10 +272,13 @@ EOF
 else
 cat <<EOF
 Still yours to do:
-  point $DOMAIN at $(hostname -I 2>/dev/null | awk '{print $1}') in DNS, unproxied
-  certbot --nginx -d $DOMAIN
+  1. point $DOMAIN at $(hostname -I 2>/dev/null | awk '{print $1}') as an A record,
+     DNS-only (grey cloud) — proxied, Let's Encrypt cannot validate the origin
+  2. certbot --nginx -d $DOMAIN
+     it adds the 443 block and turns port 80 into a redirect
 
 The basic auth is not decoration. This page names every open port, every failed
-unit and every unrotated credential in the estate.
+unit and every unrotated credential in the estate. Until certbot has run, that
+password crosses the network in the clear — do not use one you use elsewhere.
 EOF
 fi
