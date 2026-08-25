@@ -39,14 +39,8 @@ MODE="${MODE:-public}"
 # auth_basic lines in the vhost with:  allow <your.ip>;  deny all;
 AUTH="${AUTH:-basic}"
 
-# Paths git may own on this box. Code, plus the three files under data/ that are
-# WRITTEN BY HAND rather than by ingest — prices, glossary and the analysis
-# model. Without them the box keeps whatever it cloned on day one and every
-# later edit to costs.json stays on the laptop, which is how the renewals panel
-# ended up saying "nothing is priced yet" on a machine whose repo had prices.
-# Everything else under data/ is live state here and must never be merged over.
-CODE_PATHS=(src schema content deploy test kw-collect.sh package.json playwright.config.js README.md
-            data/costs.json data/glossary.json data/analysis.json)
+# Which paths git may overwrite lives in deploy/pull.sh — one definition, used
+# by this script and by the service's ExecStartPre on every collection pass.
 
 say()  { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 ok()   { printf '    \033[32m✓\033[0m %s\n' "$*"; }
@@ -84,13 +78,7 @@ selfsum() { [ -f "$SELF" ] && sha256sum "$SELF" | cut -d' ' -f1 || echo none; }
 if [ -d "$DIR/.git" ]; then
   say "Updating the checkout at $DIR"
   BEFORE="$(selfsum)"
-  git -C "$DIR" fetch --quiet origin "$BRANCH"
-  # Take code from origin without merging: data/ and dist/ on this box are
-  # newer than anything in the repo and a pull would conflict on every run.
-  for p in "${CODE_PATHS[@]}"; do
-    git -C "$DIR" checkout --quiet "origin/$BRANCH" -- "$p" 2>/dev/null || true
-  done
-  ok "code updated to origin/$BRANCH; data/ and dist/ left alone"
+  DIR="$DIR" BRANCH="$BRANCH" bash "$DIR/deploy/pull.sh" | sed 's/^/    /'
 
   # This script updates itself. Bash reads a script incrementally by byte
   # offset, so carrying on after the file changed underneath us runs a mix of

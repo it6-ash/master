@@ -42,8 +42,18 @@ key, installs a systemd timer, and points nginx at the checkout's `dist/`. It is
 also the update path — run it again and it takes new code from `origin/main`
 without touching the live `data/` and `dist/` on the box.
 
-Four times a day the timer runs `src/sync.js`, which SSHes to all three servers,
-runs `kw-collect.sh`, ingests, and rebuilds `dist/index.html` **in place**.
+Four times a day the timer takes new code from `origin/main` and then runs
+`src/sync.js`, which SSHes to all three servers, runs `kw-collect.sh`, ingests,
+and rebuilds `dist/index.html` **in place**. A push to main is live on the box
+within six hours; nothing to run by hand.
+
+`deploy/pull.sh` is that update, and it is the single owner of which paths git
+may overwrite here. It never pulls or merges — it checks out named code paths
+and leaves `data/` and `dist/` alone, because ingest on this box writes state
+newer than anything in the repo. If GitHub is unreachable it says so and the
+pass runs on the code already on disk. Unit files are deliberately excluded: a
+timer that can rewrite its own systemd unit and restart itself is a bad thing
+to debug at 3am, so `deploy/*.service` changes still need `install.sh`.
 nginx serves that file directly, so there is no copy step and no window where
 the page and the data disagree. Nothing new is trusted: the same parser, the
 same redaction, the same snapshot-and-diff path a hand-pasted dump takes. A host

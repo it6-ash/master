@@ -16,6 +16,9 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/kw-estate
+# Leading `-`: a GitHub outage must not stop the estate being collected. It
+# logs the failure and the pass runs on whatever code is already on disk.
+ExecStartPre=-/usr/bin/env bash /opt/kw-estate/deploy/pull.sh
 ExecStart=/usr/bin/env node /opt/kw-estate/src/sync.js
 Environment=NO_COLOR=1
 
