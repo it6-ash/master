@@ -126,7 +126,7 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --canvas: #eef2fa;
+  --canvas: #e9eef8;
   --surface-start: #ffffff;
   --surface-end: #f7f9ff;
   --raised-start: #ffffff;
@@ -134,8 +134,8 @@
   --glass: rgba(255, 255, 255, 0.78);
   --sunken: #f2f5fc;
 
-  --border: #dae2f2;
-  --border-hover: #b4c2e4;
+  --border: #ccd7ee;
+  --border-hover: #9fb2dd;
 
   --ink: #131a30;
   --ink-2: #5c6785;
@@ -165,7 +165,7 @@
   --ord-3: #0a5b51;
 
   --track: rgba(19, 26, 48, 0.07);
-  --shadow: 0 14px 40px rgba(40, 60, 120, 0.16);
+  --shadow: 0 10px 30px rgba(40, 60, 120, 0.13);
   --scrim: rgba(30, 44, 84, 0.38);
 
   --glow-1: rgba(13, 156, 138, 0.07);
@@ -372,7 +372,16 @@ h2.section .count {
 
 .intro {
   padding: var(--gap-lg) 0 0;
-  max-width: 78ch;
+  display: grid;
+  gap: 0 clamp(24px, 4vw, 56px);
+}
+/* Past ~1000px a single measure-capped column leaves half the row empty, which
+   reads as broken rather than as whitespace. Two columns use the width without
+   letting a line of prose run past a readable measure. */
+@media (min-width: 1000px) {
+  .intro { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); align-items: start; }
+  .intro-title { grid-column: 1 / -1; }
+  .intro-how { grid-column: 2; grid-row: 2 / span 3; margin-top: 0 !important; align-self: start; }
 }
 .intro-title {
   font-size: clamp(21px, 2vw + 14px, 30px);
@@ -389,13 +398,27 @@ h2.section .count {
   margin-top: 14px !important;
 }
 
+.section-head { margin: var(--section-gap) 0 var(--gap); }
+.section-head h2.section { margin: 0 0 5px; }
+
 .section-note {
-  margin: -6px 0 var(--gap);
+  margin: 0;
   color: var(--ink-2);
   font-size: var(--fs-meta);
-  max-width: 82ch;
+  max-width: 88ch;
 }
-h2.section + .section-note { margin-top: -8px; }
+
+@media (min-width: 1100px) {
+  /* Label left, explanation beside it. The row is full width and the prose
+     still stops at a readable measure. */
+  .section-head {
+    display: grid;
+    grid-template-columns: minmax(150px, 20%) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 4px clamp(20px, 3vw, 44px);
+  }
+  .section-head h2.section { margin: 0; }
+}
 
 .derived-note {
   border: 1px dashed var(--border-hover);
@@ -1260,7 +1283,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 06:47 UTC</div>
+      <div class="built">built 2026-08-25 06:59 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -1331,15 +1354,19 @@ body.searching .no-match { display: none !important; }
   </div>
   </div>
 
-  <h2 class="section">What changed</h2>
+  <div class="section-head">
+    <h2 class="section">What changed</h2>
     <p class="section-note">Differences between the two most recent collections of each server: units that failed, ports that opened, certificates running down, workflows switched off. This is the thing a static inventory cannot tell you.</p>
+  </div>
   <div class="changes"><div class="empty">
       <strong>No changes yet.</strong> Every server has exactly one snapshot, so there is nothing to compare against.
       Run <code>kw-collect.sh</code> again in a few days and this panel fills itself in.
     </div></div>
 
-  <h2 class="section">Servers <span class="count">3</span></h2>
+  <div class="section-head">
+    <h2 class="section">Servers <span class="count">3</span></h2>
     <p class="section-note">The three Hostinger VPS the whole estate runs on. The stripe down the left edge is health, the bars are disk and memory at last collection. Open one for its full inventory.</p>
+  </div>
   <div class="servers">
     <button class="server searchable tilt server--critical" type="button" data-open="server:srv1340120"
       data-search="srv1340120 apps &amp; automation 72.62.228.194">
@@ -1478,8 +1505,10 @@ body.searching .no-match { display: none !important; }
   </button>
   </div>
 
-  <h2 class="section">Analysis</h2>
+  <div class="section-head">
+    <h2 class="section">Analysis</h2>
     <p class="section-note">Three questions the raw inventory does not answer: where the leads stop, how many workflows actually run, and what the whole thing costs to operate each month.</p>
+  </div>
   <div class="chart-grid">
     <figure class="chart" id="funnel">
     <figcaption>Yamini funnel: where the leads stop</figcaption>
@@ -1636,8 +1665,10 @@ body.searching .no-match { display: none !important; }
   </figure>
   </div>
 
-  <h2 class="section">Estate tree <span class="count">server → project → workflow</span></h2>
+  <div class="section-head">
+    <h2 class="section">Estate tree <span class="count">server → project → workflow</span></h2>
     <p class="section-note">The shape of the estate, generated from live data rather than drawn. Workflows belonging to no project are called out rather than quietly dropped.</p>
+  </div>
   <div class="tree"><details class="tree-node tree-node--server" open>
       <summary>
         <span class="dot dot--live"></span>
@@ -2364,8 +2395,10 @@ body.searching .no-match { display: none !important; }
       </div>
     </details></div>
 
-  <h2 class="section">Projects <span class="count">17 across 3 servers</span></h2>
+  <div class="section-head">
+    <h2 class="section">Projects <span class="count">17 across 3 servers</span></h2>
     <p class="section-note">Everything reachable at a hostname or running as a systemd unit, discovered from the servers themselves. A few carry a written brief; the rest are described from what was found on disk.</p>
+  </div>
   <div class="filter-row" id="project-filters">
     <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
     <button class="chip" type="button" data-filter="srv1340120" aria-pressed="false">srv1340120</button><button class="chip" type="button" data-filter="srv1870078" aria-pressed="false">srv1870078</button><button class="chip" type="button" data-filter="srv1900820" aria-pressed="false">srv1900820</button>
@@ -2658,8 +2691,10 @@ body.searching .no-match { display: none !important; }
   </button>
   </div>
 
-  <h2 class="section">Issues <span class="count">19 open · 3 reconciled</span></h2>
+  <div class="section-head">
+    <h2 class="section">Issues <span class="count">19 open · 3 reconciled</span></h2>
     <p class="section-note">Findings written by hand plus findings detected automatically on every collection. A hand-written finding is re-tested against the newest data, so one that has since been fixed shows struck through rather than being repeated as fact.</p>
+  </div>
   <div class="issue issue--critical reconciled">
     <div class="issue-head">
       <span class="sev sev--critical">critical</span>
@@ -2835,8 +2870,10 @@ body.searching .no-match { display: none !important; }
     
   </div>
 
-  <h2 class="section">Workflow inventory <span class="count">13 active of 138</span></h2>
+  <div class="section-head">
+    <h2 class="section">Workflow inventory <span class="count">13 active of 138</span></h2>
     <p class="section-note">Every n8n workflow on every server, grouped by what it does. Roughly a hundred are demo templates that were imported and never removed; they are grouped separately and collapsed.</p>
+  </div>
   <div class="wf-groups"><details class="wf-group" open>
       <summary>Yamini
         <span class="wf-count">6 active · 21 total · 7 imports</span>

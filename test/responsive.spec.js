@@ -370,3 +370,36 @@ test('a workflow page says what a workflow even is', async ({ page }) => {
   await expect(note).toContainText('An automation running inside n8n');
   await expect(note).toContainText('switched off');
 });
+
+test('wide viewports use the width instead of leaving half the row empty', async ({ page }) => {
+  await openAt(page, 1920, 'dark');
+
+  // The intro splits into two columns rather than one measure-capped column
+  // with a dead half beside it.
+  const cols = await page.locator('.intro').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  expect(cols).toBe(2);
+
+  // The "how to read it" note sits to the right of the lead, not under it.
+  const lead = await page.locator('.intro p').first().boundingBox();
+  const how = await page.locator('.intro-how').boundingBox();
+  expect(how.x).toBeGreaterThan(lead.x + lead.width - 20);
+
+  // A section label and its explanation share a row.
+  const head = page.locator('.section-head').first();
+  const h2 = await head.locator('h2.section').boundingBox();
+  const note = await head.locator('.section-note').boundingBox();
+  expect(note.x).toBeGreaterThan(h2.x + h2.width - 10);
+  expect(Math.abs(note.y - h2.y)).toBeLessThan(30);
+});
+
+test('narrow viewports stack the same content in one column', async ({ page }) => {
+  await openAt(page, 390, 'dark');
+
+  const cols = await page.locator('.intro').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  expect(cols).toBe(1);
+
+  const head = page.locator('.section-head').first();
+  const h2 = await head.locator('h2.section').boundingBox();
+  const note = await head.locator('.section-note').boundingBox();
+  expect(note.y).toBeGreaterThan(h2.y + h2.height - 5);
+});

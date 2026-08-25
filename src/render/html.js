@@ -43,8 +43,12 @@ const EVENT_LABELS = {
  * infer what a panel is from its contents.
  */
 function section(title, note, count) {
-  return `<h2 class="section">${escapeHtml(title)}${count ? ` <span class="count">${escapeHtml(count)}</span>` : ''}</h2>
-    ${note ? `<p class="section-note">${note}</p>` : ''}`;
+  // Heading and explanation are one unit, so a wide viewport can set them side
+  // by side instead of leaving half the row empty beside a measure-capped line.
+  return `<div class="section-head">
+    <h2 class="section">${escapeHtml(title)}${count ? ` <span class="count">${escapeHtml(count)}</span>` : ''}</h2>
+    ${note ? `<p class="section-note">${note}</p>` : ''}
+  </div>`;
 }
 
 /**

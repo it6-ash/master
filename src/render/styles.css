@@ -103,7 +103,7 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --canvas: #eef2fa;
+  --canvas: #e9eef8;
   --surface-start: #ffffff;
   --surface-end: #f7f9ff;
   --raised-start: #ffffff;
@@ -111,8 +111,8 @@
   --glass: rgba(255, 255, 255, 0.78);
   --sunken: #f2f5fc;
 
-  --border: #dae2f2;
-  --border-hover: #b4c2e4;
+  --border: #ccd7ee;
+  --border-hover: #9fb2dd;
 
   --ink: #131a30;
   --ink-2: #5c6785;
@@ -142,7 +142,7 @@
   --ord-3: #0a5b51;
 
   --track: rgba(19, 26, 48, 0.07);
-  --shadow: 0 14px 40px rgba(40, 60, 120, 0.16);
+  --shadow: 0 10px 30px rgba(40, 60, 120, 0.13);
   --scrim: rgba(30, 44, 84, 0.38);
 
   --glow-1: rgba(13, 156, 138, 0.07);
@@ -349,7 +349,16 @@ h2.section .count {
 
 .intro {
   padding: var(--gap-lg) 0 0;
-  max-width: 78ch;
+  display: grid;
+  gap: 0 clamp(24px, 4vw, 56px);
+}
+/* Past ~1000px a single measure-capped column leaves half the row empty, which
+   reads as broken rather than as whitespace. Two columns use the width without
+   letting a line of prose run past a readable measure. */
+@media (min-width: 1000px) {
+  .intro { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); align-items: start; }
+  .intro-title { grid-column: 1 / -1; }
+  .intro-how { grid-column: 2; grid-row: 2 / span 3; margin-top: 0 !important; align-self: start; }
 }
 .intro-title {
   font-size: clamp(21px, 2vw + 14px, 30px);
@@ -366,13 +375,27 @@ h2.section .count {
   margin-top: 14px !important;
 }
 
+.section-head { margin: var(--section-gap) 0 var(--gap); }
+.section-head h2.section { margin: 0 0 5px; }
+
 .section-note {
-  margin: -6px 0 var(--gap);
+  margin: 0;
   color: var(--ink-2);
   font-size: var(--fs-meta);
-  max-width: 82ch;
+  max-width: 88ch;
 }
-h2.section + .section-note { margin-top: -8px; }
+
+@media (min-width: 1100px) {
+  /* Label left, explanation beside it. The row is full width and the prose
+     still stops at a readable measure. */
+  .section-head {
+    display: grid;
+    grid-template-columns: minmax(150px, 20%) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 4px clamp(20px, 3vw, 44px);
+  }
+  .section-head h2.section { margin: 0; }
+}
 
 .derived-note {
   border: 1px dashed var(--border-hover);
