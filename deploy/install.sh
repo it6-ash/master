@@ -32,6 +32,13 @@ KEY="${KEY:-/root/.ssh/id_ed25519}"
 #          needs an ingress rule and an Access policy to be worth anything.
 MODE="${MODE:-public}"
 
+# basic — htpasswd prompt. The default.
+# none  — no authentication at all. The page is then readable by anyone who
+#         resolves the hostname. See the warning install.sh prints.
+# For "no prompt, still not public", leave AUTH=basic and replace the two
+# auth_basic lines in the vhost with:  allow <your.ip>;  deny all;
+AUTH="${AUTH:-basic}"
+
 # Paths git may own on this box. Code, plus the three files under data/ that are
 # WRITTEN BY HAND rather than by ingest — prices, glossary and the analysis
 # model. Without them the box keeps whatever it cloned on day one and every
@@ -181,6 +188,14 @@ say "nginx ($MODE)"
 
 enable_vhost() {
   install -m 644 "$DIR/deploy/$1" /etc/nginx/sites-available/kw-estate
+
+  if [ "$AUTH" = "none" ]; then
+    # Comment rather than delete, so turning it back on is one sed away.
+    sed -i 's/^\( *\)auth_basic/\1# auth_basic/' /etc/nginx/sites-available/kw-estate
+    warn "AUTH=none — this page is now readable by anyone who resolves $DOMAIN."
+    warn "It lists every IP, open port, failed unit and unrotated credential here."
+  fi
+
   ln -sfn /etc/nginx/sites-available/kw-estate /etc/nginx/sites-enabled/kw-estate
   if nginx -t 2>/dev/null; then
     systemctl reload nginx
@@ -200,6 +215,12 @@ if [ -e /etc/nginx/sites-enabled/kw-estate ] \
   rm -f /etc/nginx/sites-enabled/kw-estate
 fi
 
+# Same for changing AUTH: "already enabled" must not mean "keeps the old auth".
+if [ "$AUTH" = "none" ] && grep -qE '^\s*auth_basic' /etc/nginx/sites-available/kw-estate 2>/dev/null; then
+  warn "removing basic auth from the installed vhost"
+  rm -f /etc/nginx/sites-enabled/kw-estate
+fi
+
 if [ -e /etc/nginx/sites-enabled/kw-estate ]; then
   ok "vhost already enabled"
 elif [ "$MODE" = "tunnel" ]; then
@@ -207,7 +228,7 @@ elif [ "$MODE" = "tunnel" ]; then
   ok "listening on 127.0.0.1:8060 only — no public port claimed"
   warn "the tunnel half is yours: add the ingress rule, route the DNS, then put"
   warn "$DOMAIN behind Cloudflare Access. Until Access exists, it is PUBLIC."
-elif [ -f /etc/nginx/.kw-estate-htpasswd ]; then
+elif [ "$AUTH" = "none" ] || [ -f /etc/nginx/.kw-estate-htpasswd ]; then
   enable_vhost kw-estate.nginx.conf
 else
   warn "no /etc/nginx/.kw-estate-htpasswd yet, and MODE=public needs one."
