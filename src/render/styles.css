@@ -601,6 +601,14 @@ h2.section .count {
 }
 @media (prefers-reduced-motion: reduce) { .project .dot--live::after { animation: none; } }
 
+.platform-flag {
+  font: 10px var(--mono);
+  color: var(--s2);
+  border: 1px solid var(--s2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 .doc-flag {
   font: 10px var(--mono);
   color: var(--primary);

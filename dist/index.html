@@ -624,6 +624,14 @@ h2.section .count {
 }
 @media (prefers-reduced-motion: reduce) { .project .dot--live::after { animation: none; } }
 
+.platform-flag {
+  font: 10px var(--mono);
+  color: var(--s2);
+  border: 1px solid var(--s2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 .doc-flag {
   font: 10px var(--mono);
   color: var(--primary);
@@ -1340,7 +1348,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 07:06 UTC</div>
+      <div class="built">built 2026-08-25 07:09 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -2492,6 +2500,7 @@ body.searching .no-match { display: none !important; }
     <div class="stat-label">Cost per lead</div>
   </div></div>
     <div class="tags">
+      <span class="platform-flag">hosts 135 workflows</span>
       <span class="doc-flag">documented</span>
       <span class="tag">n8n</span><span class="tag">MongoDB</span><span class="tag">GPT-5 mini</span><span class="tag">WhatsApp Cloud API</span>
     </div>
@@ -2516,6 +2525,7 @@ body.searching .no-match { display: none !important; }
     <div class="stat-label">Failed units</div>
   </div></div>
     <div class="tags">
+      
       <span class="doc-flag">documented</span>
       <span class="tag">FastAPI</span><span class="tag">MongoDB Atlas</span><span class="tag">sales floor</span>
     </div>
@@ -2540,6 +2550,7 @@ body.searching .no-match { display: none !important; }
     <div class="stat-label">Database</div>
   </div></div>
     <div class="tags">
+      
       <span class="doc-flag">documented</span>
       <span class="tag">FastAPI</span><span class="tag">MongoDB</span><span class="tag">Google Sign-In</span><span class="tag">leadership</span>
     </div>
@@ -2556,6 +2567,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:8082</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:hrportal-leadq"
@@ -2570,6 +2582,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      
       
       <span class="tag">nginx</span><span class="tag">systemd</span><span class="tag">:8100</span>
     </div>
@@ -2586,6 +2599,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span><span class="tag">systemd</span><span class="tag">:8200</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:kwatch-leadq"
@@ -2600,6 +2614,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      
       
       <span class="tag">cloudflared</span><span class="tag">systemd</span><span class="tag">:8050</span>
     </div>
@@ -2616,6 +2631,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:8081</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:kwgroup"
@@ -2630,6 +2646,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      
       
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:8080</span>
     </div>
@@ -2646,6 +2663,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:8791</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:mcp-google-ads-leadq"
@@ -2661,6 +2679,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:8842</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:n8n-vfa2-n8n-1"
@@ -2675,6 +2694,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      <span class="platform-flag">hosts 3 workflows</span>
       
       <span class="tag">docker</span><span class="tag">:32769</span><span class="tag">published</span>
     </div>
@@ -2690,6 +2710,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      <span class="platform-flag">hosts 135 workflows</span>
       
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:5678</span>
     </div>
@@ -2706,6 +2727,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span><span class="tag">docker</span><span class="tag">:3000</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:lead-api"
@@ -2720,6 +2742,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      
       
       <span class="tag">systemd</span><span class="tag">:8000</span>
     </div>
@@ -2736,6 +2759,7 @@ body.searching .no-match { display: none !important; }
     
     <div class="tags">
       
+      
       <span class="tag">nginx</span>
     </div>
   </button><button class="project searchable tilt" type="button" data-open="project:manashi-leadq"
@@ -2750,6 +2774,7 @@ body.searching .no-match { display: none !important; }
     
     
     <div class="tags">
+      
       
       <span class="tag">nginx</span>
     </div>
@@ -4202,6 +4227,28 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     </tr></tbody>
   </table></div>
 
+    <h2>What runs on this</h2><h3>Workflows it runs · 12 active of 30</h3>
+      <p>This is the n8n instance itself, not one automation inside it. It holds
+      135 workflows in total, of which 105 are demo
+      templates that were imported and never removed.</p>
+      <p>Projects with workflows running here:
+        <a href="#project=n8n-srv1340120" data-open="project:n8n-srv1340120">n8n.srv1340120.hstgr.cloud</a>.</p><h3>Databases it holds</h3><div class="table-wrap"><table>
+        <thead><tr><th>Database</th><th>Collection</th><th>Documents</th></tr></thead>
+        <tbody><tr>
+          <td data-label="Database">Yamini</td>
+          <td data-label="Collection"><code>customerChats</code></td>
+          <td data-label="Documents" class="num">27,368</td>
+        </tr><tr>
+          <td data-label="Database">Yamini</td>
+          <td data-label="Collection"><code>authLogs</code></td>
+          <td data-label="Documents" class="num">130</td>
+        </tr><tr>
+          <td data-label="Database">Yamini</td>
+          <td data-label="Collection"><code>allowedUsers</code></td>
+          <td data-label="Documents" class="num">5</td>
+        </tr></tbody>
+      </table></div>
+
     <h2>Connected to</h2><h3>Data it touches</h3><div class="table-wrap"><table>
       <thead><tr><th>Collection</th><th>Documents</th><th>Database</th></tr></thead>
       <tbody><tr>
@@ -4525,6 +4572,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>leadq.co.in</code> → <code>127.0.0.1:8001</code></li></ul>
 
     
@@ -4754,6 +4803,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>overview.leadq.co.in</code> → <code>127.0.0.1:8002</code></li></ul>
 
     <h3>Data it touches</h3><div class="table-wrap"><table>
@@ -4844,6 +4895,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>ghaziabadcommercialshops.org</code> → <code>127.0.0.1:8082</code></li></ul>
 
     
@@ -4888,6 +4941,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <dt>Env file</dt><dd>present, contents never read</dd>
       <dt>Certificate</dt><dd>34 days remaining</dd>
     </dl>
+
+    
 
     
 
@@ -4948,6 +5003,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>KW-Site-visit.leadq.co.in</code> → <code>127.0.0.1:8200</code></li></ul>
 
     
@@ -5005,6 +5062,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <dt>Env file</dt><dd>present, contents never read</dd>
       
     </dl>
+
+    
 
     
 
@@ -5069,6 +5128,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>kwbluepearl.com</code> → <code>127.0.0.1:8081</code></li></ul>
 
     
@@ -5116,6 +5177,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>kwgroup.in</code> → <code>127.0.0.1:8080</code></li></ul>
 
     
@@ -5160,6 +5223,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       
       <dt>Certificate</dt><dd>42 days remaining</dd>
     </dl>
+
+    
 
     
 
@@ -5217,6 +5282,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       
       <dt>Certificate</dt><dd>58 days remaining</dd>
     </dl>
+
+    
 
     
 
@@ -5300,6 +5367,12 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <td data-label="Id"><code>iuR5O4JIeGsD7T23</code></td>
     </tr></tbody>
   </table></div>
+
+    <h2>What runs on this</h2><h3>Workflows it runs · 1 active of 2</h3>
+      <p>This is the n8n instance itself, not one automation inside it. It holds
+      3 workflows in total, of which 1 are demo
+      templates that were imported and never removed.</p>
+      
 
     
 
@@ -6231,6 +6304,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     </tr></tbody>
   </table></div>
 
+    <h2>What runs on this</h2><h3>Workflows it runs · 12 active of 30</h3>
+      <p>This is the n8n instance itself, not one automation inside it. It holds
+      135 workflows in total, of which 105 are demo
+      templates that were imported and never removed.</p>
+      <p>Projects with workflows running here:
+        <a href="#project=yamini" data-open="project:yamini">Yamini</a>.</p>
+
     <h2>Connected to</h2><h3>Reachable at</h3><ul><li><code>n8n.srv1340120.hstgr.cloud</code> → <code>127.0.0.1:5678</code></li></ul>
 
     
@@ -6287,6 +6367,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <dt>Env file</dt><dd>present, contents never read</dd>
       <dt>Certificate</dt><dd>80 days remaining</dd>
     </dl>
+
+    
 
     
 
@@ -6347,6 +6429,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
 
     
 
+    
+
     <h2>Connected to</h2><h3>Also on srv1340120</h3>
       <div class="chip-list"><a class="pill" href="#project=yamini" data-open="project:yamini">
         <span class="dot dot--partial"></span>Yamini</a><a class="pill" href="#project=leadq" data-open="project:leadq">
@@ -6395,6 +6479,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       
       <dt>Certificate</dt><dd>84 days remaining</dd>
     </dl>
+
+    
 
     
 
@@ -6452,6 +6538,8 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <dt>Env file</dt><dd>present, contents never read</dd>
       <dt>Certificate</dt><dd>39 days remaining</dd>
     </dl>
+
+    
 
     
 
@@ -6621,7 +6709,7 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <text class="flow-label" x="632" y="582">google-ads-mcp</text>
       <text class="flow-sublabel" x="632" y="599">:8842</text>
     </g></a>
-    <a href="#project=yamini" data-open="project:yamini"><g class="flow-node flow-node--live flow-node--node flow-node--linked flow-node--explained" data-node="n8n_n8n_1">
+    <a href="#project=n8n-srv1340120" data-open="project:n8n-srv1340120"><g class="flow-node flow-node--live flow-node--node flow-node--linked flow-node--explained" data-node="n8n_n8n_1">
       <title>A self-hosted workflow automation tool, running in Docker on srv1340120. Every integration in the estate is an n8n workflow rather than bespoke code, which is why the workflow list is the closest thing to an architecture diagram this estate has.</title>
       <rect class="flow-shape" x="548" y="644" width="168" height="58" rx="9" />
       <text class="flow-label" x="632" y="670">n8n-n8n-1</text>
@@ -6730,7 +6818,7 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <text class="flow-label" x="1216" y="278">google-ads-mcp</text>
       <text class="flow-sublabel" x="1216" y="295">:8842</text>
     </g></a>
-    <a href="#project=yamini" data-open="project:yamini"><g class="flow-node flow-node--live flow-node--node flow-node--linked flow-node--explained" data-node="n8n_n8n_1">
+    <a href="#project=n8n-srv1340120" data-open="project:n8n-srv1340120"><g class="flow-node flow-node--live flow-node--node flow-node--linked flow-node--explained" data-node="n8n_n8n_1">
       <title>A self-hosted workflow automation tool, running in Docker on srv1340120. Every integration in the estate is an n8n workflow rather than bespoke code, which is why the workflow list is the closest thing to an architecture diagram this estate has.</title>
       <rect class="flow-shape" x="1316" y="252" width="168" height="58" rx="9" />
       <text class="flow-label" x="1400" y="278">n8n-n8n-1</text>
@@ -7062,7 +7150,7 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       <h2 class="board-title"><span class="board-num">9</span>Containers</h2>
       <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Name</th><th>State</th><th>Image</th><th>Age</th></tr></thead>
-    <tbody><tr><td data-label="Name">traefik-iyg2-traefik-1</td><td data-label="State"><span class="dot dot--broken"></span> restarting</td><td data-label="Image"><code>traefik:latest</code></td><td data-label="Age"><span class="num">0d</span></td></tr><tr><td data-label="Name"><a href="#project=yamini" data-open="project:yamini">n8n-n8n-1</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>docker.n8n.io/n8nio/n8n</code></td><td data-label="Age"><span class="num">0d</span></td></tr><tr><td data-label="Name"><a href="#project=mcp-google-ads-leadq" data-open="project:mcp-google-ads-leadq">google-ads-mcp</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>google-ads-mcp-google-ads-mcp</code></td><td data-label="Age"><span class="num">31d</span></td></tr><tr><td data-label="Name"><a href="#project=skills-leadq" data-open="project:skills-leadq">kwskills-app</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>kwskills-app</code></td><td data-label="Age"><span class="num">37d</span></td></tr><tr><td data-label="Name"><a href="#project=mcp-cratio-leadq" data-open="project:mcp-cratio-leadq">cratio-mcp</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>cratio-mcp:latest</code></td><td data-label="Age"><span class="num">44d</span></td></tr><tr><td data-label="Name">kwskills-db</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>postgres:17-alpine</code></td><td data-label="Age"><span class="num">69d</span></td></tr><tr><td data-label="Name">n8n-traefik-1</td><td data-label="State"><span class="dot dot--idle"></span> created</td><td data-label="Image"><code>9004e1cd1e33</code></td><td data-label="Age"><span class="num">115d</span></td></tr><tr><td data-label="Name">n8n-kw-dashboard-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>python:3.11-slim</code></td><td data-label="Age"><span class="num">115d</span></td></tr></tbody>
+    <tbody><tr><td data-label="Name">traefik-iyg2-traefik-1</td><td data-label="State"><span class="dot dot--broken"></span> restarting</td><td data-label="Image"><code>traefik:latest</code></td><td data-label="Age"><span class="num">0d</span></td></tr><tr><td data-label="Name"><a href="#project=n8n-srv1340120" data-open="project:n8n-srv1340120">n8n-n8n-1</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>docker.n8n.io/n8nio/n8n</code></td><td data-label="Age"><span class="num">0d</span></td></tr><tr><td data-label="Name"><a href="#project=mcp-google-ads-leadq" data-open="project:mcp-google-ads-leadq">google-ads-mcp</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>google-ads-mcp-google-ads-mcp</code></td><td data-label="Age"><span class="num">31d</span></td></tr><tr><td data-label="Name"><a href="#project=skills-leadq" data-open="project:skills-leadq">kwskills-app</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>kwskills-app</code></td><td data-label="Age"><span class="num">37d</span></td></tr><tr><td data-label="Name"><a href="#project=mcp-cratio-leadq" data-open="project:mcp-cratio-leadq">cratio-mcp</a></td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>cratio-mcp:latest</code></td><td data-label="Age"><span class="num">44d</span></td></tr><tr><td data-label="Name">kwskills-db</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>postgres:17-alpine</code></td><td data-label="Age"><span class="num">69d</span></td></tr><tr><td data-label="Name">n8n-traefik-1</td><td data-label="State"><span class="dot dot--idle"></span> created</td><td data-label="Image"><code>9004e1cd1e33</code></td><td data-label="Age"><span class="num">115d</span></td></tr><tr><td data-label="Name">n8n-kw-dashboard-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>python:3.11-slim</code></td><td data-label="Age"><span class="num">115d</span></td></tr></tbody>
   </table></div></div>
     </section>
 

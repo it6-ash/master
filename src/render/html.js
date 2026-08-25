@@ -393,8 +393,10 @@ function renderServerPanel(id, server, { projects, workflows, issues, glossary =
   // can travel rather than a picture of one.
   const topoLinks = {};
   for (const node of topo?.nodes ?? []) {
-    const owner = projects.find((pr) => pr.server === id
-      && (pr.services ?? []).some((svc) => svc.replace(/[^A-Za-z0-9]/g, '_') === node.id));
+    const backing = (server.services ?? []).concat(server.containers ?? [])
+      .map((x) => x.name)
+      .find((name) => name.replace(/[^A-Za-z0-9]/g, '_') === node.id);
+    const owner = projectForService(backing, id, projects);
     if (owner) topoLinks[node.id] = { href: `#project=${owner.id}`, open: `project:${owner.id}` };
   }
   const topoHtml = topo
@@ -578,9 +580,30 @@ function renderServerPanel(id, server, { projects, workflows, issues, glossary =
   </section>`;
 }
 
+/**
+ * A one-word note for a project that is really a platform, so the grid does
+ * not present n8n as just another app.
+ */
+function platformNote(project, { servers, workflows }) {
+  const server = project.server ? servers[project.server] : null;
+  if (!server) return null;
+  const own = new Set([project.discovered?.backend, ...(project.services ?? [])].filter(Boolean));
+
+  if (server.n8n?.container && own.has(server.n8n.container)) {
+    const n = Object.values(workflows).filter((w) => w.server === project.server).length;
+    return `hosts ${n} workflows`;
+  }
+  if (own.has('nginx')) return `answers for ${(server.vhosts ?? []).length} hostnames`;
+  if (own.has('mongod')) {
+    const colls = Object.values(server.databases ?? {}).reduce((a, db) => a + (db.collections?.length ?? 0), 0);
+    return colls ? `holds ${colls} collections` : null;
+  }
+  return null;
+}
+
 /* ------------------------------------------------------ project cards */
 
-function renderProjectCard(project) {
+function renderProjectCard(project, { servers = {}, workflows = {} } = {}) {
   const stats = (project.stats ?? []).slice(0, 3).map((s) => `<div>
     <div class="stat-value${s.state ? ` stat-value--${s.state}` : ''}">${escapeHtml(String(s.value))}</div>
     <div class="stat-label">${escapeHtml(s.label)}</div>
@@ -601,10 +624,76 @@ function renderProjectCard(project) {
     ${project.summary ? `<div class="project-summary">${escapeHtml(project.summary.slice(0, 120))}${project.summary.length > 120 ? '…' : ''}</div>` : ''}
     ${stats ? `<div class="stats">${stats}</div>` : ''}
     <div class="tags">
+      ${(() => { const note = platformNote(project, { servers, workflows }); return note ? `<span class="platform-flag">${escapeHtml(note)}</span>` : ''; })()}
       ${project.origin === 'documented' ? '<span class="doc-flag">documented</span>' : ''}
       ${(project.tags ?? []).slice(0, 4).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
     </div>
   </button>`;
+}
+
+/**
+ * What a platform hosts. Some projects are not applications but the things
+ * applications run inside: n8n holds workflows, mongod holds collections,
+ * nginx answers for hostnames. A page for one of those is close to useless
+ * without an inventory of its tenants.
+ */
+function hostedBy(project, { servers, workflows, allProjects }) {
+  const server = project.server ? servers[project.server] : null;
+  if (!server) return '';
+  const own = new Set([project.discovered?.backend, ...(project.services ?? [])].filter(Boolean));
+  const blocks = [];
+
+  // n8n hosts workflows
+  if (server.n8n?.container && own.has(server.n8n.container)) {
+    const mine = Object.entries(workflows).filter(([, w]) => w.server === project.server);
+    const real = mine.filter(([, w]) => !w.noise);
+    const active = real.filter(([, w]) => w.active);
+    const tenants = allProjects.filter((pr) => pr.id !== project.id
+      && (pr.workflows ?? []).some((wid) => workflows[wid]?.server === project.server));
+
+    blocks.push(`<h3>Workflows it runs · ${active.length} active of ${real.length}</h3>
+      <p>This is the n8n instance itself, not one automation inside it. It holds
+      ${mine.length} workflows in total, of which ${mine.length - real.length} are demo
+      templates that were imported and never removed.</p>
+      ${tenants.length ? `<p>Projects with workflows running here:
+        ${tenants.map((t) => linkProject(t.id, t.name)).join(', ')}.</p>` : ''}`);
+  }
+
+  // a database engine hosts collections
+  if (own.has('mongod') || own.has('postgres') || own.has('postgresql')) {
+    const dbs = Object.entries(server.databases ?? {});
+    if (dbs.length) {
+      blocks.push(`<h3>Databases it holds</h3><div class="table-wrap"><table>
+        <thead><tr><th>Database</th><th>Collection</th><th>Documents</th></tr></thead>
+        <tbody>${dbs.flatMap(([name, db]) => (db.collections ?? []).map((c) => `<tr>
+          <td data-label="Database">${escapeHtml(name)}</td>
+          <td data-label="Collection"><code>${escapeHtml(c.name)}</code></td>
+          <td data-label="Documents" class="num">${fmt(c.docs ?? 0)}</td>
+        </tr>`)).join('')}</tbody>
+      </table></div>`);
+    }
+  }
+
+  // a reverse proxy answers for hostnames
+  if (own.has('nginx')) {
+    const vhosts = (server.vhosts ?? []).filter((v) => v.source === 'nginx');
+    blocks.push(`<h3>Hostnames it answers for · ${vhosts.length}</h3><div class="table-wrap"><table>
+      <thead><tr><th>Domain</th><th>Goes to</th><th>Project</th></tr></thead>
+      <tbody>${vhosts.map((v) => {
+    const port = /:(\d{2,5})\b/.exec(v.proxyTo ?? '');
+    const backing = port ? (server.services ?? []).concat(server.containers ?? [])
+      .find((x) => x.port === Number(port[1]) || new RegExp(`:${port[1]}->`).test(x.ports ?? '')) : null;
+    const owner = backing ? projectForService(backing.name, project.server, allProjects) : null;
+    return `<tr>
+          <td data-label="Domain">${escapeHtml(v.domain)}</td>
+          <td data-label="Goes to"><code>${escapeHtml(v.proxyTo ?? v.root ?? '')}</code></td>
+          <td data-label="Project">${owner ? linkProject(owner.id, owner.name) : '<span class="faint">—</span>'}</td>
+        </tr>`;
+  }).join('')}</tbody>
+    </table></div>`);
+  }
+
+  return blocks.length ? `<h2>What runs on this</h2>${blocks.join('')}` : '';
 }
 
 /**
@@ -827,6 +916,8 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects, 
 
     ${wfRows ? `<h2>Workflows · ${liveCount} active of ${owned.length}</h2>${wfRows}` : ''}
 
+    ${hostedBy(project, { servers, workflows, allProjects })}
+
     ${connections ? `<h2>Connected to</h2>${connections}` : ''}
 
     ${(() => {
@@ -875,10 +966,22 @@ const linkProject = (id, label) => `<a href="#project=${escapeHtml(id)}" data-op
 const linkServer = (id, label) => `<a href="#server=${escapeHtml(id)}" data-open="server:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
 const linkWorkflow = (id, label) => `<a href="#workflow=${escapeHtml(id)}" data-open="workflow:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
 
-/** Which project, if any, owns a given service or container name. */
+/**
+ * Which project a service or container name belongs to.
+ *
+ * Priority matters. A platform is listed as a service by everything that runs
+ * on it: Yamini declares `n8n-n8n-1` because it runs there, but it does not
+ * own n8n — n8n hosts 135 workflows of which Yamini is one. So a project whose
+ * discovered BACKEND is this service wins over one that merely mentions it,
+ * and clicking n8n in a diagram lands on n8n rather than on its best-known
+ * tenant.
+ */
 function projectForService(name, serverId, projects) {
   if (!name) return null;
-  return projects.find((p) => p.server === serverId && (p.services ?? []).includes(name)) ?? null;
+  const onServer = projects.filter((p) => p.server === serverId);
+  return onServer.find((p) => p.discovered?.backend === name)
+    ?? onServer.find((p) => (p.services ?? []).includes(name))
+    ?? null;
 }
 
 /** Which project owns a workflow id. */
@@ -1190,7 +1293,7 @@ ${css}
     <button class="chip" type="button" data-filter="broken" aria-pressed="false">Not healthy</button>
   </div>
   <div class="projects" id="projects">
-    ${projects.map(renderProjectCard).join('')}
+    ${projects.map((p) => renderProjectCard(p, { servers, workflows })).join('')}
   </div>
 
   ${section('Issues', 'Findings written by hand plus findings detected automatically on every collection. A hand-written finding is re-tested against the newest data, so one that has since been fixed shows struck through rather than being repeated as fact.', `${openIssues.filter((i) => i.claimStatus !== 'reconciled').length} open${reconciled.length ? ` · ${reconciled.length} reconciled` : ''}`)}

@@ -473,3 +473,48 @@ test('Enter opens the top result, Escape clears the search', async ({ page }) =>
   await expect(page.locator('#search')).toHaveValue('');
   await expect(page.locator('#dashboard')).toBeVisible();
 });
+
+/* ------------------------------------------------------------ platforms */
+
+test('clicking n8n in the topology opens n8n, not its best-known tenant', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#server=srv1340120`);
+
+  const node = page.locator('[data-panel="server:srv1340120"] .flow-horizontal a')
+    .filter({ has: page.locator('text=n8n-n8n-1') }).first();
+  await expect(node).toHaveCount(1);
+
+  const href = await node.getAttribute('href');
+  expect(href).not.toBe('#project=yamini');
+  expect(href).toBe('#project=n8n-srv1340120');
+});
+
+test('the n8n page lists every workflow it hosts, Yamini being one of them', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=n8n-srv1340120`);
+
+  const panel = page.locator('[data-panel="project:n8n-srv1340120"]');
+  await expect(panel.locator('h2', { hasText: 'What runs on this' })).toHaveCount(1);
+  await expect(panel.locator('h3', { hasText: 'Workflows it runs' })).toHaveCount(1);
+
+  // It hosts far more than any single project's declared list.
+  const rows = panel.locator('[data-open^="workflow:"]');
+  expect(await rows.count()).toBeGreaterThan(100);
+
+  // And it names Yamini as a tenant rather than being Yamini.
+  await expect(panel.locator('[data-open="project:yamini"]').first()).toBeVisible();
+});
+
+test('a platform is labelled as one in the project grid', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  const card = page.locator('[data-open="project:n8n-srv1340120"]');
+  await expect(card.locator('.platform-flag')).toContainText(/hosts \d+ workflows/);
+});
+
+test('nginx answers for hostnames and links each one to its project', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=n8n-srv1340120`);
+  // The n8n project is not nginx, so it must not claim nginx's hostnames.
+  const panel = page.locator('[data-panel="project:n8n-srv1340120"]');
+  await expect(panel.locator('h3', { hasText: 'Hostnames it answers for' })).toHaveCount(0);
+});
