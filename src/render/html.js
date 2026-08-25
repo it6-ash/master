@@ -35,6 +35,69 @@ const EVENT_LABELS = {
   'db.growth': 'collection grew', 'server.stale': 'data stale',
 };
 
+/* ----------------------------------------------------------- search */
+
+/**
+ * A search index emitted with the page.
+ *
+ * The previous implementation hid non-matching cards in place, which left every
+ * heading, tile and section note behind — so from the top of the page a search
+ * looked like it had done nothing at all. Matching against a real index and
+ * showing a real result list is both clearer and faster.
+ */
+function buildSearchIndex({ servers, projects, workflows, issues }) {
+  const entries = [];
+
+  for (const [id, server] of Object.entries(servers)) {
+    entries.push({
+      kind: 'server',
+      open: `server:${id}`,
+      label: id,
+      sub: [server.role, server.ip].filter(Boolean).join(' · '),
+      text: [id, server.role, server.ip, server.state?.os].filter(Boolean).join(' ').toLowerCase(),
+    });
+  }
+
+  for (const project of projects) {
+    entries.push({
+      kind: 'project',
+      open: `project:${project.id}`,
+      label: project.name,
+      sub: [project.server, project.url].filter(Boolean).join(' · '),
+      text: [project.id, project.name, project.summary, project.url, project.server,
+        ...(project.tags ?? []), ...(project.services ?? []),
+        ...(project.discovered?.hostnames ?? []),
+      ].filter(Boolean).join(' ').toLowerCase(),
+    });
+  }
+
+  for (const [id, wf] of Object.entries(workflows)) {
+    entries.push({
+      kind: 'workflow',
+      open: `workflow:${id}`,
+      label: wf.name,
+      sub: [wf.group, wf.server, wf.active ? 'active' : 'off'].filter(Boolean).join(' · '),
+      state: wf.active ? 'live' : 'idle',
+      noise: wf.noise === true,
+      text: [id, wf.name, wf.group, wf.server].filter(Boolean).join(' ').toLowerCase(),
+    });
+  }
+
+  for (const issue of issues) {
+    if (issue.resolved) continue;
+    entries.push({
+      kind: 'issue',
+      open: issue.project ? `project:${issue.project}` : issue.server ? `server:${issue.server}` : null,
+      label: issue.title,
+      sub: [issue.severity, issue.server, issue.source].filter(Boolean).join(' · '),
+      state: issue.severity === 'critical' ? 'broken' : issue.severity === 'high' ? 'partial' : null,
+      text: [issue.id, issue.title, issue.body, issue.server, issue.project].filter(Boolean).join(' ').toLowerCase(),
+    });
+  }
+
+  return entries;
+}
+
 /* -------------------------------------------------------- orientation */
 
 /**
@@ -1087,7 +1150,15 @@ ${css}
   </div>
 </header>
 
-<main class="wrap">
+<div class="results" id="results" hidden>
+  <div class="results-head">
+    <span id="results-count"></span>
+    <button class="chip" id="results-clear" type="button">Clear</button>
+  </div>
+  <div id="results-list"></div>
+</div>
+
+<main class="wrap" id="dashboard">
   ${renderIntro({ servers, projects, workflows, builtAt })}
   ${renderTiles({ servers, projects, workflows, issues, history })}
 
@@ -1148,6 +1219,10 @@ ${css}
   </div>
 </section>
 
+<script type="application/json" id="search-index">${
+  JSON.stringify(buildSearchIndex({ servers, projects, workflows, issues }))
+    .replace(/</g, '\\u003c')
+}</script>
 <script>
 ${clientScript()}
 </script>
@@ -1236,6 +1311,12 @@ function clientScript() {
       subEl.textContent = '';
     }
 
+    if (body.classList.contains('searching')) {
+      search.value = '';
+      results.hidden = true;
+      dashboard.hidden = false;
+      body.classList.remove('searching');
+    }
     body.classList.add('detail-open');
     drawer.setAttribute('aria-hidden', 'false');
     window.scrollTo(0, 0);
@@ -1302,24 +1383,96 @@ function clientScript() {
   fromHash(false);
 
   // --- search ---------------------------------------------------------
-  var searchables = [].slice.call(document.querySelectorAll('.searchable'));
+  var index = [];
+  try {
+    index = JSON.parse(document.getElementById('search-index').textContent) || [];
+  } catch (e) { index = []; }
+
+  var dashboard = document.getElementById('dashboard');
+  var results = document.getElementById('results');
+  var resultsList = document.getElementById('results-list');
+  var resultsCount = document.getElementById('results-count');
+
+  var KIND_ORDER = { server: 0, project: 1, issue: 2, workflow: 3 };
+
+  function score(entry, q) {
+    var label = entry.label.toLowerCase();
+    if (label === q) return 0;
+    if (label.indexOf(q) === 0) return 1;
+    if (label.indexOf(q) !== -1) return 2;
+    if (entry.text.indexOf(q) !== -1) return 3;
+    return -1;
+  }
+
+  function render(q) {
+    var hits = [];
+    for (var i = 0; i < index.length; i++) {
+      var rank = score(index[i], q);
+      if (rank === -1) continue;
+      // A demo template nobody wrote should never outrank a real thing.
+      hits.push({ entry: index[i], rank: rank + (index[i].noise ? 4 : 0) });
+    }
+
+    hits.sort(function (a, b) {
+      return a.rank - b.rank
+        || (KIND_ORDER[a.entry.kind] - KIND_ORDER[b.entry.kind])
+        || a.entry.label.localeCompare(b.entry.label);
+    });
+
+    resultsCount.textContent = hits.length
+      ? hits.length + (hits.length === 1 ? ' match for ' : ' matches for ') + '"' + q + '"'
+      : 'Nothing matches "' + q + '"';
+
+    if (!hits.length) {
+      resultsList.innerHTML = '<p class="empty">No server, project, workflow or issue mentions that. '
+        + 'Search covers names, hostnames, tags, ids and issue text.</p>';
+      return;
+    }
+
+    var html = '';
+    for (var h = 0; h < Math.min(hits.length, 60); h++) {
+      var e = hits[h].entry;
+      html += '<' + (e.open ? 'a href="#' + e.open.replace(':', '=') + '" data-open="' + e.open + '"' : 'div')
+        + ' class="result">'
+        + '<span class="result-kind result-kind--' + e.kind + '">' + e.kind + '</span>'
+        + (e.state ? '<span class="dot dot--' + e.state + '"></span>' : '<span class="dot" style="opacity:0"></span>')
+        + '<span class="result-label">' + e.label.replace(/[<>&]/g, '') + '</span>'
+        + '<span class="result-sub">' + (e.sub || '').replace(/[<>&]/g, '') + '</span>'
+        + '</' + (e.open ? 'a' : 'div') + '>';
+    }
+    if (hits.length > 60) html += '<p class="empty">' + (hits.length - 60) + ' more not shown. Narrow the search.</p>';
+    resultsList.innerHTML = html;
+  }
+
   function applySearch() {
     var q = search.value.trim().toLowerCase();
-    body.classList.toggle('searching', q.length > 0);
-    for (var i = 0; i < searchables.length; i++) {
-      var el = searchables[i];
-      if (!q) { el.classList.remove('no-match'); continue; }
-      var hay = el.getAttribute('data-search') || el.textContent.toLowerCase();
-      el.classList.toggle('no-match', hay.indexOf(q) === -1);
+    if (!q) {
+      results.hidden = true;
+      dashboard.hidden = false;
+      body.classList.remove('searching');
+      return;
     }
-    // Open any workflow group that now contains a match.
-    var groups = document.querySelectorAll('.wf-group');
-    for (var g = 0; g < groups.length; g++) {
-      if (!q) continue;
-      groups[g].open = !!groups[g].querySelector('.wf.searchable:not(.no-match)');
-    }
+    // Searching replaces the dashboard rather than filtering inside it, so it
+    // is never ambiguous whether anything happened.
+    body.classList.add('searching');
+    dashboard.hidden = true;
+    results.hidden = false;
+    if (body.classList.contains('detail-open')) close();
+    render(q);
   }
+
   search.addEventListener('input', applySearch);
+  document.getElementById('results-clear').addEventListener('click', function () {
+    search.value = '';
+    applySearch();
+    search.focus();
+  });
+
+  search.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var first = resultsList.querySelector('a.result');
+    if (first) { e.preventDefault(); first.click(); }
+  });
 
   // --- project filters ------------------------------------------------
   var filterRow = document.getElementById('project-filters');
@@ -1350,7 +1503,8 @@ function clientScript() {
     if (e.key === '/' && !typing) { e.preventDefault(); search.focus(); search.select(); return; }
 
     if (e.key === 'Escape') {
-      if (document.activeElement === search) { search.value = ''; applySearch(); search.blur(); return; }
+      if (document.activeElement === search && search.value) { search.value = ''; applySearch(); return; }
+      if (document.activeElement === search) { search.blur(); return; }
       if (body.classList.contains('detail-open')) close();
       return;
     }

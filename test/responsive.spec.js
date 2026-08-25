@@ -403,3 +403,73 @@ test('narrow viewports stack the same content in one column', async ({ page }) =
   const note = await head.locator('.section-note').boundingBox();
   expect(note.y).toBeGreaterThan(h2.y + h2.height - 5);
 });
+
+/* --------------------------------------------------------------- search */
+
+test('searching shows a result list instead of silently filtering', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.locator('#search').fill('yamini');
+
+  await expect(page.locator('#results')).toBeVisible();
+  await expect(page.locator('#dashboard')).toBeHidden();
+
+  const count = await page.locator('#results-count').textContent();
+  expect(count).toMatch(/matches? for "yamini"/);
+
+  const rows = page.locator('.result');
+  expect(await rows.count()).toBeGreaterThan(0);
+  // The project itself should outrank a workflow that merely mentions it.
+  await expect(rows.first().locator('.result-label')).toHaveText('Yamini');
+});
+
+test('a result opens the thing it names, and clears the search', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.locator('#search').fill('yamini');
+  await page.locator('a.result').first().click();
+
+  await expect(page.locator('#detail-title')).toHaveText('Yamini');
+  await expect(page.locator('#search')).toHaveValue('');
+  await expect(page.locator('#results')).toBeHidden();
+});
+
+test('search reaches servers, workflows and issues, not just projects', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+
+  await page.locator('#search').fill('srv1870078');
+  await expect(page.locator('.result-kind--server').first()).toBeVisible();
+
+  await page.locator('#search').fill('broadcast');
+  await expect(page.locator('.result-kind--workflow').first()).toBeVisible();
+
+  await page.locator('#search').fill('cratio');
+  const kinds = await page.locator('.result-kind').allTextContents();
+  expect(kinds).toContain('issue');
+});
+
+test('search finds a project by a hostname that is not in its name', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.locator('#search').fill('hrportal');
+  await expect(page.locator('.result').first()).toBeVisible();
+  const first = await page.locator('.result-label').first().textContent();
+  expect(first.toLowerCase()).toContain('hrportal');
+});
+
+test('a query that matches nothing says so plainly', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.locator('#search').fill('zzzznotathing');
+  await expect(page.locator('#results-count')).toHaveText(/Nothing matches/);
+  await expect(page.locator('.result')).toHaveCount(0);
+});
+
+test('Enter opens the top result, Escape clears the search', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.locator('#search').fill('yamini');
+  await page.locator('#search').press('Enter');
+  await expect(page.locator('#detail-title')).toHaveText('Yamini');
+
+  await page.locator('#detail-close').click();
+  await page.locator('#search').fill('leadq');
+  await page.locator('#search').press('Escape');
+  await expect(page.locator('#search')).toHaveValue('');
+  await expect(page.locator('#dashboard')).toBeVisible();
+});

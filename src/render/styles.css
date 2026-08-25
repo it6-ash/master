@@ -1134,6 +1134,63 @@ svg.flow-horizontal { display: block; }
 .flow-edge-label { font: 10px var(--mono); fill: var(--ink-3); text-anchor: middle; }
 .flow-edge-label--broken { fill: var(--critical); }
 
+/* ------------------------------------------------------------ results */
+
+.results {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--gap-lg) var(--pad-page) calc(96px + var(--sa-bottom));
+}
+.results[hidden] { display: none; }
+
+.results-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--gap);
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+}
+
+.result {
+  display: grid;
+  grid-template-columns: 74px 8px minmax(0, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-inner);
+  background: linear-gradient(160deg, var(--surface-start), var(--surface-end));
+  margin-bottom: 6px;
+  color: inherit;
+  text-decoration: none;
+  min-height: var(--touch);
+}
+a.result:hover { border-color: var(--border-hover); text-decoration: none; }
+a.result:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.result-kind {
+  font: 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  text-align: center;
+}
+.result-kind--server { color: var(--s2); }
+.result-kind--project { color: var(--s1); }
+.result-kind--workflow { color: var(--s5); }
+.result-kind--issue { color: var(--critical); }
+
+.result-label { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.result-sub { font: var(--fs-meta) var(--mono); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .result { grid-template-columns: 66px 8px minmax(0, 1fr); }
+  .result-sub { grid-column: 3; font-size: 10.5px; }
+}
+
 /* --------------------------------------------------------- filtering */
 
 body.searching .no-match { display: none !important; }
