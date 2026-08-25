@@ -257,3 +257,27 @@ test('the added detail does not reintroduce overflow', async ({ page }) => {
     expect((await overflow(page)).doc, `${width}px with card detail`).toBe(0);
   }
 });
+
+test('template imports get no page, so nothing links to one', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await load(page, '', 'dark');
+
+  // 106 of 138 workflows are n8n demo templates. Rendering a page for each was
+  // a third of the output; they are listed but not linked.
+  const links = await page.locator('[data-open^="workflow:"]').count();
+  const panels = await page.locator('[data-panel^="workflow:"]').count();
+  expect(panels).toBeLessThan(40);
+  expect(panels).toBeGreaterThan(20);
+
+  // Every link must resolve to a panel that exists.
+  const dangling = await page.evaluate(() => {
+    const out = [];
+    for (const a of document.querySelectorAll('[data-open^="workflow:"]')) {
+      const key = a.getAttribute('data-open');
+      if (!document.querySelector(`[data-panel="${CSS.escape(key)}"]`)) out.push(key);
+    }
+    return out;
+  });
+  expect(dangling, 'links pointing at a page that was not rendered').toEqual([]);
+  expect(links).toBeGreaterThan(0);
+});

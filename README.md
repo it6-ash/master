@@ -17,10 +17,9 @@ Stage order and checkpoints follow the build brief.
 | 4 | `diff.js` + auto-issue rules | **done** |
 | 5 | Flow DSL auto-layout + animated SVG renderer | **done** |
 | 6 | Full HTML build | **done** |
-| 7 | Watch mode, `new-project`, README | watch and README done, `new-project` outstanding |
+| 7 | Watch mode, `new-project`, README | **done** |
 
-Everything is live except `npm run new-project`, which still exits 2. Beyond the
-brief: `sync` (collect from all three servers over SSH), `serve`, a dual theme,
+Every command in the brief is live. Beyond the brief: `sync` (collect from all three servers over SSH), `serve`, a dual theme,
 a Playwright responsive suite, and a glossary that explains what each thing is
 and why it is in the picture.
 

@@ -940,7 +940,7 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects, 
   const wfRows = owned.length ? `<div class="table-wrap"><table>
     <thead><tr><th>Workflow</th><th>State</th><th>Group</th><th>Server</th><th>First seen</th><th>Id</th></tr></thead>
     <tbody>${owned.map(({ id, wf }) => (wf ? `<tr>
-      <td data-label="Workflow">${linkWorkflow(id, wf.name)}</td>
+      <td data-label="Workflow">${linkWorkflow(id, wf.name, wf.noise)}</td>
       <td data-label="State"><span class="dot dot--${wf.active ? 'live' : 'idle'}"></span> ${wf.active ? 'active' : 'off'}</td>
       <td data-label="Group">${escapeHtml(wf.group ?? '')}</td>
       <td data-label="Server">${wf.server ? `<a href="#server=${escapeHtml(wf.server)}" data-open="server:${escapeHtml(wf.server)}">${escapeHtml(wf.server)}</a>` : '—'}</td>
@@ -1073,7 +1073,10 @@ function explain(label, glossary, className = 'tag') {
  */
 const linkProject = (id, label) => `<a href="#project=${escapeHtml(id)}" data-open="project:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
 const linkServer = (id, label) => `<a href="#server=${escapeHtml(id)}" data-open="server:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
-const linkWorkflow = (id, label) => `<a href="#workflow=${escapeHtml(id)}" data-open="workflow:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
+// A template import gets no page, so it is plain text rather than a dead link.
+const linkWorkflow = (id, label, noise) => (noise
+  ? escapeHtml(label ?? id)
+  : `<a href="#workflow=${escapeHtml(id)}" data-open="workflow:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`);
 
 /**
  * Which project a service or container name belongs to.
@@ -1181,7 +1184,7 @@ function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
           <tbody>${siblings.slice(0, 12).map(([wid, w]) => {
     const o = projectForWorkflow(wid, projects);
     return `<tr>
-              <td data-label="Workflow">${linkWorkflow(wid, w.name)}</td>
+              <td data-label="Workflow">${linkWorkflow(wid, w.name, w.noise)}</td>
               <td data-label="State"><span class="dot dot--${w.active ? 'live' : 'idle'}"></span> ${w.active ? 'active' : 'off'}</td>
               <td data-label="Project">${o ? linkProject(o.id, o.name) : '<span class="faint">unclaimed</span>'}</td>
             </tr>`;
@@ -1245,7 +1248,7 @@ function renderTree(servers, projects, workflows) {
     .sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
     .map((w) => `<div class="tree-leaf">
               <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
-              <span class="tree-name">${linkWorkflow(w.id, w.name)}</span>
+              <span class="tree-name">${linkWorkflow(w.id, w.name, w.noise)}</span>
               <span class="tree-meta">${escapeHtml(w.group ?? '')}</span>
             </div>`).join('')}</div>
         </details>` : ''}
@@ -1288,7 +1291,7 @@ function renderWorkflows(workflows, projects) {
       const own = owner.get(w.id);
       return `<div class="wf${w.noise ? ' wf--noise' : ''} searchable" data-search="${escapeHtml(`${w.name} ${w.id} ${group} ${w.server ?? ''}`.toLowerCase())}">
         <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
-        <span class="wf-name">${linkWorkflow(w.id, w.name)}</span>
+        <span class="wf-name">${linkWorkflow(w.id, w.name, w.noise)}</span>
         ${own ? `<span class="wf-id">${linkProject(own.id, own.name)}</span>` : ''}
         ${w.server ? `<span class="wf-id">${escapeHtml(w.server)}</span>` : ''}
         <span class="wf-id">${escapeHtml(w.id)}</span>
@@ -1427,7 +1430,9 @@ ${css}
   <div class="detail-body" id="detail-body">
     ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects, glossary })).join('')}
     ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues, glossary })).join('')}
-    ${Object.entries(workflows).map(([id, wf]) => renderWorkflowPanel(id, wf, { projects, workflows, servers, issues })).join('')}
+    ${Object.entries(workflows)
+    .filter(([, wf]) => !wf.noise)
+    .map(([id, wf]) => renderWorkflowPanel(id, wf, { projects, workflows, servers, issues })).join('')}
   </div>
 </section>
 

@@ -261,8 +261,6 @@ function main() {
 
   const out = abs('dist', 'index.html');
   writeTextIfChanged(out, `<!doctype html>\n${html}\n`);
-  // A copy the theme test can load without the dev server running.
-  writeTextIfChanged(abs('dist', '.nojekyll'), '');
 
   const bytes = Buffer.byteLength(html, 'utf8');
   process.stdout.write(

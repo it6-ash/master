@@ -497,9 +497,12 @@ test('the n8n page lists every workflow it hosts, Yamini being one of them', asy
   await expect(panel.locator('h2', { hasText: 'What runs on this' })).toHaveCount(1);
   await expect(panel.locator('h3', { hasText: 'Workflows it runs' })).toHaveCount(1);
 
-  // It hosts far more than any single project's declared list.
-  const rows = panel.locator('[data-open^="workflow:"]');
+  // It hosts far more than any single project's declared list. Counted as
+  // table rows, not links: template imports get no page and so no link.
+  const rows = panel.locator('td[data-label="Workflow"]');
   expect(await rows.count()).toBeGreaterThan(100);
+  // The ones somebody actually built are still reachable.
+  expect(await panel.locator('[data-open^="workflow:"]').count()).toBeGreaterThan(10);
 
   // And it names Yamini as a tenant rather than being Yamini.
   await expect(panel.locator('[data-open="project:yamini"]').first()).toBeVisible();
