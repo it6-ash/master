@@ -55,7 +55,13 @@ NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 [ "$NODE_MAJOR" -ge 20 ] || die "Node $NODE_MAJOR is too old; this needs 20+."
 ok "node $(node -v), nginx, git"
 
-command -v htpasswd >/dev/null || { warn "htpasswd missing, installing apache2-utils"; apt-get install -y -qq apache2-utils; }
+# Only MODE=public needs it. Don't install a package on a production box that
+# the chosen path will never call. An `if`, not `[ ] && [ ] && ...`, because a
+# false test at the end of a && chain exits the script under `set -e`.
+if [ "$MODE" = "public" ] && ! command -v htpasswd >/dev/null; then
+  warn "htpasswd missing, installing apache2-utils"
+  apt-get install -y -qq apache2-utils
+fi
 
 # ------------------------------------------------------------- the checkout
 
