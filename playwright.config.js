@@ -11,7 +11,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  reporter: process.env.CI ? 'github' : [['list']],
+  // On CI, annotations alone tell you which test failed but not what the page
+  // looked like. The HTML report carries the screenshot and the DOM snapshot,
+  // and the workflow uploads it — a red run should be diagnosable without
+  // reproducing it.
+  reporter: process.env.CI
+    ? [['github'], ['html', { open: 'never', outputFolder: 'playwright-report' }]]
+    : [['list']],
   use: {
     ...devices['Desktop Chrome'],
     screenshot: 'only-on-failure',
