@@ -31,13 +31,20 @@ IOSchedulingClass=idle
 # the collector needs root on the far end. Narrow what root means here.
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=strict
 ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictSUIDSGID=true
 RestrictRealtime=true
 LockPersonality=true
-# The repo, because the build writes into it. /root/.ssh, because
-# StrictHostKeyChecking=accept-new appends to known_hosts on a first contact.
-ReadWritePaths=/opt/kw-estate /root/.ssh
+
+# `full`, not `strict`. Under strict, /var is read-only, and `nginx -T` cannot
+# open its error log — it exits non-zero, the collector's vhosts subsection
+# comes back empty, and the next build reports every hostname on this box as
+# "hostname gone". Hardening that silently corrupts the data it collects is
+# worse than slightly less hardening. `full` still keeps /usr, /boot and /etc
+# read-only, which is what actually matters for a tool that only reads.
+ProtectSystem=full
+# The repo, because the build writes into it. /root, because the collector
+# writes its dump there and ssh appends to known_hosts on a first contact.
+ReadWritePaths=/opt/kw-estate /root

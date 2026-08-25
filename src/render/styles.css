@@ -472,6 +472,20 @@ h2.section .count {
 
 /* ------------------------------------------------------- what changed */
 
+.changes-wrap > summary {
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: var(--fs-meta);
+  list-style: none;
+  padding: 6px 0 10px;
+  user-select: none;
+}
+.changes-wrap > summary::-webkit-details-marker { display: none; }
+.changes-wrap > summary::before { content: "\25B8\00a0"; }
+.changes-wrap[open] > summary::before { content: "\25BE\00a0"; }
+.changes-wrap > summary:hover { color: var(--ink); }
+.changes-wrap > summary:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
+
 .changes { overflow: hidden; }
 .change {
   display: grid;
@@ -1072,7 +1086,14 @@ th {
   padding: 1px 5px;
 }
 
+/* Five columns will never sit in a 380px grid track, so it takes the full row.
+   The charts beside it are a fixed-aspect SVG; this is a table, and tables want
+   width more than they want to be a neighbour. */
+#renewals { grid-column: 1 / -1; }
 .renewals .table-wrap { margin-top: 12px; }
+.renewal-table { table-layout: auto; }
+.renewal-table td, .renewal-table th { vertical-align: top; }
+.renewal-table td:not(.num) { white-space: normal; }
 .renewal-table th[scope="row"] { text-transform: none; font-size: var(--fs-meta); color: var(--ink); font-weight: 600; }
 .renewal-kind {
   color: var(--ink-3);

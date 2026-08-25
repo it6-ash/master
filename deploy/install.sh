@@ -32,9 +32,14 @@ KEY="${KEY:-/root/.ssh/id_ed25519}"
 #          needs an ingress rule and an Access policy to be worth anything.
 MODE="${MODE:-public}"
 
-# Paths git may own on this box are code only. data/ and dist/ are live state
-# here and must never be merged over.
-CODE_PATHS=(src schema content deploy test kw-collect.sh package.json playwright.config.js README.md)
+# Paths git may own on this box. Code, plus the three files under data/ that are
+# WRITTEN BY HAND rather than by ingest — prices, glossary and the analysis
+# model. Without them the box keeps whatever it cloned on day one and every
+# later edit to costs.json stays on the laptop, which is how the renewals panel
+# ended up saying "nothing is priced yet" on a machine whose repo had prices.
+# Everything else under data/ is live state here and must never be merged over.
+CODE_PATHS=(src schema content deploy test kw-collect.sh package.json playwright.config.js README.md
+            data/costs.json data/glossary.json data/analysis.json)
 
 say()  { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 ok()   { printf '    \033[32m✓\033[0m %s\n' "$*"; }

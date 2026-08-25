@@ -187,7 +187,13 @@ function renderChanges(events) {
       Run <code>kw-collect.sh</code> again in a few days and this panel fills itself in.
     </div></div>`;
   }
-  return `<div class="changes">${events.slice(0, 20).map((e) => {
+  const shown = events.slice(0, 20);
+  // Twenty rows of "hostname gone" is a wall between the reader and the servers
+  // below it. <details> collapses it with no script and remembers nothing,
+  // which is right: it should be open by default every visit.
+  return `<details class="changes-wrap" open>
+    <summary>${shown.length}${events.length > shown.length ? ` of ${events.length}` : ''} change${shown.length === 1 ? '' : 's'} since the previous collection</summary>
+    <div class="changes">${shown.map((e) => {
     const subject = e.name ?? e.domain ?? (e.port != null ? `port ${e.port}` : '');
     const delta = e.from != null && e.to != null
       ? `<span class="faint">${escapeHtml(String(e.from))} → ${escapeHtml(String(e.to))}</span>`
@@ -199,7 +205,8 @@ function renderChanges(events) {
         ${e.server ? `<span class="faint">on ${escapeHtml(e.server)}</span>` : ''}</div>
       <div class="change-when num">${escapeHtml(e.at ?? '')}</div>
     </div>`;
-  }).join('')}</div>`;
+  }).join('')}</div>
+  </details>`;
 }
 
 /* ------------------------------------------------------- server cards */
