@@ -688,6 +688,39 @@ h2.section .count {
 .claim-note--holds { color: var(--warning); border-color: var(--warning); }
 .claim-note--unverifiable { color: var(--ink-3); }
 
+.issue-scroll { max-height: 460px; overflow-y: auto; overscroll-behavior: contain; margin: 0 -2px; }
+
+.issue-row {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--idle);
+  border-radius: var(--r-sm);
+  margin-bottom: 6px;
+  background: var(--sunken);
+}
+.issue-row.issue--critical { border-left-color: var(--critical); }
+.issue-row.issue--high { border-left-color: var(--warning); }
+.issue-row.issue--medium { border-left-color: var(--info); }
+.issue-row.issue--low { border-left-color: var(--idle); }
+.issue-row.reconciled { border-left-color: var(--ok); }
+.issue-row.reconciled .issue-title { text-decoration: line-through; text-decoration-color: var(--ink-3); }
+
+.issue-row > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 11px;
+  cursor: pointer;
+  list-style: none;
+  min-height: 36px;
+  flex-wrap: wrap;
+}
+.issue-row > summary::-webkit-details-marker { display: none; }
+.issue-row > summary::before { content: "\25B8"; color: var(--ink-3); font-size: 9px; flex: none; }
+.issue-row[open] > summary::before { content: "\25BE"; }
+.issue-row .issue-title { font-weight: 600; font-size: var(--fs-meta); }
+.issue-src { margin-left: auto; font: 10px var(--mono); }
+.issue-detail { padding: 0 11px 11px 28px; }
+
 /* ------------------------------------------------------------ charts */
 
 .chart-grid {
@@ -842,8 +875,9 @@ body.detail-open .wrap { display: none; }
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: var(--gap);
   align-items: start;
-  /* dense so a narrow panel backfills the track a wide one left open */
-  grid-auto-flow: row dense;
+  /* NOT dense. Panels are numbered, and dense packing pulls a later narrow
+     panel up beside an earlier one, so the board reads 1, 2, 3, 16. Visual
+     order has to match the numbering or the numbering is a lie. */
   margin-bottom: var(--gap-lg);
 }
 .board-panel {
@@ -936,7 +970,7 @@ body.detail-open .wrap { display: none; }
   mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
 }
-svg.flow { display: block; max-width: none; }
+svg.flow { display: block; max-width: none; margin: 0 auto; }
 /* Both orientations ship and CSS picks one. These selectors are element-
    qualified so they outrank `svg.flow { display: block }` on specificity. */
 svg.flow-vertical { display: none; }

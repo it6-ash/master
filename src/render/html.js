@@ -156,83 +156,276 @@ function renderServerCard(id, server, { issues, history, staleDays, projects, wo
 
 /* ------------------------------------------------------ server drawer */
 
+/**
+ * A server's topology, derived from its own record rather than drawn by hand:
+ * the internet, the proxies that actually own 80/443, and every backend a
+ * hostname resolves to. No edge here is invented — each one comes from a vhost
+ * whose upstream port matched a running unit or container.
+ */
+function serverTopology(server, id) {
+  const nodes = [];
+  const edges = [];
+  const seen = new Set();
+
+  const add = (node) => {
+    if (seen.has(node.id)) return false;
+    seen.add(node.id);
+    nodes.push({ sublabel: null, state: null, x: null, y: null, line: 0, ...node });
+    return true;
+  };
+  const key = (s) => String(s).replace(/[^A-Za-z0-9]/g, '_').replace(/^(\d)/, 'n$1');
+
+  add({ id: 'net', kind: 'ext', label: 'Internet', sublabel: server.ip ?? id });
+
+  const sources = new Set((server.vhosts ?? []).map((v) => v.source));
+  if (sources.has('nginx')) {
+    const nginx = (server.services ?? []).find((x) => x.name === 'nginx');
+    add({ id: 'nginx', kind: 'node', label: 'nginx', sublabel: ':80 :443', state: nginx?.state === 'running' ? 'live' : 'broken' });
+    edges.push({ from: 'net', to: 'nginx', state: 'live', label: null, line: 0 });
+  }
+  if (sources.has('cloudflared')) {
+    const cf = (server.services ?? []).find((x) => x.name === 'cloudflared');
+    add({ id: 'tunnel', kind: 'node', label: 'cloudflared', sublabel: 'tunnel', state: cf?.state === 'running' ? 'live' : 'broken' });
+    edges.push({ from: 'net', to: 'tunnel', state: 'live', label: null, line: 0 });
+  }
+
+  for (const v of server.vhosts ?? []) {
+    const port = /:(\d{2,5})\b/.exec(v.proxyTo ?? '');
+    const svc = port ? (server.services ?? []).find((x) => x.port === Number(port[1])) : null;
+    const container = port ? (server.containers ?? []).find((c) => new RegExp(`:${port[1]}->`).test(c.ports ?? '')) : null;
+    const backend = svc?.name ?? container?.name ?? (v.root ? 'static' : null);
+    if (!backend) continue;
+
+    const nodeId = key(backend);
+    const runState = svc?.state ?? container?.state;
+    const nodeState = runState === 'running' ? 'live'
+      : (runState === 'failed' || runState === 'restarting') ? 'broken' : 'idle';
+    add({
+      id: nodeId,
+      kind: 'node',
+      label: backend.length > 20 ? `${backend.slice(0, 19)}…` : backend,
+      sublabel: port ? `:${port[1]}` : v.root,
+      state: nodeState,
+    });
+
+    const proxy = v.source === 'cloudflared' ? 'tunnel' : 'nginx';
+    if (seen.has(proxy) && !edges.some((e) => e.from === proxy && e.to === nodeId)) {
+      edges.push({ from: proxy, to: nodeId, state: nodeState === 'broken' ? 'broken' : 'data', label: null, line: 0 });
+    }
+  }
+
+  if (nodes.length < 2) return null;
+  return { nodes, edges, errors: [], warnings: [] };
+}
+
+
+/** Compact issue row: severity, title, and the detail behind a disclosure. */
+function renderIssueCompact(issue) {
+  const reconciled = issue.claimStatus === 'reconciled';
+  const claim = issue.claimStatus ? `<div class="claim-note claim-note--${issue.claimStatus}">
+    ${reconciled
+    ? `Re-tested: <strong>no longer reproduces</strong>. ${escapeHtml(issue.claimDetail ?? '')}.`
+    : issue.claimStatus === 'holds'
+      ? `Re-tested: <strong>still true</strong>. ${escapeHtml(issue.claimDetail ?? '')}.`
+      : `Could not re-test: ${escapeHtml(issue.claimDetail ?? '')}.`}
+  </div>` : '';
+
+  return `<details class="issue-row issue--${issue.severity}${reconciled ? ' reconciled' : ''}">
+    <summary>
+      <span class="sev sev--${issue.severity}">${issue.severity}</span>
+      <span class="issue-title">${escapeHtml(issue.title)}</span>
+      <span class="faint issue-src">${escapeHtml(issue.source)}</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">${escapeHtml(issue.body ?? '')}</div>
+      ${issue.evidence ? `<div class="issue-evidence">${escapeHtml(issue.evidence)}</div>` : ''}
+      ${claim}
+    </div>
+  </details>`;
+}
+
 function renderServerPanel(id, server, { projects, workflows, issues }) {
   const state = server.state ?? {};
   const mine = projects.filter((p) => p.server === id);
   const wf = Object.values(workflows).filter((w) => w.server === id);
-  const activeWf = wf.filter((w) => w.active);
+  const failed = (server.services ?? []).filter((x) => x.state === 'failed');
+  const running = (server.services ?? []).filter((x) => x.state === 'running');
+  const exposed = (server.ports ?? []).filter((p) => p.exposed);
   const mineIssues = issues.filter((i) => i.server === id && !i.resolved).sort(bySeverity);
 
-  // data-label carries the header down to narrow viewports, where the table
-  // restacks into one labelled card per row.
   const table = (headers, rows) => (rows.length ? `<div class="table-wrap"><table>
     <thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
     <tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td data-label="${escapeHtml(headers[i] ?? '')}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>` : '<p class="faint">Nothing recorded.</p>');
 
-  const exposed = (server.ports ?? []).filter((p) => p.exposed);
+  let n = 0;
+  const panel = (title, html, mod = '') => {
+    if (!html) return '';
+    n += 1;
+    return `<section class="board-panel${mod}">
+      <h2 class="board-title"><span class="board-num">${n}</span>${escapeHtml(title)}</h2>
+      <div class="board-content">${html}</div>
+    </section>`;
+  };
+
+  const topo = serverTopology(server, id);
+  const topoHtml = topo
+    ? `<div class="flow-wrap"><div class="flow-scroll">${
+      renderFlowSvg(topo, { id: `t-${id}`, title: `${id} topology` })
+    }${renderFlowSvg(topo, { id: `tv-${id}`, title: `${id} topology`, vertical: true })}</div></div>`
+    : '';
+
+  const meterClass = (p) => (p >= 90 ? 'meter-fill--bad' : p >= 80 ? 'meter-fill--warn' : '');
+
+  const kpis = `<div class="tiles">
+    ${statTile({ value: `${state.diskUsedPct ?? '?'}%`, label: 'Disk used', note: `${state.diskUsed ?? '?'} of ${state.diskTotal ?? '?'}`, state: (state.diskUsedPct ?? 0) > 80 ? 'critical' : null })}
+    ${statTile({ value: `${state.memUsedPct ?? '?'}%`, label: 'Memory', note: `${state.memUsed ?? '?'} of ${state.memTotal ?? '?'}` })}
+    ${statTile({ value: running.length, label: 'Units running', note: `${failed.length} failed`, state: failed.length ? 'warning' : 'good' })}
+    ${statTile({ value: (server.containers ?? []).length, label: 'Containers', note: `${(server.containers ?? []).filter((c) => c.state === 'running').length} running` })}
+    ${statTile({ value: mine.length, label: 'Projects', note: `${mine.filter((p) => p.status === 'live').length} live` })}
+    ${statTile({ value: wf.length ? wf.filter((w) => w.active).length : '0', label: 'Active workflows', note: wf.length ? `of ${wf.length}` : 'no n8n here' })}
+  </div>`;
+
+  const identity = `<dl class="kv">
+    <dt>Address</dt><dd>${escapeHtml(server.ip ?? 'unknown')}</dd>
+    <dt>Role</dt><dd>${escapeHtml(server.role ?? '')}</dd>
+    <dt>OS</dt><dd>${escapeHtml(state.os ?? '')}</dd>
+    <dt>Kernel</dt><dd>${escapeHtml(state.kernel ?? '')}${state.rebootPending ? ' · reboot pending' : ''}</dd>
+    <dt>CPU</dt><dd>${server.specs?.cpu ?? '?'} vCPU · ${escapeHtml(server.specs?.cpuModel ?? '')}</dd>
+    <dt>Memory</dt><dd>${escapeHtml(server.specs?.ram ?? '')}</dd>
+    <dt>Disk</dt><dd>${escapeHtml(server.specs?.disk ?? '')}</dd>
+    <dt>Uptime</dt><dd>${escapeHtml(state.uptime ?? '')}</dd>
+    <dt>Firewall</dt><dd>${escapeHtml(state.firewall ?? 'unknown')} · ${escapeHtml(state.firewallDefault ?? '')}</dd>
+    <dt>Ingested</dt><dd>${escapeHtml(server.lastIngest ?? 'never')}</dd>
+  </dl>`;
+
+  const mounts = (state.mounts ?? []).map((m) => `<div class="meter-row">
+    <span class="meter-label"><code>${escapeHtml(m.mount)}</code></span>
+    <span class="meter"><span class="meter-fill ${meterClass(m.usePct ?? 0)}" style="width:${m.usePct ?? 0}%"></span></span>
+    <span class="meter-value">${m.usePct ?? '?'}% · ${escapeHtml(m.used ?? '')}</span>
+  </div>`).join('');
+
+  const bigFiles = (server.storage?.bigFiles ?? []).slice(0, 8);
+  const storageHtml = `${mounts ? `<div class="meters">${mounts}</div>` : ''}
+    ${bigFiles.length ? `<h3>Largest files</h3>${table(['Path', 'Size'], bigFiles.map((f) => [
+    `<code>${escapeHtml(f.path)}</code>`, `<span class="num">${escapeHtml(f.size ?? '')}</span>`,
+  ]))}` : ''}`;
+
+  const logs = server.logs ?? {};
+  const logsHtml = (logs.journalSize || logs.largest?.length) ? `<dl class="kv">
+      ${logs.journalSize ? `<dt>Journal</dt><dd>${escapeHtml(logs.journalSize)}</dd>` : ''}
+      ${logs.varLogTotal ? `<dt>/var/log</dt><dd>${escapeHtml(logs.varLogTotal)}</dd>` : ''}
+      ${logs.recentErrors ? `<dt>Recent errors</dt><dd>${logs.recentErrors} lines</dd>` : ''}
+    </dl>
+    ${table(['Log', 'Size'], (logs.largest ?? []).slice(0, 8).map((l) => [
+    `<code>${escapeHtml(l.path)}</code>`, `<span class="num">${escapeHtml(l.size ?? '')}</span>`,
+  ]))}` : '';
+
+  const dockerHtml = server.docker ? `<dl class="kv">
+      <dt>Version</dt><dd>${escapeHtml(server.docker.version ?? '')}</dd>
+      <dt>Images</dt><dd>${server.docker.images ?? '?'} · ${escapeHtml(server.docker.diskUsage?.images ?? '')}</dd>
+      <dt>Volumes</dt><dd>${server.docker.volumes ?? '?'} · ${escapeHtml(server.docker.diskUsage?.volumes ?? '')}</dd>
+      <dt>Reclaimable</dt><dd>${escapeHtml(server.docker.diskUsage?.reclaimable ?? '')}</dd>
+      ${server.docker.orphanVolumes?.length ? `<dt>Orphan volumes</dt><dd>${server.docker.orphanVolumes.map(escapeHtml).join(', ')}</dd>` : ''}
+    </dl>
+    ${server.docker.compose?.length ? `<h3>Compose stacks</h3>${table(['Stack', 'Status', 'File'], server.docker.compose.map((c) => [
+    escapeHtml(c.name),
+    `<span class="dot dot--${/^running/.test(c.status ?? '') ? 'live' : 'broken'}"></span> ${escapeHtml(c.status ?? '')}`,
+    `<code>${escapeHtml(c.configFile ?? '')}</code>`,
+  ]))}` : ''}` : '';
+
+  const dbHtml = Object.keys(server.databases ?? {}).length ? `${table(['Database', 'Engine', 'Collection', 'Documents'],
+    Object.entries(server.databases).flatMap(([name, db]) => (db.collections?.length
+      ? db.collections.map((c) => [escapeHtml(name), escapeHtml(db.engine ?? ''), `<code>${escapeHtml(c.name)}</code>`, `<span class="num">${fmt(c.docs ?? 0)}</span>`])
+      : [[escapeHtml(name), escapeHtml(db.engine ?? ''), '<span class="faint">not enumerated</span>', '—']])))}
+  ${server.databaseEngines ? `<h3>Engines on this host</h3><div class="chip-list">${Object.entries(server.databaseEngines).map(([k, v]) => `<span class="pill"><span class="dot dot--${v === 'active' ? 'live' : 'idle'}"></span>${escapeHtml(k)} ${escapeHtml(v)}</span>`).join('')}</div>` : ''}` : '';
+
+  const sshHtml = server.ssh ? `<dl class="kv">
+    <dt>Port</dt><dd>${server.ssh.port ?? '?'}</dd>
+    <dt>Root login</dt><dd>${server.ssh.permitRootLogin ? 'permitted' : 'denied'}</dd>
+    <dt>Password auth</dt><dd>${server.ssh.passwordAuthentication ? 'enabled' : 'disabled'}</dd>
+    <dt>Failed passwords</dt><dd>${server.ssh.failedPasswords ?? 0} in the current log</dd>
+  </dl>
+  ${server.ssh.topAttackers?.length ? `<h3>Most persistent sources</h3>${table(['Address', 'Attempts'], server.ssh.topAttackers.slice(0, 6).map((a) => [
+    `<code>${escapeHtml(a.ip)}</code>`, `<span class="num">${a.count}</span>`,
+  ]))}` : ''}` : '';
+
+  const workflowHtml = wf.length ? `${table(['Workflow', 'State', 'Group'], wf
+    .filter((w) => !w.noise)
+    .sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
+    .map((w) => [
+      escapeHtml(w.name),
+      `<span class="dot dot--${w.active ? 'live' : 'idle'}"></span> ${w.active ? 'active' : 'off'}`,
+      escapeHtml(w.group ?? ''),
+    ]))}<p class="faint">${wf.filter((w) => w.noise).length} template imports hidden.</p>` : '';
 
   return `<section class="drawer-panel" data-panel="server:${escapeHtml(id)}">
-    <dl class="kv">
-      <dt>Address</dt><dd>${escapeHtml(server.ip ?? 'unknown')}</dd>
-      <dt>Role</dt><dd>${escapeHtml(server.role ?? '')}</dd>
-      <dt>OS</dt><dd>${escapeHtml(state.os ?? '')} · ${escapeHtml(state.kernel ?? '')}</dd>
-      <dt>Hardware</dt><dd>${server.specs?.cpu ?? '?'} vCPU · ${escapeHtml(server.specs?.cpuModel ?? '')} · ${escapeHtml(server.specs?.ram ?? '')} · ${escapeHtml(server.specs?.disk ?? '')}</dd>
-      <dt>Uptime</dt><dd>${escapeHtml(state.uptime ?? '')}${state.rebootPending ? ' · reboot pending' : ''}</dd>
-      <dt>Firewall</dt><dd>${escapeHtml(state.firewall ?? 'unknown')} · ${escapeHtml(state.firewallDefault ?? '')}</dd>
-      ${server.lastIngest ? `<dt>Last ingest</dt><dd>${escapeHtml(server.lastIngest)}</dd>` : ''}
-    </dl>
+    ${kpis}
 
-    ${mineIssues.length ? `<h2>Issues · ${mineIssues.length}</h2>
-      ${mineIssues.map(renderIssue).join('')}` : ''}
+    <div class="board">
+      ${panel('Topology', topoHtml, ' board-panel--flow')}
+      ${panel(`Issues · ${mineIssues.filter((i) => i.claimStatus !== 'reconciled').length} open`,
+    mineIssues.length ? `<div class="issue-scroll">${mineIssues.map(renderIssueCompact).join('')}</div>` : '',
+    ' board-panel--wide')}
+      ${panel('Identity', identity)}
+      ${panel('Storage', storageHtml, ' board-panel--wide')}
 
-    <h2>Projects · ${mine.length}</h2>
-    ${table(['Project', 'Status', 'Backend', 'Port'], mine.map((p) => [
+      ${panel('Projects', table(['Project', 'Status', 'Backend', 'Port'], mine.map((p) => [
     `<a href="#project=${escapeHtml(p.id)}" data-open="project:${escapeHtml(p.id)}">${escapeHtml(p.name)}</a>`,
     `<span class="dot dot--${p.status}"></span> ${escapeHtml(p.status)}`,
     escapeHtml((p.services ?? []).join(', ') || '—'),
     p.discovered?.port ? `<span class="num">${p.discovered.port}</span>` : '—',
-  ]))}
+  ])), ' board-panel--wide')}
 
-    <h2>Workflows · ${activeWf.length} active of ${wf.length}</h2>
-    ${wf.length ? `<div class="wf-list" style="border:1px solid var(--line);border-radius:var(--r-sm)">
-      ${wf.filter((w) => !w.noise).sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
-    .map((w) => `<div class="wf"><span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
-        <span class="wf-name">${escapeHtml(w.name)}</span>
-        <span class="wf-id">${escapeHtml(w.group ?? '')}</span></div>`).join('')}
-    </div>
-    <p class="faint" style="margin-top:8px">${wf.filter((w) => w.noise).length} template imports hidden.</p>` : '<p class="faint">No n8n instance on this host.</p>'}
+      ${panel('Hostnames', table(['Domain', 'Upstream', 'Via', 'Cert'], (server.vhosts ?? []).map((v) => [
+    escapeHtml(v.domain),
+    v.proxyTo ? `<code>${escapeHtml(v.proxyTo)}</code>` : v.root ? `static ${escapeHtml(v.root)}` : '—',
+    escapeHtml(v.source ?? ''),
+    v.certExpiryDays != null
+      ? `<span class="num" style="color:${v.certExpiryDays < 30 ? 'var(--warning)' : 'inherit'}">${v.certExpiryDays}d</span>`
+      : '<span class="faint">none</span>',
+  ])), ' board-panel--wide')}
 
-    <h2>Exposed ports · ${exposed.length}</h2>
-    ${table(['Port', 'Bind', 'Process'], exposed.map((p) => [
+      ${panel('Exposed ports', table(['Port', 'Bind', 'Process'], exposed.map((p) => [
     `<span class="num">${p.port}/${escapeHtml(p.proto ?? 'tcp')}</span>`,
     `<code>${escapeHtml(p.bind ?? '')}</code>`,
     escapeHtml(p.proc ?? '—'),
-  ]))}
+  ])), ' board-panel--wide')}
 
-    <h2>Hostnames · ${(server.vhosts ?? []).length}</h2>
-    ${table(['Domain', 'Upstream', 'Cert'], (server.vhosts ?? []).map((v) => [
-    escapeHtml(v.domain),
-    v.proxyTo ? `<code>${escapeHtml(v.proxyTo)}</code>` : v.root ? `static ${escapeHtml(v.root)}` : '—',
-    v.certExpiryDays != null
-      ? `<span class="num" style="color:${v.certExpiryDays < 30 ? 'var(--serious)' : 'inherit'}">${v.certExpiryDays}d</span>`
-      : '<span class="faint">none</span>',
-  ]))}
+      ${panel('Failed units', failed.length ? table(['Unit', 'Description', 'Port'], failed.map((x) => [
+    `<code>${escapeHtml(x.name)}</code>`, escapeHtml(x.desc ?? ''), x.port ? `<span class="num">${x.port}</span>` : '—',
+  ])) : '<p class="faint">Every unit is healthy.</p>', ' board-panel--wide')}
 
-    <h2>Containers · ${(server.containers ?? []).length}</h2>
-    ${table(['Name', 'State', 'Image', 'Age'], (server.containers ?? []).map((c) => [
+      ${panel('Containers', table(['Name', 'State', 'Image', 'Age'], (server.containers ?? []).map((c) => [
     escapeHtml(c.name),
     `<span class="dot dot--${c.state === 'running' ? 'live' : c.state === 'restarting' ? 'broken' : 'idle'}"></span> ${escapeHtml(c.state)}`,
     `<code>${escapeHtml(c.image ?? '')}</code>`,
     c.ageDays != null ? `<span class="num">${c.ageDays}d</span>` : '—',
-  ]))}
+  ])), ' board-panel--wide')}
 
-    <h2>Scheduled jobs · ${(server.cron ?? []).length}</h2>
-    ${table(['When', 'User', 'Command'], (server.cron ?? []).slice(0, 40).map((c) => [
+      ${panel('Docker', dockerHtml, ' board-panel--wide')}
+      ${panel('Databases', dbHtml, ' board-panel--wide')}
+      ${panel('Workflows', workflowHtml, ' board-panel--wide')}
+
+      ${panel('Scheduled jobs', table(['When', 'User', 'Command'], (server.cron ?? []).slice(0, 30).map((c) => [
     `<code>${escapeHtml(c.schedule ?? '')}</code>`,
     escapeHtml(c.user ?? '—'),
-    `${c.hasSecret ? '<span class="sev sev--high">secret</span> ' : ''}<code>${escapeHtml((c.cmd ?? '').slice(0, 90))}</code>`,
-  ]))}
+    `${c.hasSecret ? '<span class="sev sev--high">secret</span> ' : ''}<code>${escapeHtml((c.cmd ?? '').slice(0, 80))}</code>`,
+  ])), ' board-panel--wide')}
+
+      ${panel('Logs', logsHtml, ' board-panel--wide')}
+      ${panel('SSH', sshHtml, ' board-panel--wide')}
+
+      ${panel('Packages', server.packages ? `<dl class="kv">
+        <dt>Upgradable</dt><dd>${server.packages.upgradable ?? '?'}</dd>
+        <dt>apt cache</dt><dd>${escapeHtml(server.packages.aptCache ?? '')}</dd>
+        ${state.kernelInstalled?.length ? `<dt>Kernels</dt><dd>${state.kernelInstalled.map(escapeHtml).join('<br>')}</dd>` : ''}
+      </dl>` : '')}
+
+      ${panel('Left lying around', server.staleFiles?.length
+    ? `<ul>${server.staleFiles.map((f) => `<li><code>${escapeHtml(f)}</code></li>`).join('')}</ul>`
+    : '')}
+    </div>
   </section>`;
 }
 

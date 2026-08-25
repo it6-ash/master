@@ -711,6 +711,39 @@ h2.section .count {
 .claim-note--holds { color: var(--warning); border-color: var(--warning); }
 .claim-note--unverifiable { color: var(--ink-3); }
 
+.issue-scroll { max-height: 460px; overflow-y: auto; overscroll-behavior: contain; margin: 0 -2px; }
+
+.issue-row {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--idle);
+  border-radius: var(--r-sm);
+  margin-bottom: 6px;
+  background: var(--sunken);
+}
+.issue-row.issue--critical { border-left-color: var(--critical); }
+.issue-row.issue--high { border-left-color: var(--warning); }
+.issue-row.issue--medium { border-left-color: var(--info); }
+.issue-row.issue--low { border-left-color: var(--idle); }
+.issue-row.reconciled { border-left-color: var(--ok); }
+.issue-row.reconciled .issue-title { text-decoration: line-through; text-decoration-color: var(--ink-3); }
+
+.issue-row > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 11px;
+  cursor: pointer;
+  list-style: none;
+  min-height: 36px;
+  flex-wrap: wrap;
+}
+.issue-row > summary::-webkit-details-marker { display: none; }
+.issue-row > summary::before { content: "\25B8"; color: var(--ink-3); font-size: 9px; flex: none; }
+.issue-row[open] > summary::before { content: "\25BE"; }
+.issue-row .issue-title { font-weight: 600; font-size: var(--fs-meta); }
+.issue-src { margin-left: auto; font: 10px var(--mono); }
+.issue-detail { padding: 0 11px 11px 28px; }
+
 /* ------------------------------------------------------------ charts */
 
 .chart-grid {
@@ -865,8 +898,9 @@ body.detail-open .wrap { display: none; }
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: var(--gap);
   align-items: start;
-  /* dense so a narrow panel backfills the track a wide one left open */
-  grid-auto-flow: row dense;
+  /* NOT dense. Panels are numbered, and dense packing pulls a later narrow
+     panel up beside an earlier one, so the board reads 1, 2, 3, 16. Visual
+     order has to match the numbering or the numbering is a lie. */
   margin-bottom: var(--gap-lg);
 }
 .board-panel {
@@ -959,7 +993,7 @@ body.detail-open .wrap { display: none; }
   mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
 }
-svg.flow { display: block; max-width: none; }
+svg.flow { display: block; max-width: none; margin: 0 auto; }
 /* Both orientations ship and CSS picks one. These selectors are element-
    qualified so they outrank `svg.flow { display: block }` on specificity. */
 svg.flow-vertical { display: none; }
@@ -1122,7 +1156,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 05:51 UTC</div>
+      <div class="built">built 2026-08-25 06:13 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -5927,440 +5961,1119 @@ body.searching .no-match { display: none !important; }
     
   </section>
     <section class="drawer-panel" data-panel="server:srv1340120">
-    <dl class="kv">
-      <dt>Address</dt><dd>72.62.228.194</dd>
-      <dt>Role</dt><dd>Apps &amp; Automation</dd>
-      <dt>OS</dt><dd>Ubuntu 24.04.4 LTS · 6.8.0-110-generic</dd>
-      <dt>Hardware</dt><dd>4 vCPU · AMD EPYC 7543P 32-Core Processor · 15Gi · 193G</dd>
-      <dt>Uptime</dt><dd>115 days · reboot pending</dd>
-      <dt>Firewall</dt><dd>active · deny (incoming), allow (outgoing), allow (routed)</dd>
-      <dt>Last ingest</dt><dd>2026-08-24T12:03:33Z</dd>
-    </dl>
+    <div class="tiles">
+    <div class="tile">
+    <div class="tile-value">19%</div>
+    <div class="tile-label">Disk used</div>
+    <div class="tile-note">35G of 193G</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">24%</div>
+    <div class="tile-label">Memory</div>
+    <div class="tile-note">3.6Gi of 15Gi</div>
+    
+  </div>
+    <div class="tile tile--warning">
+    <div class="tile-value">38</div>
+    <div class="tile-label">Units running</div>
+    <div class="tile-note">2 failed</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">8</div>
+    <div class="tile-label">Containers</div>
+    <div class="tile-note">6 running</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">13</div>
+    <div class="tile-label">Projects</div>
+    <div class="tile-note">8 live</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">12</div>
+    <div class="tile-label">Active workflows</div>
+    <div class="tile-note">of 135</div>
+    
+  </div>
+  </div>
 
-    <h2>Issues · 19</h2>
-      <div class="issue issue--critical">
-    <div class="issue-head">
+    <div class="board">
+      <section class="board-panel board-panel--flow">
+      <h2 class="board-title"><span class="board-num">1</span>Topology</h2>
+      <div class="board-content"><div class="flow-wrap"><div class="flow-scroll"><svg class="flow flow-horizontal" width="744" height="906" viewBox="0 0 744 906" role="img" aria-label="srv1340120 topology" preserveAspectRatio="xMidYMin meet">
+    <title>srv1340120 topology</title>
+    <defs>
+      <marker id="t-srv1340120-arrow-neutral" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--neutral" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1340120-arrow-live" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--live" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1340120-arrow-data" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--data" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1340120-arrow-idle" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--idle" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1340120-arrow-broken" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--broken" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+    </defs>
+    <path id="t-srv1340120-e0" class="flow-edge flow-edge--live" d="M 196 453 C 242 453, 242 409, 288 409" marker-end="url(#t-srv1340120-arrow-live)" />
+    <path id="t-srv1340120-e1" class="flow-edge flow-edge--live" d="M 196 453 C 242 453, 242 497, 288 497" marker-end="url(#t-srv1340120-arrow-live)" />
+    <path id="t-srv1340120-e2" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 145, 548 145" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e3" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 233, 548 233" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e4" class="flow-edge flow-edge--data" d="M 456 497 C 502 497, 502 57, 548 57" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e5" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 321, 548 321" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e6" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 409, 548 409" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e7" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 497, 548 497" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e8" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 585, 548 585" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e9" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 673, 548 673" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e10" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 761, 548 761" marker-end="url(#t-srv1340120-arrow-data)" />
+    <path id="t-srv1340120-e11" class="flow-edge flow-edge--data" d="M 456 409 C 502 409, 502 849, 548 849" marker-end="url(#t-srv1340120-arrow-data)" />
+    <g class="flow-node flow-node--neutral flow-node--ext" data-node="net">
+      <rect class="flow-shape flow-shape--ext" x="28" y="424" width="168" height="58" rx="9" />
+      <text class="flow-label" x="112" y="450">Internet</text>
+      <text class="flow-sublabel" x="112" y="467">72.62.228.194</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="nginx">
+      <rect class="flow-shape" x="288" y="380" width="168" height="58" rx="9" />
+      <text class="flow-label" x="372" y="406">nginx</text>
+      <text class="flow-sublabel" x="372" y="423">:80 :443</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="tunnel">
+      <rect class="flow-shape" x="288" y="468" width="168" height="58" rx="9" />
+      <text class="flow-label" x="372" y="494">cloudflared</text>
+      <text class="flow-sublabel" x="372" y="511">tunnel</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kw_manashi">
+      <rect class="flow-shape" x="548" y="116" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="142">kw-manashi</text>
+      <text class="flow-sublabel" x="632" y="159">:8100</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwsite">
+      <rect class="flow-shape" x="548" y="204" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="230">kwsite</text>
+      <text class="flow-sublabel" x="632" y="247">:8200</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwatch">
+      <rect class="flow-shape" x="548" y="28" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="54">kwatch</text>
+      <text class="flow-sublabel" x="632" y="71">:8050</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="dashboard">
+      <rect class="flow-shape" x="548" y="292" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="318">dashboard</text>
+      <text class="flow-sublabel" x="632" y="335">:8001</text>
+    </g>
+    <g class="flow-node flow-node--idle flow-node--node" data-node="static">
+      <rect class="flow-shape" x="548" y="380" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="406">static</text>
+      <text class="flow-sublabel" x="632" y="423">/var/www/html</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="cratio_mcp">
+      <rect class="flow-shape" x="548" y="468" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="494">cratio-mcp</text>
+      <text class="flow-sublabel" x="632" y="511">:8791</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="google_ads_mcp">
+      <rect class="flow-shape" x="548" y="556" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="582">google-ads-mcp</text>
+      <text class="flow-sublabel" x="632" y="599">:8842</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="n8n_n8n_1">
+      <rect class="flow-shape" x="548" y="644" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="670">n8n-n8n-1</text>
+      <text class="flow-sublabel" x="632" y="687">:5678</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="dashboard2">
+      <rect class="flow-shape" x="548" y="732" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="758">dashboard2</text>
+      <text class="flow-sublabel" x="632" y="775">:8002</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwskills_app">
+      <rect class="flow-shape" x="548" y="820" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="846">kwskills-app</text>
+      <text class="flow-sublabel" x="632" y="863">:3000</text>
+    </g>
+  </svg><svg class="flow flow-vertical" width="1880" height="338" viewBox="0 0 1880 338" role="img" aria-label="srv1340120 topology" preserveAspectRatio="xMidYMin meet">
+    <title>srv1340120 topology</title>
+    <defs>
+      <marker id="tv-srv1340120-arrow-neutral" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--neutral" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1340120-arrow-live" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--live" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1340120-arrow-data" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--data" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1340120-arrow-idle" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--idle" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1340120-arrow-broken" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--broken" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+    </defs>
+    <path id="tv-srv1340120-e0" class="flow-edge flow-edge--live" d="M 940 86 C 940 113, 848 113, 848 140" marker-end="url(#tv-srv1340120-arrow-live)" />
+    <path id="tv-srv1340120-e1" class="flow-edge flow-edge--live" d="M 940 86 C 940 113, 1032 113, 1032 140" marker-end="url(#tv-srv1340120-arrow-live)" />
+    <path id="tv-srv1340120-e2" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 296 225, 296 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e3" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 480 225, 480 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e4" class="flow-edge flow-edge--data" d="M 1032 198 C 1032 225, 112 225, 112 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e5" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 664 225, 664 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e6" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 848 225, 848 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e7" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 1032 225, 1032 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e8" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 1216 225, 1216 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e9" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 1400 225, 1400 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e10" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 1584 225, 1584 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <path id="tv-srv1340120-e11" class="flow-edge flow-edge--data" d="M 848 198 C 848 225, 1768 225, 1768 252" marker-end="url(#tv-srv1340120-arrow-data)" />
+    <g class="flow-node flow-node--neutral flow-node--ext" data-node="net">
+      <rect class="flow-shape flow-shape--ext" x="856" y="28" width="168" height="58" rx="9" />
+      <text class="flow-label" x="940" y="54">Internet</text>
+      <text class="flow-sublabel" x="940" y="71">72.62.228.194</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="nginx">
+      <rect class="flow-shape" x="764" y="140" width="168" height="58" rx="9" />
+      <text class="flow-label" x="848" y="166">nginx</text>
+      <text class="flow-sublabel" x="848" y="183">:80 :443</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="tunnel">
+      <rect class="flow-shape" x="948" y="140" width="168" height="58" rx="9" />
+      <text class="flow-label" x="1032" y="166">cloudflared</text>
+      <text class="flow-sublabel" x="1032" y="183">tunnel</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kw_manashi">
+      <rect class="flow-shape" x="212" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="296" y="278">kw-manashi</text>
+      <text class="flow-sublabel" x="296" y="295">:8100</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwsite">
+      <rect class="flow-shape" x="396" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="480" y="278">kwsite</text>
+      <text class="flow-sublabel" x="480" y="295">:8200</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwatch">
+      <rect class="flow-shape" x="28" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="112" y="278">kwatch</text>
+      <text class="flow-sublabel" x="112" y="295">:8050</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="dashboard">
+      <rect class="flow-shape" x="580" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="664" y="278">dashboard</text>
+      <text class="flow-sublabel" x="664" y="295">:8001</text>
+    </g>
+    <g class="flow-node flow-node--idle flow-node--node" data-node="static">
+      <rect class="flow-shape" x="764" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="848" y="278">static</text>
+      <text class="flow-sublabel" x="848" y="295">/var/www/html</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="cratio_mcp">
+      <rect class="flow-shape" x="948" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="1032" y="278">cratio-mcp</text>
+      <text class="flow-sublabel" x="1032" y="295">:8791</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="google_ads_mcp">
+      <rect class="flow-shape" x="1132" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="1216" y="278">google-ads-mcp</text>
+      <text class="flow-sublabel" x="1216" y="295">:8842</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="n8n_n8n_1">
+      <rect class="flow-shape" x="1316" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="1400" y="278">n8n-n8n-1</text>
+      <text class="flow-sublabel" x="1400" y="295">:5678</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="dashboard2">
+      <rect class="flow-shape" x="1500" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="1584" y="278">dashboard2</text>
+      <text class="flow-sublabel" x="1584" y="295">:8002</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwskills_app">
+      <rect class="flow-shape" x="1684" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="1768" y="278">kwskills-app</text>
+      <text class="flow-sublabel" x="1768" y="295">:3000</text>
+    </g>
+  </svg></div></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">2</span>Issues · 17 open</h2>
+      <div class="board-content"><div class="issue-scroll"><details class="issue-row issue--critical">
+    <summary>
       <span class="sev sev--critical">critical</span>
       <span class="issue-title">Yamini's verdicts never reach Cratio</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Qualification verdicts are written to MongoDB and shown on the overview dashboard, but nothing writes them back to Cratio CRM. The four AI Bot fields on the lead record have been null since Aug 2025, so sales never sees the qualification and the pipeline is read-only in practice. The workflow that would close this loop, KW 3 · Qualification &amp; CRM Writeback (ppXd4bTAUtLaBwB7), exists in n8n and is inactive.</div>
+      
+      
     </div>
-    <div class="issue-body">Qualification verdicts are written to MongoDB and shown on the overview dashboard, but nothing writes them back to Cratio CRM. The four AI Bot fields on the lead record have been null since Aug 2025, so sales never sees the qualification and the pipeline is read-only in practice. The workflow that would close this loop, KW 3 · Qualification &amp; CRM Writeback (ppXd4bTAUtLaBwB7), exists in n8n and is inactive.</div>
-    
-    
-  </div><div class="issue issue--critical">
-    <div class="issue-head">
+  </details><details class="issue-row issue--critical">
+    <summary>
       <span class="sev sev--critical">critical</span>
       <span class="issue-title">LeadQ's Atlas credentials belong to a departed employee, username reused as password</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">The MongoDB Atlas connection string is hardcoded in the LeadQ config and the account belongs to someone who has left. The username is reused as the password. Rotate in Atlas first, then update the config and restart the unit, then audit Atlas access logs. This cannot be verified from a VPS dump because the cluster is external.</div>
+      
+      
     </div>
-    <div class="issue-body">The MongoDB Atlas connection string is hardcoded in the LeadQ config and the account belongs to someone who has left. The username is reused as the password. Rotate in Atlas first, then update the config and restart the unit, then audit Atlas access logs. This cannot be verified from a VPS dump because the cluster is external.</div>
-    
-    
-  </div><div class="issue issue--critical reconciled">
-    <div class="issue-head">
+  </details><details class="issue-row issue--critical reconciled">
+    <summary>
       <span class="sev sev--critical">critical</span>
       <span class="issue-title">MongoDB was listening on 0.0.0.0 with 26k customer conversations behind it</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
-    </div>
-    <div class="issue-body">Reported on 18 Aug against srv1340120: mongod bound to all interfaces with no firewall in front of it. Recorded here so the fix is traceable rather than silently dropped.</div>
-    
-    <div class="claim-note claim-note--reconciled">
-    Re-tested against the latest ingest: <strong>no longer reproduces</strong>. port 27017 is bound to 127.0.0.1. Looks fixed since this was written on 2026-08-18.
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Reported on 18 Aug against srv1340120: mongod bound to all interfaces with no firewall in front of it. Recorded here so the fix is traceable rather than silently dropped.</div>
+      
+      <div class="claim-note claim-note--reconciled">
+    Re-tested: <strong>no longer reproduces</strong>. port 27017 is bound to 127.0.0.1.
   </div>
-  </div><div class="issue issue--critical reconciled">
-    <div class="issue-head">
+    </div>
+  </details><details class="issue-row issue--critical reconciled">
+    <summary>
       <span class="sev sev--critical">critical</span>
       <span class="issue-title">ufw was inactive on srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
-    </div>
-    <div class="issue-body">Reported on 18 Aug: every listening port on the apps and automation host was reachable from anywhere that could route to it.</div>
-    
-    <div class="claim-note claim-note--reconciled">
-    Re-tested against the latest ingest: <strong>no longer reproduces</strong>. ufw is active. Looks fixed since this was written on 2026-08-18.
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Reported on 18 Aug: every listening port on the apps and automation host was reachable from anywhere that could route to it.</div>
+      
+      <div class="claim-note claim-note--reconciled">
+    Re-tested: <strong>no longer reproduces</strong>. ufw is active.
   </div>
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+    </div>
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">LeadQ and Overview read different databases and nobody knows which is true</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Yamini writes to the local MongoDB. LeadQ reads MongoDB Atlas whatsapp_leads2. Nothing observed connects the two. Either Atlas has been frozen since the April migration and the sales floor has served stale data for four months, or a second pipeline is still writing to it and two dashboards are reporting different numbers for the same agent. Compare the newest document timestamp in each database to settle it.</div>
+      
+      
     </div>
-    <div class="issue-body">Yamini writes to the local MongoDB. LeadQ reads MongoDB Atlas whatsapp_leads2. Nothing observed connects the two. Either Atlas has been frozen since the April migration and the sales floor has served stale data for four months, or a second pipeline is still writing to it and two dashboards are reporting different numbers for the same agent. Compare the newest document timestamp in each database to settle it.</div>
-    
-    
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">Media server offers a public directory listing on 0.0.0.0:8899</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
-    </div>
-    <div class="issue-body">media-server.service runs `python3 -m http.server 8899 --directory /var/www/media` bound to all interfaces. Python's http.server serves an index of the directory when no index file is present. Bind it to 127.0.0.1 and proxy through nginx if it needs to be public.</div>
-    
-    <div class="claim-note claim-note--holds">
-    Re-tested against the latest ingest: <strong>still true</strong>. port 8899 is bound to 0.0.0.0.
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">media-server.service runs `python3 -m http.server 8899 --directory /var/www/media` bound to all interfaces. Python's http.server serves an index of the directory when no index file is present. Bind it to 127.0.0.1 and proxy through nginx if it needs to be public.</div>
+      
+      <div class="claim-note claim-note--holds">
+    Re-tested: <strong>still true</strong>. port 8899 is bound to 0.0.0.0.
   </div>
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+    </div>
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">Eight overlapping WhatsApp workflows, two sharing an identical name</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Two workflows are both named KW WhatsApp — Main with different ids, alongside six more inbound responders of overlapping purpose. Nobody can tell from the n8n list which one is authoritative. Consolidate, and rename anything that survives.</div>
+      
+      
     </div>
-    <div class="issue-body">Two workflows are both named KW WhatsApp — Main with different ids, alongside six more inbound responders of overlapping purpose. Nobody can tell from the n8n list which one is authoritative. Consolidate, and rename anything that survives.</div>
-    
-    
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">A scheduled job on srv1340120 carries a credential on its command line</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">The claude-deploy crontab entry &quot;0 3 * * *&quot; passes a secret as an argument, which makes it visible in the process table and in shell history. Move it to an environment file with 0600 permissions.</div>
+      <div class="issue-evidence">claude-deploy: 0 3 * * * curl -fsS -X POST -H &quot;Authorization: Bearer ***REDACTED***&quot; http://127.0.0.1:3000/api/cron</div>
+      
     </div>
-    <div class="issue-body">The claude-deploy crontab entry &quot;0 3 * * *&quot; passes a secret as an argument, which makes it visible in the process table and in shell history. Move it to an environment file with 0600 permissions.</div>
-    <div class="issue-evidence">claude-deploy: 0 3 * * * curl -fsS -X POST -H &quot;Authorization: Bearer ***REDACTED***&quot; http://127.0.0.1:3000/api/cron</div>
-    
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">A scheduled job on srv1340120 carries a credential on its command line</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">The root crontab entry &quot;0 2 * * 0&quot; passes a secret as an argument, which makes it visible in the process table and in shell history. Move it to an environment file with 0600 permissions.</div>
+      <div class="issue-evidence">root: 0 2 * * 0 mongodump --uri=&quot;mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=admin&quot; --out</div>
+      
     </div>
-    <div class="issue-body">The root crontab entry &quot;0 2 * * 0&quot; passes a secret as an argument, which makes it visible in the process table and in shell history. Move it to an environment file with 0600 permissions.</div>
-    <div class="issue-evidence">root: 0 2 * * 0 mongodump --uri=&quot;mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=admin&quot; --out</div>
-    
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">fastapi_app has failed on srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Gunicorn instance to serve FastAPI Dashboard is in a failed state. It should be serving port 8001.</div>
+      <div class="issue-evidence">systemctl --failed: fastapi_app.service</div>
+      
     </div>
-    <div class="issue-body">Gunicorn instance to serve FastAPI Dashboard is in a failed state. It should be serving port 8001.</div>
-    <div class="issue-evidence">systemctl --failed: fastapi_app.service</div>
-    
-  </div><div class="issue issue--high">
-    <div class="issue-head">
+  </details><details class="issue-row issue--high">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">lead-api has failed on srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Lead API is in a failed state. It should be serving port 8000.</div>
+      <div class="issue-evidence">systemctl --failed: lead-api.service</div>
+      
     </div>
-    <div class="issue-body">Lead API is in a failed state. It should be serving port 8000.</div>
-    <div class="issue-evidence">systemctl --failed: lead-api.service</div>
-    
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">overview.leadq.co.in terminates TLS but certbot holds no certificate for it</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">nginx declares listen 443 ssl for this hostname, but the certbot inventory has no certificate covering it. The leadq.co.in certificate covers the apex, www and hrportal only. Whatever it is presenting on 443 is worth checking before a browser starts warning about it.</div>
+      
+      
     </div>
-    <div class="issue-body">nginx declares listen 443 ssl for this hostname, but the certbot inventory has no certificate covering it. The leadq.co.in certificate covers the apex, www and hrportal only. Whatever it is presenting on 443 is worth checking before a browser starts warning about it.</div>
-    
-    
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">n8n's SQLite database is 2.5 GB, with a 4.4 GB stale copy beside it</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
-    </div>
-    <div class="issue-body">The live database.sqlite is 2.5 GB, driven largely by ~100 imported demo workflows and unpruned execution data. A 4.4 GB n8n-db-2026-08-17.sqlite also sits in /root, and a 905 MB backup archive beside it. Set EXECUTIONS_DATA_MAX_AGE, prune, and delete the stale copies.</div>
-    
-    <div class="claim-note claim-note--holds">
-    Re-tested against the latest ingest: <strong>still true</strong>. n8n.dbSizeBytes is 2509012992.
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">The live database.sqlite is 2.5 GB, driven largely by ~100 imported demo workflows and unpruned execution data. A 4.4 GB n8n-db-2026-08-17.sqlite also sits in /root, and a 905 MB backup archive beside it. Set EXECUTIONS_DATA_MAX_AGE, prune, and delete the stale copies.</div>
+      
+      <div class="claim-note claim-note--holds">
+    Re-tested: <strong>still true</strong>. n8n.dbSizeBytes is 2509012992.
   </div>
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+    </div>
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">Agent conversations and dashboard sign-in share one database</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">allowedUsers and authLogs live in the same Yamini database as customerChats. Read access to the sign-in allowlist is read access to every customer conversation. Split the auth collections out.</div>
+      
+      
     </div>
-    <div class="issue-body">allowedUsers and authLogs live in the same Yamini database as customerChats. Read access to the sign-in allowlist is read access to every customer conversation. Split the auth collections out.</div>
-    
-    
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">Meta CAPI is inactive while Google Enhanced Conversions is live, the reverse of the architecture brief</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">The architecture brief describes Meta CAPI as the live attribution path and Google Enhanced Conversions as planned. The n8n state is the opposite. Recorded as a contradiction rather than resolved silently: one of the two sources is wrong and it needs a human decision which.</div>
+      
+      
     </div>
-    <div class="issue-body">The architecture brief describes Meta CAPI as the live attribution path and Google Enhanced Conversions as planned. The n8n state is the opposite. Recorded as a contradiction rather than resolved silently: one of the two sources is wrong and it needs a human decision which.</div>
-    
-    
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">srv1340120 is running an older kernel than the one installed</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Running 6.8.0-110-generic, but 6.8.0-138-generic is installed. A reboot is needed to pick it up.</div>
+      <div class="issue-evidence">running=6.8.0-110-generic newest=6.8.0-138-generic</div>
+      
     </div>
-    <div class="issue-body">Running 6.8.0-110-generic, but 6.8.0-138-generic is installed. A reboot is needed to pick it up.</div>
-    <div class="issue-evidence">running=6.8.0-110-generic newest=6.8.0-138-generic</div>
-    
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">hrportal.bak.20260505-044819 in sites-enabled is a file, not a symlink</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">nginx loads it all the same, so it is live configuration that no longer tracks anything in sites-available.</div>
+      <div class="issue-evidence">/etc/nginx/sites-enabled/hrportal.bak.20260505-044819</div>
+      
     </div>
-    <div class="issue-body">nginx loads it all the same, so it is live configuration that no longer tracks anything in sites-available.</div>
-    <div class="issue-evidence">/etc/nginx/sites-enabled/hrportal.bak.20260505-044819</div>
-    
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">manashi in sites-enabled is a file, not a symlink</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">nginx loads it all the same, so it is live configuration that no longer tracks anything in sites-available.</div>
+      <div class="issue-evidence">/etc/nginx/sites-enabled/manashi</div>
+      
     </div>
-    <div class="issue-body">nginx loads it all the same, so it is live configuration that no longer tracks anything in sites-available.</div>
-    <div class="issue-evidence">/etc/nginx/sites-enabled/manashi</div>
-    
-  </div><div class="issue issue--low">
-    <div class="issue-head">
+  </details><details class="issue-row issue--low">
+    <summary>
       <span class="sev sev--low">low</span>
       <span class="issue-title">Container n8n-traefik-1 has been in Created state for 115 days</span>
-      <span class="faint" style="font:11px var(--mono)">srv1340120</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">It was created but never started. Either it is dead weight, or something expects it to be running.</div>
+      <div class="issue-evidence">docker ps -a: n8n-traefik-1 — Created, 115d</div>
+      
     </div>
-    <div class="issue-body">It was created but never started. Either it is dead weight, or something expects it to be running.</div>
-    <div class="issue-evidence">docker ps -a: n8n-traefik-1 — Created, 115d</div>
-    
-  </div>
+  </details></div></div>
+    </section>
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">3</span>Identity</h2>
+      <div class="board-content"><dl class="kv">
+    <dt>Address</dt><dd>72.62.228.194</dd>
+    <dt>Role</dt><dd>Apps &amp; Automation</dd>
+    <dt>OS</dt><dd>Ubuntu 24.04.4 LTS</dd>
+    <dt>Kernel</dt><dd>6.8.0-110-generic · reboot pending</dd>
+    <dt>CPU</dt><dd>4 vCPU · AMD EPYC 7543P 32-Core Processor</dd>
+    <dt>Memory</dt><dd>15Gi</dd>
+    <dt>Disk</dt><dd>193G</dd>
+    <dt>Uptime</dt><dd>115 days</dd>
+    <dt>Firewall</dt><dd>active · deny (incoming), allow (outgoing), allow (routed)</dd>
+    <dt>Ingested</dt><dd>2026-08-24T12:03:33Z</dd>
+  </dl></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">4</span>Storage</h2>
+      <div class="board-content"><div class="meters"><div class="meter-row">
+    <span class="meter-label"><code>/</code></span>
+    <span class="meter"><span class="meter-fill " style="width:19%"></span></span>
+    <span class="meter-value">19% · 35G</span>
+  </div><div class="meter-row">
+    <span class="meter-label"><code>/boot</code></span>
+    <span class="meter"><span class="meter-fill " style="width:26%"></span></span>
+    <span class="meter-value">26% · 206M</span>
+  </div><div class="meter-row">
+    <span class="meter-label"><code>/boot/efi</code></span>
+    <span class="meter"><span class="meter-fill " style="width:6%"></span></span>
+    <span class="meter-value">6% · 6.2M</span>
+  </div></div>
+    <h3>Largest files</h3><div class="table-wrap"><table>
+    <thead><tr><th>Path</th><th>Size</th></tr></thead>
+    <tbody><tr><td data-label="Path"><code>/root/n8n-db-2026-08-17.sqlite</code></td><td data-label="Size"><span class="num">4.1G</span></td></tr><tr><td data-label="Path"><code>/var/log/mongodb/mongod.log</code></td><td data-label="Size"><span class="num">3.5G</span></td></tr><tr><td data-label="Path"><code>/root/kwbluepearldelhi.com.zip</code></td><td data-label="Size"><span class="num">2.6G</span></td></tr><tr><td data-label="Path"><code>/var/lib/docker/volumes/n8n_data/_data/database.sqlite</code></td><td data-label="Size"><span class="num">2.4G</span></td></tr><tr><td data-label="Path"><code>/var/www/kwsite/.git/objects/pack/pack-e41ab5e33e7834ce97130a376c14930dc76d7401.pack</code></td><td data-label="Size"><span class="num">1.3G</span></td></tr><tr><td data-label="Path"><code>/root/n8n-backup-2026-08-24/n8n_data.tar.gz</code></td><td data-label="Size"><span class="num">905M</span></td></tr><tr><td data-label="Path"><code>/root/kwbluepearldelhi_db.sql</code></td><td data-label="Size"><span class="num">345M</span></td></tr><tr><td data-label="Path"><code>/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/7db6653f6804003b37929943998584f13d1788dea632aec0d6d3d5d3e65a3c75</code></td><td data-label="Size"><span class="num">295M</span></td></tr></tbody>
+  </table></div></div>
+    </section>
 
-    <h2>Projects · 13</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">5</span>Projects</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Project</th><th>Status</th><th>Backend</th><th>Port</th></tr></thead>
     <tbody><tr><td data-label="Project"><a href="#project=yamini" data-open="project:yamini">Yamini</a></td><td data-label="Status"><span class="dot dot--partial"></span> partial</td><td data-label="Backend">n8n-n8n-1, mongod</td><td data-label="Port">—</td></tr><tr><td data-label="Project"><a href="#project=leadq" data-open="project:leadq">LeadQ</a></td><td data-label="Status"><span class="dot dot--partial"></span> partial</td><td data-label="Backend">dashboard</td><td data-label="Port"><span class="num">8001</span></td></tr><tr><td data-label="Project"><a href="#project=overview-leadq" data-open="project:overview-leadq">LeadQ Overview V2</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">dashboard2</td><td data-label="Port"><span class="num">8002</span></td></tr><tr><td data-label="Project"><a href="#project=hrportal-leadq" data-open="project:hrportal-leadq">hrportal.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kw-manashi</td><td data-label="Port"><span class="num">8100</span></td></tr><tr><td data-label="Project"><a href="#project=kw-site-visit-leadq" data-open="project:kw-site-visit-leadq">KW-Site-visit.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kwsite</td><td data-label="Port"><span class="num">8200</span></td></tr><tr><td data-label="Project"><a href="#project=kwatch-leadq" data-open="project:kwatch-leadq">kwatch.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kwatch</td><td data-label="Port"><span class="num">8050</span></td></tr><tr><td data-label="Project"><a href="#project=mcp-cratio-leadq" data-open="project:mcp-cratio-leadq">mcp-cratio.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">cratio-mcp</td><td data-label="Port"><span class="num">8791</span></td></tr><tr><td data-label="Project"><a href="#project=mcp-google-ads-leadq" data-open="project:mcp-google-ads-leadq">mcp-google-ads.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">google-ads-mcp</td><td data-label="Port"><span class="num">8842</span></td></tr><tr><td data-label="Project"><a href="#project=n8n-srv1340120" data-open="project:n8n-srv1340120">n8n.srv1340120.hstgr.cloud</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">n8n-n8n-1</td><td data-label="Port"><span class="num">5678</span></td></tr><tr><td data-label="Project"><a href="#project=skills-leadq" data-open="project:skills-leadq">skills.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kwskills-app</td><td data-label="Port"><span class="num">3000</span></td></tr><tr><td data-label="Project"><a href="#project=lead-api" data-open="project:lead-api">lead-api</a></td><td data-label="Status"><span class="dot dot--broken"></span> broken</td><td data-label="Backend">lead-api</td><td data-label="Port"><span class="num">8000</span></td></tr><tr><td data-label="Project"><a href="#project=gbt-leadq" data-open="project:gbt-leadq">gbt.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--idle"></span> idle</td><td data-label="Backend">—</td><td data-label="Port">—</td></tr><tr><td data-label="Project"><a href="#project=manashi-leadq" data-open="project:manashi-leadq">manashi.leadq.co.in</a></td><td data-label="Status"><span class="dot dot--idle"></span> idle</td><td data-label="Backend">—</td><td data-label="Port">—</td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Workflows · 12 active of 135</h2>
-    <div class="wf-list" style="border:1px solid var(--line);border-radius:var(--r-sm)">
-      <div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">4 · KW Google Enhanced Conversions · DAILY (with GCLID)</span>
-        <span class="wf-id">Attribution</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">BP WhatsApp Weekly Broadcast</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">CRM Lead Agent</span>
-        <span class="wf-id">Ungrouped</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">D6 WhatsApp Weekly Broadcast</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">GB Blue Pearl</span>
-        <span class="wf-id">KW GBT</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">GB Delhi 6</span>
-        <span class="wf-id">KW GBT</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">Lead Qualification Agent</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">web-chat-kwbp</span>
-        <span class="wf-id">Web chat</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">web-chat-kwd6</span>
-        <span class="wf-id">Web chat</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">WhatsApp BP Inbound AI Reply</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">WhatsApp Chat Agent</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">WhatsApp D6 Inbound AI Reply</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Call Auditor</span>
-        <span class="wf-id">Sales QA</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Call Recording Analyser</span>
-        <span class="wf-id">Sales QA</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Cratio pull API → Meta CAPI (scheduled, lead_id match)</span>
-        <span class="wf-id">Attribution</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">CV Filter Automation - KW Group</span>
-        <span class="wf-id">HR</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">hr screening system community1</span>
-        <span class="wf-id">HR</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Isha Working</span>
-        <span class="wf-id">Ungrouped</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW 3 · Qualification &amp; CRM Writeback</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW CV Screening Pipeline v7</span>
-        <span class="wf-id">HR</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW Group – YAMINI WhatsApp AI Support</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW WhatsApp — Main (Single Webhook + Manual Test)</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW WhatsApp — Main (Single Webhook + Manual Test)</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW: Cratio -&gt; Meta CAPI (daily, by Updated Time)</span>
-        <span class="wf-id">Attribution</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Lead Qualification Pipeline - CRM → Ringg AI → Scoring → DB</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Media prompt</span>
-        <span class="wf-id">Ungrouped</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">SR's Combined Qualification Agent</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Summarize the news</span>
-        <span class="wf-id">Ungrouped</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">Whatsapp Auto Reply with Followback</span>
-        <span class="wf-id">Yamini</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">WhatsApp Inbound AI Reply</span>
-        <span class="wf-id">Yamini</span></div>
-    </div>
-    <p class="faint" style="margin-top:8px">105 template imports hidden.</p>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">6</span>Hostnames</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>Domain</th><th>Upstream</th><th>Via</th><th>Cert</th></tr></thead>
+    <tbody><tr><td data-label="Domain">gbt.leadq.co.in</td><td data-label="Upstream"><code>kw_gbt_api</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">84d</span></td></tr><tr><td data-label="Domain">hrportal.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8100</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">34d</span></td></tr><tr><td data-label="Domain">KW-Site-visit.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8200</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">62d</span></td></tr><tr><td data-label="Domain">kwatch.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8050</code></td><td data-label="Via">cloudflared</td><td data-label="Cert"><span class="faint">none</span></td></tr><tr><td data-label="Domain">leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8001</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">34d</span></td></tr><tr><td data-label="Domain">manashi.leadq.co.in</td><td data-label="Upstream">static /var/www/html</td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">39d</span></td></tr><tr><td data-label="Domain">mcp-cratio.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8791/mcp</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">42d</span></td></tr><tr><td data-label="Domain">mcp-google-ads.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8842</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">58d</span></td></tr><tr><td data-label="Domain">n8n.srv1340120.hstgr.cloud</td><td data-label="Upstream"><code>127.0.0.1:5678</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">35d</span></td></tr><tr><td data-label="Domain">overview.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8002</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="faint">none</span></td></tr><tr><td data-label="Domain">skills.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:3000</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">80d</span></td></tr><tr><td data-label="Domain">srv1340120.hstgr.cloud</td><td data-label="Upstream">—</td><td data-label="Via">nginx</td><td data-label="Cert"><span class="faint">none</span></td></tr><tr><td data-label="Domain">www.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8001</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">34d</span></td></tr></tbody>
+  </table></div></div>
+    </section>
 
-    <h2>Exposed ports · 11</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">7</span>Exposed ports</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Port</th><th>Bind</th><th>Process</th></tr></thead>
     <tbody><tr><td data-label="Port"><span class="num">22/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">sshd</td></tr><tr><td data-label="Port"><span class="num">80/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">nginx</td></tr><tr><td data-label="Port"><span class="num">443/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">nginx</td></tr><tr><td data-label="Port"><span class="num">8001/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">uvicorn</td></tr><tr><td data-label="Port"><span class="num">8002/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">uvicorn</td></tr><tr><td data-label="Port"><span class="num">8100/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">uvicorn</td></tr><tr><td data-label="Port"><span class="num">8899/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">python3</td></tr><tr><td data-label="Port"><span class="num">40281/udp</span></td><td data-label="Bind"><code>*</code></td><td data-label="Process">cloudflared</td></tr><tr><td data-label="Port"><span class="num">55569/udp</span></td><td data-label="Bind"><code>*</code></td><td data-label="Process">cloudflared</td></tr><tr><td data-label="Port"><span class="num">57899/udp</span></td><td data-label="Bind"><code>*</code></td><td data-label="Process">cloudflared</td></tr><tr><td data-label="Port"><span class="num">59219/udp</span></td><td data-label="Bind"><code>*</code></td><td data-label="Process">cloudflared</td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Hostnames · 13</h2>
-    <div class="table-wrap"><table>
-    <thead><tr><th>Domain</th><th>Upstream</th><th>Cert</th></tr></thead>
-    <tbody><tr><td data-label="Domain">gbt.leadq.co.in</td><td data-label="Upstream"><code>kw_gbt_api</code></td><td data-label="Cert"><span class="num" style="color:inherit">84d</span></td></tr><tr><td data-label="Domain">hrportal.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8100</code></td><td data-label="Cert"><span class="num" style="color:inherit">34d</span></td></tr><tr><td data-label="Domain">KW-Site-visit.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8200</code></td><td data-label="Cert"><span class="num" style="color:inherit">62d</span></td></tr><tr><td data-label="Domain">kwatch.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8050</code></td><td data-label="Cert"><span class="faint">none</span></td></tr><tr><td data-label="Domain">leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8001</code></td><td data-label="Cert"><span class="num" style="color:inherit">34d</span></td></tr><tr><td data-label="Domain">manashi.leadq.co.in</td><td data-label="Upstream">static /var/www/html</td><td data-label="Cert"><span class="num" style="color:inherit">39d</span></td></tr><tr><td data-label="Domain">mcp-cratio.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8791/mcp</code></td><td data-label="Cert"><span class="num" style="color:inherit">42d</span></td></tr><tr><td data-label="Domain">mcp-google-ads.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8842</code></td><td data-label="Cert"><span class="num" style="color:inherit">58d</span></td></tr><tr><td data-label="Domain">n8n.srv1340120.hstgr.cloud</td><td data-label="Upstream"><code>127.0.0.1:5678</code></td><td data-label="Cert"><span class="num" style="color:inherit">35d</span></td></tr><tr><td data-label="Domain">overview.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8002</code></td><td data-label="Cert"><span class="faint">none</span></td></tr><tr><td data-label="Domain">skills.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:3000</code></td><td data-label="Cert"><span class="num" style="color:inherit">80d</span></td></tr><tr><td data-label="Domain">srv1340120.hstgr.cloud</td><td data-label="Upstream">—</td><td data-label="Cert"><span class="faint">none</span></td></tr><tr><td data-label="Domain">www.leadq.co.in</td><td data-label="Upstream"><code>127.0.0.1:8001</code></td><td data-label="Cert"><span class="num" style="color:inherit">34d</span></td></tr></tbody>
-  </table></div>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">8</span>Failed units</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>Unit</th><th>Description</th><th>Port</th></tr></thead>
+    <tbody><tr><td data-label="Unit"><code>fastapi_app</code></td><td data-label="Description">Gunicorn instance to serve FastAPI Dashboard</td><td data-label="Port"><span class="num">8001</span></td></tr><tr><td data-label="Unit"><code>lead-api</code></td><td data-label="Description">Lead API</td><td data-label="Port"><span class="num">8000</span></td></tr></tbody>
+  </table></div></div>
+    </section>
 
-    <h2>Containers · 8</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">9</span>Containers</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Name</th><th>State</th><th>Image</th><th>Age</th></tr></thead>
     <tbody><tr><td data-label="Name">traefik-iyg2-traefik-1</td><td data-label="State"><span class="dot dot--broken"></span> restarting</td><td data-label="Image"><code>traefik:latest</code></td><td data-label="Age"><span class="num">0d</span></td></tr><tr><td data-label="Name">n8n-n8n-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>docker.n8n.io/n8nio/n8n</code></td><td data-label="Age"><span class="num">0d</span></td></tr><tr><td data-label="Name">google-ads-mcp</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>google-ads-mcp-google-ads-mcp</code></td><td data-label="Age"><span class="num">31d</span></td></tr><tr><td data-label="Name">kwskills-app</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>kwskills-app</code></td><td data-label="Age"><span class="num">37d</span></td></tr><tr><td data-label="Name">cratio-mcp</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>cratio-mcp:latest</code></td><td data-label="Age"><span class="num">44d</span></td></tr><tr><td data-label="Name">kwskills-db</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>postgres:17-alpine</code></td><td data-label="Age"><span class="num">69d</span></td></tr><tr><td data-label="Name">n8n-traefik-1</td><td data-label="State"><span class="dot dot--idle"></span> created</td><td data-label="Image"><code>9004e1cd1e33</code></td><td data-label="Age"><span class="num">115d</span></td></tr><tr><td data-label="Name">n8n-kw-dashboard-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>python:3.11-slim</code></td><td data-label="Age"><span class="num">115d</span></td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Scheduled jobs · 31</h2>
-    <div class="table-wrap"><table>
-    <thead><tr><th>When</th><th>User</th><th>Command</th></tr></thead>
-    <tbody><tr><td data-label="When"><code>0 2 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><span class="sev sev--high">secret</span> <code>mongodump --uri=&quot;mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=admin&quot; --out</code></td></tr><tr><td data-label="When"><code>15 2 * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-manashi-backup.sh &gt;&gt; /var/log/kw-manashi-backup.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>* * * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-manashi-autodeploy.sh &gt;&gt; /var/log/kw-manashi-autodeploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>* * * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-skills-autodeploy.sh &gt;&gt; /var/log/kw-skills-autodeploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 3 * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><span class="sev sev--high">secret</span> <code>curl -fsS -X POST -H &quot;Authorization: Bearer ***REDACTED***&quot; http://127.0.0.1:3000/api/cron</code></td></tr><tr><td data-label="When"><code>* * * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-gbt-autodeploy.sh &gt;&gt; /var/log/kw-gbt-autodeploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 */12 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -x /usr/bin/certbot -a \! -d /run/systemd/system &amp;&amp; perl -e 'sleep int(rand(43200))' </code></td></tr><tr><td data-label="When"><code>20 3 * * 5</code></td><td data-label="User">root</td><td data-label="Command"><code>docker builder prune -f &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>36 0 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>docker image prune -af --filter &quot;until=24h&quot; &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>30 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_</code></td></tr><tr><td data-label="When"><code>10 3 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r</code></td></tr><tr><td data-label="When"><code>5-55/10 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 1 1</code></td></tr><tr><td data-label="When"><code>59 23 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 60 2</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:10:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-collect.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 13:55:05 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fwupd-refresh.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 15:56:56 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-download.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 16:07:01 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>systemd-tmpfiles-clean.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 17:39:24 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 22:22:56 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>certbot.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 23:01:32 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>motd-news.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>dpkg-db-backup.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>logrotate.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:07:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-summary.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 05:49:19 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>man-db.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:59:44 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily-upgrade.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-08-30 03:10:35 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>e2scrub_all.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-31 01:07:03 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fstrim.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-09-06 04:00:00 UTC 1 week 5 days Mon 2026-08-24 06:30:33 UTC 5h 34min ago update-notifier-motd.timer</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-motd.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>apport-autoreport.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>snapd.snap-repair.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>ua-timer.service</code></td></tr></tbody>
-  </table></div>
-  </section><section class="drawer-panel" data-panel="server:srv1870078">
-    <dl class="kv">
-      <dt>Address</dt><dd>200.141.9.83</dd>
-      <dt>Role</dt><dd>Second n8n (idle)</dd>
-      <dt>OS</dt><dd>Ubuntu 24.04.4 LTS · 6.8.0-134-generic</dd>
-      <dt>Hardware</dt><dd>2 vCPU · AMD EPYC 9355P 32-Core Processor · 7.8Gi · 96G</dd>
-      <dt>Uptime</dt><dd>23 days · reboot pending</dd>
-      <dt>Firewall</dt><dd>active · deny (incoming), allow (outgoing), deny (routed)</dd>
-      <dt>Last ingest</dt><dd>2026-08-24T12:04:28Z</dd>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">10</span>Docker</h2>
+      <div class="board-content"><dl class="kv">
+      <dt>Version</dt><dd>29.2.1</dd>
+      <dt>Images</dt><dd>10 · 8.992GB</dd>
+      <dt>Volumes</dt><dd>4 · 2.662GB</dd>
+      <dt>Reclaimable</dt><dd>6.731GB</dd>
+      
     </dl>
+    <h3>Compose stacks</h3><div class="table-wrap"><table>
+    <thead><tr><th>Stack</th><th>Status</th><th>File</th></tr></thead>
+    <tbody><tr><td data-label="Stack">google-ads-mcp</td><td data-label="Status"><span class="dot dot--live"></span> running(1)</td><td data-label="File"><code>/opt/google-ads-connector/docker-compose.yml</code></td></tr><tr><td data-label="Stack">kwskills</td><td data-label="Status"><span class="dot dot--live"></span> running(2)</td><td data-label="File"><code>/opt/kw-skills/docker-compose.yml</code></td></tr><tr><td data-label="Stack">n8n</td><td data-label="Status"><span class="dot dot--live"></span> running(2)</td><td data-label="File"><code>/docker/n8n/docker-compose.yml</code></td></tr><tr><td data-label="Stack">traefik-iyg2</td><td data-label="Status"><span class="dot dot--broken"></span> restarting(1)</td><td data-label="File"><code>/docker/traefik-iyg2/docker-compose.yml</code></td></tr></tbody>
+  </table></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">11</span>Databases</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>Database</th><th>Engine</th><th>Collection</th><th>Documents</th></tr></thead>
+    <tbody><tr><td data-label="Database">Yamini</td><td data-label="Engine">mongodb</td><td data-label="Collection"><code>customerChats</code></td><td data-label="Documents"><span class="num">27,368</span></td></tr><tr><td data-label="Database">Yamini</td><td data-label="Engine">mongodb</td><td data-label="Collection"><code>authLogs</code></td><td data-label="Documents"><span class="num">130</span></td></tr><tr><td data-label="Database">Yamini</td><td data-label="Engine">mongodb</td><td data-label="Collection"><code>allowedUsers</code></td><td data-label="Documents"><span class="num">5</span></td></tr><tr><td data-label="Database">kw_manashi</td><td data-label="Engine">postgres</td><td data-label="Collection"><span class="faint">not enumerated</span></td><td data-label="Documents">—</td></tr><tr><td data-label="Database">kwatch</td><td data-label="Engine">postgres</td><td data-label="Collection"><span class="faint">not enumerated</span></td><td data-label="Documents">—</td></tr><tr><td data-label="Database">postgres</td><td data-label="Engine">postgres</td><td data-label="Collection"><span class="faint">not enumerated</span></td><td data-label="Documents">—</td></tr></tbody>
+  </table></div>
+  <h3>Engines on this host</h3><div class="chip-list"><span class="pill"><span class="dot dot--idle"></span>mariadb absent</span><span class="pill"><span class="dot dot--live"></span>mongod active</span><span class="pill"><span class="dot dot--idle"></span>mysql absent</span><span class="pill"><span class="dot dot--live"></span>postgresql active</span><span class="pill"><span class="dot dot--idle"></span>redis-server absent</span></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">12</span>Workflows</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>Workflow</th><th>State</th><th>Group</th></tr></thead>
+    <tbody><tr><td data-label="Workflow">4 · KW Google Enhanced Conversions · DAILY (with GCLID)</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Attribution</td></tr><tr><td data-label="Workflow">BP WhatsApp Weekly Broadcast</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">CRM Lead Agent</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Ungrouped</td></tr><tr><td data-label="Workflow">D6 WhatsApp Weekly Broadcast</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">GB Blue Pearl</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">KW GBT</td></tr><tr><td data-label="Workflow">GB Delhi 6</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">KW GBT</td></tr><tr><td data-label="Workflow">Lead Qualification Agent</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">web-chat-kwbp</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Web chat</td></tr><tr><td data-label="Workflow">web-chat-kwd6</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Web chat</td></tr><tr><td data-label="Workflow">WhatsApp BP Inbound AI Reply</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">WhatsApp Chat Agent</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">WhatsApp D6 Inbound AI Reply</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">Call Auditor</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Sales QA</td></tr><tr><td data-label="Workflow">Call Recording Analyser</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Sales QA</td></tr><tr><td data-label="Workflow">Cratio pull API → Meta CAPI (scheduled, lead_id match)</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Attribution</td></tr><tr><td data-label="Workflow">CV Filter Automation - KW Group</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">HR</td></tr><tr><td data-label="Workflow">hr screening system community1</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">HR</td></tr><tr><td data-label="Workflow">Isha Working</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Ungrouped</td></tr><tr><td data-label="Workflow">KW 3 · Qualification &amp; CRM Writeback</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">KW CV Screening Pipeline v7</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">HR</td></tr><tr><td data-label="Workflow">KW Group – YAMINI WhatsApp AI Support</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">KW WhatsApp — Main (Single Webhook + Manual Test)</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">KW WhatsApp — Main (Single Webhook + Manual Test)</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">KW: Cratio -&gt; Meta CAPI (daily, by Updated Time)</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Attribution</td></tr><tr><td data-label="Workflow">Lead Qualification Pipeline - CRM → Ringg AI → Scoring → DB</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">Media prompt</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Ungrouped</td></tr><tr><td data-label="Workflow">SR's Combined Qualification Agent</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">Summarize the news</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Ungrouped</td></tr><tr><td data-label="Workflow">Whatsapp Auto Reply with Followback</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr><tr><td data-label="Workflow">WhatsApp Inbound AI Reply</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Yamini</td></tr></tbody>
+  </table></div><p class="faint">105 template imports hidden.</p></div>
+    </section>
 
-    <h2>Issues · 2</h2>
-      <div class="issue issue--high reconciled">
-    <div class="issue-head">
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">13</span>Scheduled jobs</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>User</th><th>Command</th></tr></thead>
+    <tbody><tr><td data-label="When"><code>0 2 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><span class="sev sev--high">secret</span> <code>mongodump --uri=&quot;mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=ad</code></td></tr><tr><td data-label="When"><code>15 2 * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-manashi-backup.sh &gt;&gt; /var/log/kw-manashi-backup.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>* * * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-manashi-autodeploy.sh &gt;&gt; /var/log/kw-manashi-autodeploy.log 2&gt;</code></td></tr><tr><td data-label="When"><code>* * * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-skills-autodeploy.sh &gt;&gt; /var/log/kw-skills-autodeploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 3 * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><span class="sev sev--high">secret</span> <code>curl -fsS -X POST -H &quot;Authorization: Bearer ***REDACTED***&quot; http://127.0.0.1:300</code></td></tr><tr><td data-label="When"><code>* * * * *</code></td><td data-label="User">claude-deploy</td><td data-label="Command"><code>/usr/local/bin/kw-gbt-autodeploy.sh &gt;&gt; /var/log/kw-gbt-autodeploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 */12 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -x /usr/bin/certbot -a \! -d /run/systemd/system &amp;&amp; perl -e 'sleep int(rand</code></td></tr><tr><td data-label="When"><code>20 3 * * 5</code></td><td data-label="User">root</td><td data-label="Command"><code>docker builder prune -f &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>36 0 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>docker image prune -af --filter &quot;until=24h&quot; &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>30 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprog</code></td></tr><tr><td data-label="When"><code>10 3 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r</code></td></tr><tr><td data-label="When"><code>5-55/10 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 1 1</code></td></tr><tr><td data-label="When"><code>59 23 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 60 2</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:10:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-collect.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 13:55:05 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fwupd-refresh.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 15:56:56 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-download.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 16:07:01 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>systemd-tmpfiles-clean.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 17:39:24 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 22:22:56 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>certbot.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 23:01:32 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>motd-news.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>dpkg-db-backup.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>logrotate.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:07:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-summary.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 05:49:19 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>man-db.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:59:44 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily-upgrade.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-08-30 03:10:35 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>e2scrub_all.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-31 01:07:03 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fstrim.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-09-06 04:00:00 UTC 1 week 5 days Mon 2026-08-24 06:30:33 UTC 5h 34min ago update-notifier-motd.timer</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-motd.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>apport-autoreport.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>snapd.snap-repair.service</code></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">14</span>Logs</h2>
+      <div class="board-content"><dl class="kv">
+      <dt>Journal</dt><dd>215.6M</dd>
+      <dt>/var/log</dt><dd>3.8G</dd>
+      <dt>Recent errors</dt><dd>15 lines</dd>
+    </dl>
+    <div class="table-wrap"><table>
+    <thead><tr><th>Log</th><th>Size</th></tr></thead>
+    <tbody><tr><td data-label="Log"><code>/var/log/mongodb/mongod.log</code></td><td data-label="Size"><span class="num">3.5G</span></td></tr><tr><td data-label="Log"><code>/var/log/auth.log.1</code></td><td data-label="Size"><span class="num">7.2M</span></td></tr><tr><td data-label="Log"><code>/var/log/syslog.1</code></td><td data-label="Size"><span class="num">7.2M</span></td></tr><tr><td data-label="Log"><code>/var/log/syslog</code></td><td data-label="Size"><span class="num">3.0M</span></td></tr><tr><td data-label="Log"><code>/var/log/auth.log</code></td><td data-label="Size"><span class="num">1.9M</span></td></tr><tr><td data-label="Log"><code>/var/log/btmp.1</code></td><td data-label="Size"><span class="num">1.8M</span></td></tr><tr><td data-label="Log"><code>/var/log/kern.log</code></td><td data-label="Size"><span class="num">1.6M</span></td></tr><tr><td data-label="Log"><code>/var/log/ufw.log</code></td><td data-label="Size"><span class="num">1.6M</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">15</span>SSH</h2>
+      <div class="board-content"><dl class="kv">
+    <dt>Port</dt><dd>22</dd>
+    <dt>Root login</dt><dd>permitted</dd>
+    <dt>Password auth</dt><dd>enabled</dd>
+    <dt>Failed passwords</dt><dd>39 in the current log</dd>
+  </dl>
+  <h3>Most persistent sources</h3><div class="table-wrap"><table>
+    <thead><tr><th>Address</th><th>Attempts</th></tr></thead>
+    <tbody><tr><td data-label="Address"><code>93.183.83.99</code></td><td data-label="Attempts"><span class="num">80</span></td></tr><tr><td data-label="Address"><code>207.180.230.71</code></td><td data-label="Attempts"><span class="num">69</span></td></tr><tr><td data-label="Address"><code>116.110.147.130</code></td><td data-label="Attempts"><span class="num">60</span></td></tr><tr><td data-label="Address"><code>116.110.5.25</code></td><td data-label="Attempts"><span class="num">54</span></td></tr><tr><td data-label="Address"><code>116.110.11.84</code></td><td data-label="Attempts"><span class="num">53</span></td></tr><tr><td data-label="Address"><code>171.231.193.230</code></td><td data-label="Attempts"><span class="num">49</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">16</span>Packages</h2>
+      <div class="board-content"><dl class="kv">
+        <dt>Upgradable</dt><dd>66</dd>
+        <dt>apt cache</dt><dd>142M</dd>
+        <dt>Kernels</dt><dd>6.8.0-110-generic<br>6.8.0-138-generic</dd>
+      </dl></div>
+    </section>
+
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">17</span>Left lying around</h2>
+      <div class="board-content"><ul><li><code>/var/www/Dashborad_Overview/main.py.bak.2026-08-17-1120</code></li><li><code>/opt/kw-manashi/.env.bak.20260423</code></li><li><code>/opt/kw-manashi/credentials/gdrive_service_account.BROKEN.bak</code></li><li><code>/etc/nginx/sites-enabled/hrportal.bak.20260505-044819</code></li></ul></div>
+    </section>
+    </div>
+  </section><section class="drawer-panel" data-panel="server:srv1870078">
+    <div class="tiles">
+    <div class="tile">
+    <div class="tile-value">8%</div>
+    <div class="tile-label">Disk used</div>
+    <div class="tile-note">7.0G of 96G</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">15%</div>
+    <div class="tile-label">Memory</div>
+    <div class="tile-note">1.2Gi of 7.8Gi</div>
+    
+  </div>
+    <div class="tile tile--good">
+    <div class="tile-value">20</div>
+    <div class="tile-label">Units running</div>
+    <div class="tile-note">0 failed</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">2</div>
+    <div class="tile-label">Containers</div>
+    <div class="tile-note">2 running</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">1</div>
+    <div class="tile-label">Projects</div>
+    <div class="tile-note">1 live</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">1</div>
+    <div class="tile-label">Active workflows</div>
+    <div class="tile-note">of 3</div>
+    
+  </div>
+  </div>
+
+    <div class="board">
+      
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">1</span>Issues · 1 open</h2>
+      <div class="board-content"><div class="issue-scroll"><details class="issue-row issue--high reconciled">
+    <summary>
       <span class="sev sev--high">high</span>
       <span class="issue-title">ufw was inactive on srv1870078</span>
-      <span class="faint" style="font:11px var(--mono)">srv1870078</span>
-      <span class="faint" style="font:11px var(--mono)">manual</span>
-    </div>
-    <div class="issue-body">Reported on 18 Aug against the second n8n host.</div>
-    
-    <div class="claim-note claim-note--reconciled">
-    Re-tested against the latest ingest: <strong>no longer reproduces</strong>. ufw is active. Looks fixed since this was written on 2026-08-18.
+      <span class="faint issue-src">manual</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Reported on 18 Aug against the second n8n host.</div>
+      
+      <div class="claim-note claim-note--reconciled">
+    Re-tested: <strong>no longer reproduces</strong>. ufw is active.
   </div>
-  </div><div class="issue issue--medium">
-    <div class="issue-head">
+    </div>
+  </details><details class="issue-row issue--medium">
+    <summary>
       <span class="sev sev--medium">medium</span>
       <span class="issue-title">srv1870078 is running an older kernel than the one installed</span>
-      <span class="faint" style="font:11px var(--mono)">srv1870078</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Running 6.8.0-134-generic, but 6.8.0-138-generic is installed. A reboot is needed to pick it up.</div>
+      <div class="issue-evidence">running=6.8.0-134-generic newest=6.8.0-138-generic</div>
+      
     </div>
-    <div class="issue-body">Running 6.8.0-134-generic, but 6.8.0-138-generic is installed. A reboot is needed to pick it up.</div>
-    <div class="issue-evidence">running=6.8.0-134-generic newest=6.8.0-138-generic</div>
-    
-  </div>
+  </details></div></div>
+    </section>
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">2</span>Identity</h2>
+      <div class="board-content"><dl class="kv">
+    <dt>Address</dt><dd>200.141.9.83</dd>
+    <dt>Role</dt><dd>Second n8n (idle)</dd>
+    <dt>OS</dt><dd>Ubuntu 24.04.4 LTS</dd>
+    <dt>Kernel</dt><dd>6.8.0-134-generic · reboot pending</dd>
+    <dt>CPU</dt><dd>2 vCPU · AMD EPYC 9355P 32-Core Processor</dd>
+    <dt>Memory</dt><dd>7.8Gi</dd>
+    <dt>Disk</dt><dd>96G</dd>
+    <dt>Uptime</dt><dd>23 days</dd>
+    <dt>Firewall</dt><dd>active · deny (incoming), allow (outgoing), deny (routed)</dd>
+    <dt>Ingested</dt><dd>2026-08-24T12:04:28Z</dd>
+  </dl></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">3</span>Storage</h2>
+      <div class="board-content"><div class="meters"><div class="meter-row">
+    <span class="meter-label"><code>/</code></span>
+    <span class="meter"><span class="meter-fill " style="width:8%"></span></span>
+    <span class="meter-value">8% · 7.0G</span>
+  </div><div class="meter-row">
+    <span class="meter-label"><code>/boot</code></span>
+    <span class="meter"><span class="meter-fill " style="width:15%"></span></span>
+    <span class="meter-value">15% · 116M</span>
+  </div><div class="meter-row">
+    <span class="meter-label"><code>/boot/efi</code></span>
+    <span class="meter"><span class="meter-fill " style="width:6%"></span></span>
+    <span class="meter-value">6% · 6.2M</span>
+  </div></div>
+    <h3>Largest files</h3><div class="table-wrap"><table>
+    <thead><tr><th>Path</th><th>Size</th></tr></thead>
+    <tbody><tr><td data-label="Path"><code>/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/23/fs/home/node/core</code></td><td data-label="Size"><span class="num">3.2G</span></td></tr><tr><td data-label="Path"><code>/var/lib/docker/volumes/n8n-vfa2_n8n_data/_data/database.sqlite</code></td><td data-label="Size"><span class="num">491M</span></td></tr><tr><td data-label="Path"><code>/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/a35ce2150cc6c4855ef115cd5f268e09d3b3ec943cea9a9ee2886b0f6e6aa4ad</code></td><td data-label="Size"><span class="num">302M</span></td></tr></tbody>
+  </table></div></div>
+    </section>
 
-    <h2>Projects · 1</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">4</span>Projects</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Project</th><th>Status</th><th>Backend</th><th>Port</th></tr></thead>
     <tbody><tr><td data-label="Project"><a href="#project=n8n-vfa2-n8n-1" data-open="project:n8n-vfa2-n8n-1">n8n-vfa2-n8n-1</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">n8n-vfa2-n8n-1</td><td data-label="Port"><span class="num">32769</span></td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Workflows · 1 active of 3</h2>
-    <div class="wf-list" style="border:1px solid var(--line);border-radius:var(--r-sm)">
-      <div class="wf"><span class="dot dot--live"></span>
-        <span class="wf-name">3 · KW META Custom Audiences · D6 + Blue Pearl</span>
-        <span class="wf-id">Ungrouped</span></div><div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name">KW Group: Cratio -&gt; Google Enhanced Conversions, Google Customer Match - MATCH LISTS</span>
-        <span class="wf-id">Attribution</span></div>
-    </div>
-    <p class="faint" style="margin-top:8px">1 template imports hidden.</p>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">5</span>Hostnames</h2>
+      <div class="board-content"><p class="faint">Nothing recorded.</p></div>
+    </section>
 
-    <h2>Exposed ports · 4</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">6</span>Exposed ports</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Port</th><th>Bind</th><th>Process</th></tr></thead>
     <tbody><tr><td data-label="Port"><span class="num">22/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">sshd</td></tr><tr><td data-label="Port"><span class="num">80/tcp</span></td><td data-label="Bind"><code>*</code></td><td data-label="Process">traefik</td></tr><tr><td data-label="Port"><span class="num">443/tcp</span></td><td data-label="Bind"><code>*</code></td><td data-label="Process">traefik</td></tr><tr><td data-label="Port"><span class="num">32769/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">docker-proxy</td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Hostnames · 0</h2>
-    <p class="faint">Nothing recorded.</p>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">7</span>Failed units</h2>
+      <div class="board-content"><p class="faint">Every unit is healthy.</p></div>
+    </section>
 
-    <h2>Containers · 2</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">8</span>Containers</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Name</th><th>State</th><th>Image</th><th>Age</th></tr></thead>
     <tbody><tr><td data-label="Name">n8n-vfa2-n8n-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>docker.n8n.io/n8nio/n8n</code></td><td data-label="Age"><span class="num">23d</span></td></tr><tr><td data-label="Name">traefik-traefik-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>traefik:latest</code></td><td data-label="Age"><span class="num">23d</span></td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Scheduled jobs · 19</h2>
-    <div class="table-wrap"><table>
-    <thead><tr><th>When</th><th>User</th><th>Command</th></tr></thead>
-    <tbody><tr><td data-label="When"><code>58 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>docker builder prune -f &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 0 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>sleep $(shuf -i 0-21600 -n 1) &amp;&amp; docker image prune -af --filter &quot;until=24h&quot; &gt; /dev/null 2</code></td></tr><tr><td data-label="When"><code>30 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_</code></td></tr><tr><td data-label="When"><code>10 3 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r</code></td></tr><tr><td data-label="When"><code>5-55/10 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 1 1</code></td></tr><tr><td data-label="When"><code>59 23 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 60 2</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:10:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-collect.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 22:04:31 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>dpkg-db-backup.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>logrotate.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:07:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-summary.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 02:35:42 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>man-db.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 05:54:14 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-download.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:04:44 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>systemd-tmpfiles-clean.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:09:24 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily-upgrade.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-08-30 03:10:02 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>e2scrub_all.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-31 01:18:54 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fstrim.service</code></td></tr><tr><td data-label="When"><code>next: Sat 2026-09-05 10:37:46 UTC 1 week 4 days Mon 2026-08-24 00:06:54 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-motd.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>ua-timer.service</code></td></tr></tbody>
-  </table></div>
-  </section><section class="drawer-panel" data-panel="server:srv1900820">
-    <dl class="kv">
-      <dt>Address</dt><dd>200.234.35.172</dd>
-      <dt>Role</dt><dd>Websites</dd>
-      <dt>OS</dt><dd>Ubuntu 24.04.4 LTS · 6.8.0-137-generic</dd>
-      <dt>Hardware</dt><dd>4 vCPU · AMD EPYC 9355P 32-Core Processor · 15Gi · 193G</dd>
-      <dt>Uptime</dt><dd>11 days · reboot pending</dd>
-      <dt>Firewall</dt><dd>active · deny (incoming), allow (outgoing), deny (routed)</dd>
-      <dt>Last ingest</dt><dd>2026-08-24T12:14:41Z</dd>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">9</span>Docker</h2>
+      <div class="board-content"><dl class="kv">
+      <dt>Version</dt><dd>29.6.1</dd>
+      <dt>Images</dt><dd>2 · 2.728GB</dd>
+      <dt>Volumes</dt><dd>3 · 649.2MB</dd>
+      <dt>Reclaimable</dt><dd>0B</dd>
+      <dt>Orphan volumes</dt><dd>traefik-letsencrypt</dd>
     </dl>
+    <h3>Compose stacks</h3><div class="table-wrap"><table>
+    <thead><tr><th>Stack</th><th>Status</th><th>File</th></tr></thead>
+    <tbody><tr><td data-label="Stack">n8n-vfa2</td><td data-label="Status"><span class="dot dot--live"></span> running(1)</td><td data-label="File"><code>/docker/n8n-vfa2/docker-compose.yml</code></td></tr><tr><td data-label="Stack">traefik</td><td data-label="Status"><span class="dot dot--live"></span> running(1)</td><td data-label="File"><code>/docker/traefik/docker-compose.yml</code></td></tr></tbody>
+  </table></div></div>
+    </section>
+      
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">10</span>Workflows</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>Workflow</th><th>State</th><th>Group</th></tr></thead>
+    <tbody><tr><td data-label="Workflow">3 · KW META Custom Audiences · D6 + Blue Pearl</td><td data-label="State"><span class="dot dot--live"></span> active</td><td data-label="Group">Ungrouped</td></tr><tr><td data-label="Workflow">KW Group: Cratio -&gt; Google Enhanced Conversions, Google Customer Match - MATCH LISTS</td><td data-label="State"><span class="dot dot--idle"></span> off</td><td data-label="Group">Attribution</td></tr></tbody>
+  </table></div><p class="faint">1 template imports hidden.</p></div>
+    </section>
 
-    <h2>Issues · 1</h2>
-      <div class="issue issue--medium">
-    <div class="issue-head">
-      <span class="sev sev--medium">medium</span>
-      <span class="issue-title">srv1900820 is running an older kernel than the one installed</span>
-      <span class="faint" style="font:11px var(--mono)">srv1900820</span>
-      <span class="faint" style="font:11px var(--mono)">auto</span>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">11</span>Scheduled jobs</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>User</th><th>Command</th></tr></thead>
+    <tbody><tr><td data-label="When"><code>58 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>docker builder prune -f &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 0 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>sleep $(shuf -i 0-21600 -n 1) &amp;&amp; docker image prune -af --filter &quot;until=24h&quot; &gt; /</code></td></tr><tr><td data-label="When"><code>30 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprog</code></td></tr><tr><td data-label="When"><code>10 3 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r</code></td></tr><tr><td data-label="When"><code>5-55/10 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 1 1</code></td></tr><tr><td data-label="When"><code>59 23 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 60 2</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:10:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-collect.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 22:04:31 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>dpkg-db-backup.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>logrotate.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:07:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-summary.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 02:35:42 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>man-db.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 05:54:14 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-download.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:04:44 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>systemd-tmpfiles-clean.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:09:24 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily-upgrade.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-08-30 03:10:02 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>e2scrub_all.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-31 01:18:54 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fstrim.service</code></td></tr><tr><td data-label="When"><code>next: Sat 2026-09-05 10:37:46 UTC 1 week 4 days Mon 2026-08-24 00:06:54 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-motd.service</code></td></tr><tr><td data-label="When"><code>inactive</code></td><td data-label="User">—</td><td data-label="Command"><code>ua-timer.service</code></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">12</span>Logs</h2>
+      <div class="board-content"><dl class="kv">
+      <dt>Journal</dt><dd>144.3M</dd>
+      <dt>/var/log</dt><dd>207M</dd>
+      <dt>Recent errors</dt><dd>15 lines</dd>
+    </dl>
+    <div class="table-wrap"><table>
+    <thead><tr><th>Log</th><th>Size</th></tr></thead>
+    <tbody><tr><td data-label="Log"><code>/var/log/syslog.1</code></td><td data-label="Size"><span class="num">13M</span></td></tr><tr><td data-label="Log"><code>/var/log/syslog</code></td><td data-label="Size"><span class="num">13M</span></td></tr><tr><td data-label="Log"><code>/var/log/btmp</code></td><td data-label="Size"><span class="num">11M</span></td></tr><tr><td data-label="Log"><code>/var/log/auth.log.1</code></td><td data-label="Size"><span class="num">7.3M</span></td></tr><tr><td data-label="Log"><code>/var/log/kern.log</code></td><td data-label="Size"><span class="num">1.4M</span></td></tr><tr><td data-label="Log"><code>/var/log/kern.log.1</code></td><td data-label="Size"><span class="num">1.4M</span></td></tr><tr><td data-label="Log"><code>/var/log/auth.log</code></td><td data-label="Size"><span class="num">1.2M</span></td></tr><tr><td data-label="Log"><code>/var/log/auth.log.3.gz</code></td><td data-label="Size"><span class="num">244K</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">13</span>SSH</h2>
+      <div class="board-content"><dl class="kv">
+    <dt>Port</dt><dd>22</dd>
+    <dt>Root login</dt><dd>permitted</dd>
+    <dt>Password auth</dt><dd>enabled</dd>
+    <dt>Failed passwords</dt><dd>1535 in the current log</dd>
+  </dl>
+  <h3>Most persistent sources</h3><div class="table-wrap"><table>
+    <thead><tr><th>Address</th><th>Attempts</th></tr></thead>
+    <tbody><tr><td data-label="Address"><code>138.68.64.76</code></td><td data-label="Attempts"><span class="num">14335</span></td></tr><tr><td data-label="Address"><code>93.144.8.254</code></td><td data-label="Attempts"><span class="num">873</span></td></tr><tr><td data-label="Address"><code>218.173.89.132</code></td><td data-label="Attempts"><span class="num">873</span></td></tr><tr><td data-label="Address"><code>213.230.121.186</code></td><td data-label="Attempts"><span class="num">873</span></td></tr><tr><td data-label="Address"><code>2.56.109.156</code></td><td data-label="Attempts"><span class="num">873</span></td></tr><tr><td data-label="Address"><code>197.149.95.118</code></td><td data-label="Attempts"><span class="num">873</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">14</span>Packages</h2>
+      <div class="board-content"><dl class="kv">
+        <dt>Upgradable</dt><dd>18</dd>
+        <dt>apt cache</dt><dd>109M</dd>
+        <dt>Kernels</dt><dd>6.8.0-134-generic<br>6.8.0-138-generic</dd>
+      </dl></div>
+    </section>
+
+      
     </div>
-    <div class="issue-body">Running 6.8.0-137-generic, but 6.8.0-138-generic is installed. A reboot is needed to pick it up.</div>
-    <div class="issue-evidence">running=6.8.0-137-generic newest=6.8.0-138-generic</div>
+  </section><section class="drawer-panel" data-panel="server:srv1900820">
+    <div class="tiles">
+    <div class="tile">
+    <div class="tile-value">5%</div>
+    <div class="tile-label">Disk used</div>
+    <div class="tile-note">8.3G of 193G</div>
     
   </div>
+    <div class="tile">
+    <div class="tile-value">21%</div>
+    <div class="tile-label">Memory</div>
+    <div class="tile-note">3.1Gi of 15Gi</div>
+    
+  </div>
+    <div class="tile tile--good">
+    <div class="tile-value">23</div>
+    <div class="tile-label">Units running</div>
+    <div class="tile-note">0 failed</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">7</div>
+    <div class="tile-label">Containers</div>
+    <div class="tile-note">7 running</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">3</div>
+    <div class="tile-label">Projects</div>
+    <div class="tile-note">3 live</div>
+    
+  </div>
+    <div class="tile">
+    <div class="tile-value">0</div>
+    <div class="tile-label">Active workflows</div>
+    <div class="tile-note">no n8n here</div>
+    
+  </div>
+  </div>
 
-    <h2>Projects · 3</h2>
-    <div class="table-wrap"><table>
+    <div class="board">
+      <section class="board-panel board-panel--flow">
+      <h2 class="board-title"><span class="board-num">1</span>Topology</h2>
+      <div class="board-content"><div class="flow-wrap"><div class="flow-scroll"><svg class="flow flow-horizontal" width="744" height="290" viewBox="0 0 744 290" role="img" aria-label="srv1900820 topology" preserveAspectRatio="xMidYMin meet">
+    <title>srv1900820 topology</title>
+    <defs>
+      <marker id="t-srv1900820-arrow-neutral" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--neutral" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1900820-arrow-live" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--live" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1900820-arrow-data" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--data" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1900820-arrow-idle" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--idle" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="t-srv1900820-arrow-broken" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--broken" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+    </defs>
+    <path id="t-srv1900820-e0" class="flow-edge flow-edge--live" d="M 196 145 C 242 145, 242 145, 288 145" marker-end="url(#t-srv1900820-arrow-live)" />
+    <path id="t-srv1900820-e1" class="flow-edge flow-edge--data" d="M 456 145 C 502 145, 502 57, 548 57" marker-end="url(#t-srv1900820-arrow-data)" />
+    <path id="t-srv1900820-e2" class="flow-edge flow-edge--data" d="M 456 145 C 502 145, 502 145, 548 145" marker-end="url(#t-srv1900820-arrow-data)" />
+    <path id="t-srv1900820-e3" class="flow-edge flow-edge--data" d="M 456 145 C 502 145, 502 233, 548 233" marker-end="url(#t-srv1900820-arrow-data)" />
+    <g class="flow-node flow-node--neutral flow-node--ext" data-node="net">
+      <rect class="flow-shape flow-shape--ext" x="28" y="116" width="168" height="58" rx="9" />
+      <text class="flow-label" x="112" y="142">Internet</text>
+      <text class="flow-sublabel" x="112" y="159">200.234.35.172</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="nginx">
+      <rect class="flow-shape" x="288" y="116" width="168" height="58" rx="9" />
+      <text class="flow-label" x="372" y="142">nginx</text>
+      <text class="flow-sublabel" x="372" y="159">:80 :443</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwdelhi6_web_1">
+      <rect class="flow-shape" x="548" y="28" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="54">kwdelhi6-web-1</text>
+      <text class="flow-sublabel" x="632" y="71">:8082</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kw_blue_pearl_web_1">
+      <rect class="flow-shape" x="548" y="116" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="142">kw-blue-pearl-web-1</text>
+      <text class="flow-sublabel" x="632" y="159">:8081</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwgroup_web_1">
+      <rect class="flow-shape" x="548" y="204" width="168" height="58" rx="9" />
+      <text class="flow-label" x="632" y="230">kwgroup-web-1</text>
+      <text class="flow-sublabel" x="632" y="247">:8080</text>
+    </g>
+  </svg><svg class="flow flow-vertical" width="592" height="338" viewBox="0 0 592 338" role="img" aria-label="srv1900820 topology" preserveAspectRatio="xMidYMin meet">
+    <title>srv1900820 topology</title>
+    <defs>
+      <marker id="tv-srv1900820-arrow-neutral" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--neutral" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1900820-arrow-live" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--live" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1900820-arrow-data" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--data" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1900820-arrow-idle" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--idle" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+      <marker id="tv-srv1900820-arrow-broken" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path class="flow-arrow flow-arrow--broken" d="M 0 1 L 7 4 L 0 7 z" />
+      </marker>
+    </defs>
+    <path id="tv-srv1900820-e0" class="flow-edge flow-edge--live" d="M 296 86 C 296 113, 296 113, 296 140" marker-end="url(#tv-srv1900820-arrow-live)" />
+    <path id="tv-srv1900820-e1" class="flow-edge flow-edge--data" d="M 296 198 C 296 225, 112 225, 112 252" marker-end="url(#tv-srv1900820-arrow-data)" />
+    <path id="tv-srv1900820-e2" class="flow-edge flow-edge--data" d="M 296 198 C 296 225, 296 225, 296 252" marker-end="url(#tv-srv1900820-arrow-data)" />
+    <path id="tv-srv1900820-e3" class="flow-edge flow-edge--data" d="M 296 198 C 296 225, 480 225, 480 252" marker-end="url(#tv-srv1900820-arrow-data)" />
+    <g class="flow-node flow-node--neutral flow-node--ext" data-node="net">
+      <rect class="flow-shape flow-shape--ext" x="212" y="28" width="168" height="58" rx="9" />
+      <text class="flow-label" x="296" y="54">Internet</text>
+      <text class="flow-sublabel" x="296" y="71">200.234.35.172</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="nginx">
+      <rect class="flow-shape" x="212" y="140" width="168" height="58" rx="9" />
+      <text class="flow-label" x="296" y="166">nginx</text>
+      <text class="flow-sublabel" x="296" y="183">:80 :443</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwdelhi6_web_1">
+      <rect class="flow-shape" x="28" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="112" y="278">kwdelhi6-web-1</text>
+      <text class="flow-sublabel" x="112" y="295">:8082</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kw_blue_pearl_web_1">
+      <rect class="flow-shape" x="212" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="296" y="278">kw-blue-pearl-web-1</text>
+      <text class="flow-sublabel" x="296" y="295">:8081</text>
+    </g>
+    <g class="flow-node flow-node--live flow-node--node" data-node="kwgroup_web_1">
+      <rect class="flow-shape" x="396" y="252" width="168" height="58" rx="9" />
+      <text class="flow-label" x="480" y="278">kwgroup-web-1</text>
+      <text class="flow-sublabel" x="480" y="295">:8080</text>
+    </g>
+  </svg></div></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">2</span>Issues · 1 open</h2>
+      <div class="board-content"><div class="issue-scroll"><details class="issue-row issue--medium">
+    <summary>
+      <span class="sev sev--medium">medium</span>
+      <span class="issue-title">srv1900820 is running an older kernel than the one installed</span>
+      <span class="faint issue-src">auto</span>
+    </summary>
+    <div class="issue-detail">
+      <div class="issue-body">Running 6.8.0-137-generic, but 6.8.0-138-generic is installed. A reboot is needed to pick it up.</div>
+      <div class="issue-evidence">running=6.8.0-137-generic newest=6.8.0-138-generic</div>
+      
+    </div>
+  </details></div></div>
+    </section>
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">3</span>Identity</h2>
+      <div class="board-content"><dl class="kv">
+    <dt>Address</dt><dd>200.234.35.172</dd>
+    <dt>Role</dt><dd>Websites</dd>
+    <dt>OS</dt><dd>Ubuntu 24.04.4 LTS</dd>
+    <dt>Kernel</dt><dd>6.8.0-137-generic · reboot pending</dd>
+    <dt>CPU</dt><dd>4 vCPU · AMD EPYC 9355P 32-Core Processor</dd>
+    <dt>Memory</dt><dd>15Gi</dd>
+    <dt>Disk</dt><dd>193G</dd>
+    <dt>Uptime</dt><dd>11 days</dd>
+    <dt>Firewall</dt><dd>active · deny (incoming), allow (outgoing), deny (routed)</dd>
+    <dt>Ingested</dt><dd>2026-08-24T12:14:41Z</dd>
+  </dl></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">4</span>Storage</h2>
+      <div class="board-content"><div class="meters"><div class="meter-row">
+    <span class="meter-label"><code>/</code></span>
+    <span class="meter"><span class="meter-fill " style="width:5%"></span></span>
+    <span class="meter-value">5% · 8.3G</span>
+  </div><div class="meter-row">
+    <span class="meter-label"><code>/boot</code></span>
+    <span class="meter"><span class="meter-fill " style="width:15%"></span></span>
+    <span class="meter-value">15% · 116M</span>
+  </div><div class="meter-row">
+    <span class="meter-label"><code>/boot/efi</code></span>
+    <span class="meter"><span class="meter-fill " style="width:6%"></span></span>
+    <span class="meter-value">6% · 6.2M</span>
+  </div></div>
+    <h3>Largest files</h3><div class="table-wrap"><table>
+    <thead><tr><th>Path</th><th>Size</th></tr></thead>
+    <tbody><tr><td data-label="Path"><code>/var/lib/docker/containers/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7-json.log</code></td><td data-label="Size"><span class="num">2.8G</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">5</span>Projects</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Project</th><th>Status</th><th>Backend</th><th>Port</th></tr></thead>
     <tbody><tr><td data-label="Project"><a href="#project=ghaziabadcommercialshops" data-open="project:ghaziabadcommercialshops">ghaziabadcommercialshops.org</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kwdelhi6-web-1</td><td data-label="Port"><span class="num">8082</span></td></tr><tr><td data-label="Project"><a href="#project=kwbluepearl" data-open="project:kwbluepearl">kwbluepearl.com</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kw-blue-pearl-web-1</td><td data-label="Port"><span class="num">8081</span></td></tr><tr><td data-label="Project"><a href="#project=kwgroup" data-open="project:kwgroup">kwgroup.in</a></td><td data-label="Status"><span class="dot dot--live"></span> live</td><td data-label="Backend">kwgroup-web-1</td><td data-label="Port"><span class="num">8080</span></td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Workflows · 0 active of 0</h2>
-    <p class="faint">No n8n instance on this host.</p>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">6</span>Hostnames</h2>
+      <div class="board-content"><div class="table-wrap"><table>
+    <thead><tr><th>Domain</th><th>Upstream</th><th>Via</th><th>Cert</th></tr></thead>
+    <tbody><tr><td data-label="Domain">ghaziabadcommercialshops.org</td><td data-label="Upstream"><code>127.0.0.1:8082</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">kwbluepearl.com</td><td data-label="Upstream"><code>127.0.0.1:8081</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">kwgroup.in</td><td data-label="Upstream"><code>127.0.0.1:8080</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">www.ghaziabadcommercialshops.org</td><td data-label="Upstream"><code>127.0.0.1:8082</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">www.kwbluepearl.com</td><td data-label="Upstream"><code>127.0.0.1:8081</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">www.kwgroup.in</td><td data-label="Upstream"><code>127.0.0.1:8080</code></td><td data-label="Via">nginx</td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr></tbody>
+  </table></div></div>
+    </section>
 
-    <h2>Exposed ports · 3</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">7</span>Exposed ports</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Port</th><th>Bind</th><th>Process</th></tr></thead>
     <tbody><tr><td data-label="Port"><span class="num">22/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">sshd</td></tr><tr><td data-label="Port"><span class="num">80/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">nginx</td></tr><tr><td data-label="Port"><span class="num">443/tcp</span></td><td data-label="Bind"><code>0.0.0.0</code></td><td data-label="Process">nginx</td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Hostnames · 6</h2>
-    <div class="table-wrap"><table>
-    <thead><tr><th>Domain</th><th>Upstream</th><th>Cert</th></tr></thead>
-    <tbody><tr><td data-label="Domain">ghaziabadcommercialshops.org</td><td data-label="Upstream"><code>127.0.0.1:8082</code></td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">kwbluepearl.com</td><td data-label="Upstream"><code>127.0.0.1:8081</code></td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">kwgroup.in</td><td data-label="Upstream"><code>127.0.0.1:8080</code></td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">www.ghaziabadcommercialshops.org</td><td data-label="Upstream"><code>127.0.0.1:8082</code></td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">www.kwbluepearl.com</td><td data-label="Upstream"><code>127.0.0.1:8081</code></td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr><tr><td data-label="Domain">www.kwgroup.in</td><td data-label="Upstream"><code>127.0.0.1:8080</code></td><td data-label="Cert"><span class="num" style="color:inherit">78d</span></td></tr></tbody>
-  </table></div>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">8</span>Failed units</h2>
+      <div class="board-content"><p class="faint">Every unit is healthy.</p></div>
+    </section>
 
-    <h2>Containers · 7</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">9</span>Containers</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>Name</th><th>State</th><th>Image</th><th>Age</th></tr></thead>
     <tbody><tr><td data-label="Name">kwdelhi6-web-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>kwdelhi6-web</code></td><td data-label="Age"><span class="num">1d</span></td></tr><tr><td data-label="Name">kwgroup-app-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>kwgroup-app</code></td><td data-label="Age"><span class="num">6d</span></td></tr><tr><td data-label="Name">kw-blue-pearl-web-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>kw-blue-pearl-web</code></td><td data-label="Age"><span class="num">6d</span></td></tr><tr><td data-label="Name">kw-blue-pearl-db-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>postgres:16-alpine</code></td><td data-label="Age"><span class="num">10d</span></td></tr><tr><td data-label="Name">kwdelhi6-db-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>postgres:16-alpine</code></td><td data-label="Age"><span class="num">10d</span></td></tr><tr><td data-label="Name">kwgroup-web-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>nginx:1.27-alpine</code></td><td data-label="Age"><span class="num">11d</span></td></tr><tr><td data-label="Name">kwgroup-db-1</td><td data-label="State"><span class="dot dot--live"></span> running</td><td data-label="Image"><code>postgres:16-alpine</code></td><td data-label="Age"><span class="num">11d</span></td></tr></tbody>
-  </table></div>
+  </table></div></div>
+    </section>
 
-    <h2>Scheduled jobs · 23</h2>
-    <div class="table-wrap"><table>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">10</span>Docker</h2>
+      <div class="board-content"><dl class="kv">
+      <dt>Version</dt><dd>29.7.2</dd>
+      <dt>Images</dt><dd>5 · 2.17GB</dd>
+      <dt>Volumes</dt><dd>5 · 146MB</dd>
+      <dt>Reclaimable</dt><dd>0B</dd>
+      
+    </dl>
+    <h3>Compose stacks</h3><div class="table-wrap"><table>
+    <thead><tr><th>Stack</th><th>Status</th><th>File</th></tr></thead>
+    <tbody><tr><td data-label="Stack">kw-blue-pearl</td><td data-label="Status"><span class="dot dot--live"></span> running(2)</td><td data-label="File"><code>/opt/kw-blue-pearl/docker-compose.yml</code></td></tr><tr><td data-label="Stack">kwdelhi6</td><td data-label="Status"><span class="dot dot--live"></span> running(2)</td><td data-label="File"><code>/opt/kwdelhi6/docker-compose.yml</code></td></tr><tr><td data-label="Stack">kwgroup</td><td data-label="Status"><span class="dot dot--live"></span> running(3)</td><td data-label="File"><code>/var/www/kwgroup/docker-compose.yml</code></td></tr></tbody>
+  </table></div></div>
+    </section>
+      
+      
+
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">11</span>Scheduled jobs</h2>
+      <div class="board-content"><div class="table-wrap"><table>
     <thead><tr><th>When</th><th>User</th><th>Command</th></tr></thead>
-    <tbody><tr><td data-label="When"><code>*/2 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>/opt/kw-blue-pearl/deploy/autopull.sh &gt;&gt; /var/log/kw-blue-pearl-deploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>*/2 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>/opt/kwdelhi6/deploy/autopull.sh &gt;&gt; /var/log/kwdelhi6-deploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 */12 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -x /usr/bin/certbot -a \! -d /run/systemd/system &amp;&amp; perl -e 'sleep int(rand(43200))' </code></td></tr><tr><td data-label="When"><code>20 0 * * 5</code></td><td data-label="User">root</td><td data-label="Command"><code>docker builder prune -f &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>34 1 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>docker image prune -af --filter &quot;until=24h&quot; &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>30 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_</code></td></tr><tr><td data-label="When"><code>10 3 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r</code></td></tr><tr><td data-label="When"><code>51 8 * * 1</code></td><td data-label="User">root</td><td data-label="Command"><code>apt-get update -qq &amp;&amp; apt-get install -y -qq monarx-agent monarx-protect monarx-protect-au</code></td></tr><tr><td data-label="When"><code>5-55/10 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 1 1</code></td></tr><tr><td data-label="When"><code>59 23 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 60 2</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:20:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-collect.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:33:48 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>certbot.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>dpkg-db-backup.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>logrotate.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:07:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-summary.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 03:27:22 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 04:57:43 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>man-db.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:28:33 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily-upgrade.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 09:31:23 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-download.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 09:40:47 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>systemd-tmpfiles-clean.service</code></td></tr><tr><td data-label="When"><code>next: Fri 2026-08-28 07:18:44 UTC 3 days Thu 2026-08-20 06:46:53 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-motd.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-08-30 03:10:35 UTC 5 days Sun 2026-08-23 03:11:01 UTC 1 day 9h ago e2scrub_all.timer</code></td><td data-label="User">—</td><td data-label="Command"><code>e2scrub_all.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-31 00:39:43 UTC 6 days Mon 2026-08-24 00:03:57 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fstrim.service</code></td></tr></tbody>
-  </table></div>
+    <tbody><tr><td data-label="When"><code>*/2 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>/opt/kw-blue-pearl/deploy/autopull.sh &gt;&gt; /var/log/kw-blue-pearl-deploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>*/2 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>/opt/kwdelhi6/deploy/autopull.sh &gt;&gt; /var/log/kwdelhi6-deploy.log 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>0 */12 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -x /usr/bin/certbot -a \! -d /run/systemd/system &amp;&amp; perl -e 'sleep int(rand</code></td></tr><tr><td data-label="When"><code>20 0 * * 5</code></td><td data-label="User">root</td><td data-label="Command"><code>docker builder prune -f &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>34 1 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>docker image prune -af --filter &quot;until=24h&quot; &gt; /dev/null 2&gt;&amp;1</code></td></tr><tr><td data-label="When"><code>30 3 * * 0</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprog</code></td></tr><tr><td data-label="When"><code>10 3 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r</code></td></tr><tr><td data-label="When"><code>51 8 * * 1</code></td><td data-label="User">root</td><td data-label="Command"><code>apt-get update -qq &amp;&amp; apt-get install -y -qq monarx-agent monarx-protect monarx-</code></td></tr><tr><td data-label="When"><code>5-55/10 * * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 1 1</code></td></tr><tr><td data-label="When"><code>59 23 * * *</code></td><td data-label="User">root</td><td data-label="Command"><code>command -v debian-sa1 &gt; /dev/null &amp;&amp; debian-sa1 60 2</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:20:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-collect.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-24 12:33:48 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>certbot.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>dpkg-db-backup.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:00:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>logrotate.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 00:07:00 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>sysstat-summary.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 03:27:22 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 04:57:43 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>man-db.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 06:28:33 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>apt-daily-upgrade.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 09:31:23 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-download.service</code></td></tr><tr><td data-label="When"><code>next: Tue 2026-08-25 09:40:47 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>systemd-tmpfiles-clean.service</code></td></tr><tr><td data-label="When"><code>next: Fri 2026-08-28 07:18:44 UTC 3 days Thu 2026-08-20 06:46:53 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>update-notifier-motd.service</code></td></tr><tr><td data-label="When"><code>next: Sun 2026-08-30 03:10:35 UTC 5 days Sun 2026-08-23 03:11:01 UTC 1 day 9h ago e2scrub_all.timer</code></td><td data-label="User">—</td><td data-label="Command"><code>e2scrub_all.service</code></td></tr><tr><td data-label="When"><code>next: Mon 2026-08-31 00:39:43 UTC 6 days Mon 2026-08-24 00:03:57 UTC</code></td><td data-label="User">—</td><td data-label="Command"><code>fstrim.service</code></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">12</span>Logs</h2>
+      <div class="board-content"><dl class="kv">
+      <dt>Journal</dt><dd>181.2M</dd>
+      <dt>/var/log</dt><dd>516M</dd>
+      <dt>Recent errors</dt><dd>15 lines</dd>
+    </dl>
+    <div class="table-wrap"><table>
+    <thead><tr><th>Log</th><th>Size</th></tr></thead>
+    <tbody><tr><td data-label="Log"><code>/var/log/nginx/access.log.1</code></td><td data-label="Size"><span class="num">137M</span></td></tr><tr><td data-label="Log"><code>/var/log/syslog.1</code></td><td data-label="Size"><span class="num">54M</span></td></tr><tr><td data-label="Log"><code>/var/log/syslog</code></td><td data-label="Size"><span class="num">13M</span></td></tr><tr><td data-label="Log"><code>/var/log/kern.log.1</code></td><td data-label="Size"><span class="num">6.0M</span></td></tr><tr><td data-label="Log"><code>/var/log/auth.log.1</code></td><td data-label="Size"><span class="num">3.3M</span></td></tr><tr><td data-label="Log"><code>/var/log/kern.log</code></td><td data-label="Size"><span class="num">1.5M</span></td></tr><tr><td data-label="Log"><code>/var/log/btmp</code></td><td data-label="Size"><span class="num">954K</span></td></tr><tr><td data-label="Log"><code>/var/log/syslog.2.gz</code></td><td data-label="Size"><span class="num">949K</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+      <section class="board-panel board-panel--wide">
+      <h2 class="board-title"><span class="board-num">13</span>SSH</h2>
+      <div class="board-content"><dl class="kv">
+    <dt>Port</dt><dd>22</dd>
+    <dt>Root login</dt><dd>denied</dd>
+    <dt>Password auth</dt><dd>disabled</dd>
+    <dt>Failed passwords</dt><dd>0 in the current log</dd>
+  </dl>
+  <h3>Most persistent sources</h3><div class="table-wrap"><table>
+    <thead><tr><th>Address</th><th>Attempts</th></tr></thead>
+    <tbody><tr><td data-label="Address"><code>190.153.22.201</code></td><td data-label="Attempts"><span class="num">873</span></td></tr><tr><td data-label="Address"><code>182.78.92.90</code></td><td data-label="Attempts"><span class="num">873</span></td></tr><tr><td data-label="Address"><code>136.113.90.212</code></td><td data-label="Attempts"><span class="num">143</span></td></tr><tr><td data-label="Address"><code>103.140.250.254</code></td><td data-label="Attempts"><span class="num">96</span></td></tr><tr><td data-label="Address"><code>116.110.147.130</code></td><td data-label="Attempts"><span class="num">79</span></td></tr><tr><td data-label="Address"><code>116.110.5.25</code></td><td data-label="Attempts"><span class="num">60</span></td></tr></tbody>
+  </table></div></div>
+    </section>
+
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">14</span>Packages</h2>
+      <div class="board-content"><dl class="kv">
+        <dt>Upgradable</dt><dd>11</dd>
+        <dt>apt cache</dt><dd>122M</dd>
+        <dt>Kernels</dt><dd>6.8.0-137-generic<br>6.8.0-138-generic</dd>
+      </dl></div>
+    </section>
+
+      <section class="board-panel">
+      <h2 class="board-title"><span class="board-num">15</span>Left lying around</h2>
+      <div class="board-content"><ul><li><code>/opt/kwdelhi6/.env.bak.2026-08-21-0854</code></li><li><code>/opt/kwdelhi6/meerut.html.bak</code></li></ul></div>
+    </section>
+    </div>
   </section>
   </div>
 </section>
