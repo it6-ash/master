@@ -32,12 +32,18 @@ KEY="${KEY:-/root/.ssh/id_ed25519}"
 #          needs an ingress rule and an Access policy to be worth anything.
 MODE="${MODE:-public}"
 
-# basic — htpasswd prompt. The default.
+# basic — htpasswd prompt.
 # none  — no authentication at all. The page is then readable by anyone who
 #         resolves the hostname. See the warning install.sh prints.
-# For "no prompt, still not public", leave AUTH=basic and replace the two
+#
+# Left EMPTY on purpose. Unset, it is read back from the deployed vhost further
+# down, so re-running this script keeps whatever is currently configured. It
+# used to default to basic, which meant every routine `bash install.sh` silently
+# put the password prompt back on a site someone had deliberately opened.
+#
+# For "no prompt, still not public", leave it at basic and replace the two
 # auth_basic lines in the vhost with:  allow <your.ip>;  deny all;
-AUTH="${AUTH:-basic}"
+AUTH="${AUTH:-}"
 
 # Which paths git may overwrite lives in deploy/pull.sh — one definition, used
 # by this script and by the service's ExecStartPre on every collection pass.
@@ -61,14 +67,6 @@ command -v node >/dev/null || die "Node is not installed. Node 20+:
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 [ "$NODE_MAJOR" -ge 20 ] || die "Node $NODE_MAJOR is too old; this needs 20+."
 ok "node $(node -v), nginx, git"
-
-# Only MODE=public needs it. Don't install a package on a production box that
-# the chosen path will never call. An `if`, not `[ ] && [ ] && ...`, because a
-# false test at the end of a && chain exits the script under `set -e`.
-if [ "$MODE" = "public" ] && ! command -v htpasswd >/dev/null; then
-  warn "htpasswd missing, installing apache2-utils"
-  apt-get install -y -qq apache2-utils
-fi
 
 # ------------------------------------------------------------- the checkout
 
@@ -175,6 +173,22 @@ fi
 say "nginx ($MODE)"
 
 VHOST=/etc/nginx/sites-available/kw-estate
+
+# Read the current setting off the deployed vhost rather than defaulting. The
+# file IS the state — no second copy in /etc to drift out of sync with it.
+if [ -z "$AUTH" ]; then
+  if grep -qE '^[[:space:]]*#[[:space:]]*auth_basic' "$VHOST" 2>/dev/null; then
+    AUTH=none
+  else
+    AUTH=basic
+  fi
+  ok "auth: $AUTH (unchanged — pass AUTH=none or AUTH=basic to switch)"
+fi
+
+if [ "$AUTH" = "basic" ] && [ "$MODE" = "public" ] && ! command -v htpasswd >/dev/null; then
+  warn "htpasswd missing, installing apache2-utils"
+  apt-get install -y -qq apache2-utils
+fi
 
 # Idempotent, and safe to re-run after certbot has been at the file.
 enable_vhost() {
