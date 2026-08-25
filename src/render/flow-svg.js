@@ -230,7 +230,16 @@ function nodeShape(n) {
  * @param {{ id?: string, title?: string }} [opts]
  * @returns {string} inline SVG
  */
-export function renderFlowSvg(flow, { id = 'flow', title = 'Flow diagram', vertical = false } = {}) {
+/**
+ * @param {object} flow parsed AST
+ * @param {{ id?: string, title?: string, vertical?: boolean,
+ *           links?: Record<string, {href: string, open: string}> }} [opts]
+ *   links maps a node id to a destination, which wraps that node in an <a>.
+ *   A diagram of things you cannot click is a picture, not a map.
+ */
+export function renderFlowSvg(flow, {
+  id = 'flow', title = 'Flow diagram', vertical = false, links = {},
+} = {}) {
   const { nodes, edges, width, height } = layoutFlow(flow, { vertical });
   if (nodes.length === 0) return '<p class="muted">This flow declares no nodes.</p>';
 
@@ -264,11 +273,16 @@ export function renderFlowSvg(flow, { id = 'flow', title = 'Flow diagram', verti
     const sub = n.sublabel
       ? `<text class="flow-sublabel" x="${cx}" y="${n.y + n.h / 2 + 14}">${escapeHtml(clamp(n.sublabel, 26))}</text>`
       : '';
-    return `<g class="flow-node flow-node--${state} flow-node--${n.kind}" data-node="${escapeHtml(n.id)}">
+    const group = `<g class="flow-node flow-node--${state} flow-node--${n.kind}${links[n.id] ? ' flow-node--linked' : ''}" data-node="${escapeHtml(n.id)}">
       ${nodeShape(n)}
       <text class="flow-label" x="${cx}" y="${labelY}">${escapeHtml(clamp(n.label, 22))}</text>
       ${sub}
     </g>`;
+
+    const link = links[n.id];
+    return link
+      ? `<a href="${escapeHtml(link.href)}" data-open="${escapeHtml(link.open)}">${group}</a>`
+      : group;
   }).join('\n    ');
 
   const markers = ['neutral', 'live', 'data', 'idle', 'broken'].map((state) => `

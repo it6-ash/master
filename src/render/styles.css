@@ -721,6 +721,17 @@ h2.section .count {
 .issue-src { margin-left: auto; font: 10px var(--mono); }
 .issue-detail { padding: 0 11px 11px 28px; }
 
+.issue-link { font: 10.5px var(--mono); }
+.issue-link a { color: var(--ink-2); border-bottom: 1px dotted var(--border-hover); }
+.issue-link a:hover { color: var(--primary); text-decoration: none; }
+
+/* A node that goes somewhere says so on hover. */
+.flow-node--linked { cursor: pointer; }
+a .flow-node--linked .flow-shape { transition: stroke 140ms var(--ease); }
+a:hover .flow-node--linked .flow-shape { stroke: var(--primary); stroke-width: 2; }
+a:hover .flow-node--linked .flow-label { fill: var(--primary); }
+a:focus-visible .flow-node--linked .flow-shape { stroke: var(--primary); stroke-width: 2; }
+
 /* ------------------------------------------------------------ charts */
 
 .chart-grid {

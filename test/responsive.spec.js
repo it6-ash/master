@@ -227,3 +227,43 @@ test('every interactive control clears a 44px touch target on a phone', async ({
   });
   expect(small).toEqual([]);
 });
+
+/* ------------------------------------------------------------- linking */
+
+test('a workflow has its own page, reachable from the inventory', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#workflow=zNyAPupAI9GE1UYX`);
+  await expect(page.locator('#detail-title')).toHaveText('KW Group – YAMINI WhatsApp AI Support');
+  await expect(page.locator('main.wrap')).toBeHidden();
+});
+
+test('a workflow page links back to its project and server', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#workflow=zNyAPupAI9GE1UYX`);
+
+  const panel = page.locator('[data-panel="workflow:zNyAPupAI9GE1UYX"]');
+  await expect(panel.locator('[data-open="project:yamini"]').first()).toBeVisible();
+  await expect(panel.locator('[data-open="server:srv1340120"]').first()).toBeVisible();
+
+  await panel.locator('[data-open="project:yamini"]').first().click();
+  await expect(page.locator('#detail-title')).toHaveText('Yamini');
+});
+
+test('project and workflow reference each other both ways', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=yamini`);
+  const link = page.locator('[data-panel="project:yamini"] [data-open^="workflow:"]').first();
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page.locator('#detail')).toBeVisible();
+  await expect(page.locator('#detail-title')).not.toHaveText('Yamini');
+});
+
+test('topology nodes that map to a project are clickable', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#server=srv1340120`);
+  const node = page.locator('[data-panel="server:srv1340120"] a:has(.flow-node--linked)').first();
+  await expect(node).toHaveCount(1);
+  await node.click();
+  await expect(page.locator('#detail-title')).not.toHaveText('srv1340120');
+});

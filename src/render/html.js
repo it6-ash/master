@@ -234,6 +234,7 @@ function renderIssueCompact(issue) {
     <summary>
       <span class="sev sev--${issue.severity}">${issue.severity}</span>
       <span class="issue-title">${escapeHtml(issue.title)}</span>
+      ${issue.project ? `<span class="issue-link">${linkProject(issue.project)}</span>` : ''}
       <span class="faint issue-src">${escapeHtml(issue.source)}</span>
     </summary>
     <div class="issue-detail">
@@ -247,7 +248,7 @@ function renderIssueCompact(issue) {
 function renderServerPanel(id, server, { projects, workflows, issues }) {
   const state = server.state ?? {};
   const mine = projects.filter((p) => p.server === id);
-  const wf = Object.values(workflows).filter((w) => w.server === id);
+  const wf = Object.entries(workflows).map(([wid, w]) => ({ id: wid, ...w })).filter((w) => w.server === id);
   const failed = (server.services ?? []).filter((x) => x.state === 'failed');
   const running = (server.services ?? []).filter((x) => x.state === 'running');
   const exposed = (server.ports ?? []).filter((p) => p.exposed);
@@ -269,10 +270,18 @@ function renderServerPanel(id, server, { projects, workflows, issues }) {
   };
 
   const topo = serverTopology(server, id);
+  // A node that maps to a project becomes a link, so the diagram is a map you
+  // can travel rather than a picture of one.
+  const topoLinks = {};
+  for (const node of topo?.nodes ?? []) {
+    const owner = projects.find((pr) => pr.server === id
+      && (pr.services ?? []).some((svc) => svc.replace(/[^A-Za-z0-9]/g, '_') === node.id));
+    if (owner) topoLinks[node.id] = { href: `#project=${owner.id}`, open: `project:${owner.id}` };
+  }
   const topoHtml = topo
     ? `<div class="flow-wrap"><div class="flow-scroll">${
-      renderFlowSvg(topo, { id: `t-${id}`, title: `${id} topology` })
-    }${renderFlowSvg(topo, { id: `tv-${id}`, title: `${id} topology`, vertical: true })}</div></div>`
+      renderFlowSvg(topo, { id: `t-${id}`, title: `${id} topology`, links: topoLinks })
+    }${renderFlowSvg(topo, { id: `tv-${id}`, title: `${id} topology`, vertical: true, links: topoLinks })}</div></div>`
     : '';
 
   const meterClass = (p) => (p >= 90 ? 'meter-fill--bad' : p >= 80 ? 'meter-fill--warn' : '');
@@ -378,7 +387,10 @@ function renderServerPanel(id, server, { projects, workflows, issues }) {
   ])), ' board-panel--wide')}
 
       ${panel('Hostnames', table(['Domain', 'Upstream', 'Via', 'Cert'], (server.vhosts ?? []).map((v) => [
-    escapeHtml(v.domain),
+    (() => {
+      const owner = mine.find((pr) => (pr.discovered?.hostnames ?? []).some((h) => h.toLowerCase() === v.domain.toLowerCase()));
+      return owner ? linkProject(owner.id, v.domain) : escapeHtml(v.domain);
+    })(),
     v.proxyTo ? `<code>${escapeHtml(v.proxyTo)}</code>` : v.root ? `static ${escapeHtml(v.root)}` : '—',
     escapeHtml(v.source ?? ''),
     v.certExpiryDays != null
@@ -386,18 +398,29 @@ function renderServerPanel(id, server, { projects, workflows, issues }) {
       : '<span class="faint">none</span>',
   ])), ' board-panel--wide')}
 
-      ${panel('Exposed ports', table(['Port', 'Bind', 'Process'], exposed.map((p) => [
+      ${panel('Exposed ports', table(['Port', 'Bind', 'Process', 'Project'], exposed.map((p) => [
     `<span class="num">${p.port}/${escapeHtml(p.proto ?? 'tcp')}</span>`,
     `<code>${escapeHtml(p.bind ?? '')}</code>`,
     escapeHtml(p.proc ?? '—'),
+    (() => {
+      const owner = mine.find((pr) => pr.discovered?.port === p.port);
+      return owner ? linkProject(owner.id, owner.name) : '<span class="faint">—</span>';
+    })(),
   ])), ' board-panel--wide')}
 
-      ${panel('Failed units', failed.length ? table(['Unit', 'Description', 'Port'], failed.map((x) => [
+      ${panel('Failed units', failed.length ? table(['Unit', 'Description', 'Port', 'Project'], failed.map((x) => [
     `<code>${escapeHtml(x.name)}</code>`, escapeHtml(x.desc ?? ''), x.port ? `<span class="num">${x.port}</span>` : '—',
+    (() => {
+      const owner = projectForService(x.name, id, projects);
+      return owner ? linkProject(owner.id, owner.name) : '<span class="faint">—</span>';
+    })(),
   ])) : '<p class="faint">Every unit is healthy.</p>', ' board-panel--wide')}
 
       ${panel('Containers', table(['Name', 'State', 'Image', 'Age'], (server.containers ?? []).map((c) => [
-    escapeHtml(c.name),
+    (() => {
+      const owner = projectForService(c.name, id, projects);
+      return owner ? linkProject(owner.id, c.name) : escapeHtml(c.name);
+    })(),
     `<span class="dot dot--${c.state === 'running' ? 'live' : c.state === 'restarting' ? 'broken' : 'idle'}"></span> ${escapeHtml(c.state)}`,
     `<code>${escapeHtml(c.image ?? '')}</code>`,
     c.ageDays != null ? `<span class="num">${c.ageDays}d</span>` : '—',
@@ -474,7 +497,8 @@ function renderIssue(issue) {
     <div class="issue-head">
       <span class="sev sev--${issue.severity}">${issue.severity}</span>
       <span class="issue-title">${escapeHtml(issue.title)}</span>
-      ${issue.server ? `<span class="faint" style="font:11px var(--mono)">${escapeHtml(issue.server)}</span>` : ''}
+      ${issue.project ? `<span class="issue-link">${linkProject(issue.project)}</span>` : ''}
+      ${issue.server ? `<span class="issue-link">${linkServer(issue.server)}</span>` : ''}
       <span class="faint" style="font:11px var(--mono)">${escapeHtml(issue.source)}</span>
     </div>
     <div class="issue-body">${escapeHtml(issue.body ?? '')}</div>
@@ -566,7 +590,7 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects }
   const wfRows = owned.length ? `<div class="table-wrap"><table>
     <thead><tr><th>Workflow</th><th>State</th><th>Group</th><th>Server</th><th>First seen</th><th>Id</th></tr></thead>
     <tbody>${owned.map(({ id, wf }) => (wf ? `<tr>
-      <td data-label="Workflow">${escapeHtml(wf.name)}</td>
+      <td data-label="Workflow">${linkWorkflow(id, wf.name)}</td>
       <td data-label="State"><span class="dot dot--${wf.active ? 'live' : 'idle'}"></span> ${wf.active ? 'active' : 'off'}</td>
       <td data-label="Group">${escapeHtml(wf.group ?? '')}</td>
       <td data-label="Server">${wf.server ? `<a href="#server=${escapeHtml(wf.server)}" data-open="server:${escapeHtml(wf.server)}">${escapeHtml(wf.server)}</a>` : '—'}</td>
@@ -651,6 +675,116 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects }
 }
 
 
+
+/* --------------------------------------------------------------- links */
+
+/**
+ * Every relationship in this dashboard is navigable in both directions. These
+ * three helpers are the only way a link is written, so nothing that has a
+ * destination is ever rendered as plain text by accident.
+ */
+const linkProject = (id, label) => `<a href="#project=${escapeHtml(id)}" data-open="project:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
+const linkServer = (id, label) => `<a href="#server=${escapeHtml(id)}" data-open="server:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
+const linkWorkflow = (id, label) => `<a href="#workflow=${escapeHtml(id)}" data-open="workflow:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
+
+/** Which project, if any, owns a given service or container name. */
+function projectForService(name, serverId, projects) {
+  if (!name) return null;
+  return projects.find((p) => p.server === serverId && (p.services ?? []).includes(name)) ?? null;
+}
+
+/** Which project owns a workflow id. */
+function projectForWorkflow(id, projects) {
+  return projects.find((p) => (p.workflows ?? []).includes(id)) ?? null;
+}
+
+/* ------------------------------------------------------ workflow page */
+
+/**
+ * Workflows used to be dead ends: named in three places, openable from none.
+ * Each one now has a page carrying everything held about it plus every thing
+ * it is attached to.
+ */
+function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
+  const owner = projectForWorkflow(id, projects);
+  const server = wf.server ? servers[wf.server] : null;
+  const siblings = Object.entries(workflows)
+    .filter(([wid, w]) => wid !== id && w.group === wf.group && !w.noise)
+    .sort((a, b) => (b[1].active - a[1].active) || a[1].name.localeCompare(b[1].name));
+
+  const sameName = Object.entries(workflows).filter(([wid, w]) => wid !== id && w.name === wf.name);
+
+  const history = (wf.history ?? []).slice().reverse();
+
+  return `<section class="drawer-panel" data-panel="workflow:${escapeHtml(id)}"
+      data-title="${escapeHtml(wf.name)}" data-state="${wf.active ? 'live' : 'idle'}"
+      data-sub="${escapeHtml(`${wf.group ?? 'Ungrouped'} · ${id}`)}">
+    <div class="tags" style="margin-bottom:14px">
+      <span class="pill"><span class="dot dot--${wf.active ? 'live' : 'idle'}"></span>${wf.active ? 'active' : 'off'}</span>
+      <span class="pill">${escapeHtml(wf.group ?? 'Ungrouped')}</span>
+      ${wf.server ? `<a class="pill" href="#server=${escapeHtml(wf.server)}" data-open="server:${escapeHtml(wf.server)}">${escapeHtml(wf.server)}</a>` : ''}
+      ${owner ? `<a class="pill pill--accent" href="#project=${escapeHtml(owner.id)}" data-open="project:${escapeHtml(owner.id)}">${escapeHtml(owner.name)}</a>` : ''}
+      ${wf.noise ? '<span class="pill">template import</span>' : ''}
+    </div>
+
+    <div class="board">
+      <section class="board-panel">
+        <h2 class="board-title"><span class="board-num">1</span>Identity</h2>
+        <div class="board-content"><dl class="kv">
+          <dt>Name</dt><dd>${escapeHtml(wf.name)}</dd>
+          <dt>Id</dt><dd>${escapeHtml(id)}</dd>
+          <dt>State</dt><dd>${wf.active ? 'active' : 'inactive'}</dd>
+          <dt>Group</dt><dd>${escapeHtml(wf.group ?? 'Ungrouped')}</dd>
+          <dt>Host</dt><dd>${wf.server ? linkServer(wf.server) : 'unknown'}${server?.n8n?.container ? ` · ${escapeHtml(server.n8n.container)}` : ''}</dd>
+          <dt>First seen</dt><dd>${escapeHtml(wf.firstSeen ?? '')}</dd>
+          <dt>Last seen</dt><dd>${escapeHtml(wf.lastSeen ?? '')}</dd>
+          ${wf.missingSince ? `<dt>Missing since</dt><dd>${escapeHtml(wf.missingSince)}</dd>` : ''}
+        </dl></div>
+      </section>
+
+      <section class="board-panel">
+        <h2 class="board-title"><span class="board-num">2</span>Belongs to</h2>
+        <div class="board-content">
+          ${owner
+    ? `<p>Owned by ${linkProject(owner.id, owner.name)}, which is documented in <code>${escapeHtml(owner.sourceFile ?? '')}</code>.</p>`
+    : '<p class="faint">No project claims this workflow. Add its id to a project doc\'s <code>workflows:</code> list to attach it.</p>'}
+          ${wf.server ? `<p>Runs on ${linkServer(wf.server)}.</p>` : ''}
+          ${sameName.length ? `<p><strong>Name collision.</strong> ${sameName.length} other workflow${sameName.length === 1 ? '' : 's'} share this exact name:</p>
+            <ul>${sameName.map(([wid, w]) => `<li>${linkWorkflow(wid, wid)} <span class="faint">${w.active ? 'active' : 'off'}</span></li>`).join('')}</ul>` : ''}
+        </div>
+      </section>
+
+      ${history.length ? `<section class="board-panel">
+        <h2 class="board-title"><span class="board-num">3</span>State history</h2>
+        <div class="board-content"><div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>State</th></tr></thead>
+          <tbody>${history.map((h) => `<tr>
+            <td data-label="Date" class="num">${escapeHtml(h.date)}</td>
+            <td data-label="State"><span class="dot dot--${h.active ? 'live' : 'idle'}"></span> ${h.active ? 'activated' : 'deactivated'}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        ${history.length === 1 ? '<p class="faint">One entry means this is the first sighting, not a change.</p>' : ''}
+        </div>
+      </section>` : ''}
+
+      ${siblings.length ? `<section class="board-panel board-panel--wide">
+        <h2 class="board-title"><span class="board-num">${history.length ? 4 : 3}</span>Others in ${escapeHtml(wf.group ?? 'this group')}</h2>
+        <div class="board-content"><div class="table-wrap"><table>
+          <thead><tr><th>Workflow</th><th>State</th><th>Project</th></tr></thead>
+          <tbody>${siblings.slice(0, 25).map(([wid, w]) => {
+    const o = projectForWorkflow(wid, projects);
+    return `<tr>
+              <td data-label="Workflow">${linkWorkflow(wid, w.name)}</td>
+              <td data-label="State"><span class="dot dot--${w.active ? 'live' : 'idle'}"></span> ${w.active ? 'active' : 'off'}</td>
+              <td data-label="Project">${o ? linkProject(o.id, o.name) : '<span class="faint">unclaimed</span>'}</td>
+            </tr>`;
+  }).join('')}</tbody>
+        </table></div></div>
+      </section>` : ''}
+    </div>
+  </section>`;
+}
+
 /* ------------------------------------------------------------- tree */
 
 /**
@@ -664,7 +798,7 @@ function renderTree(servers, projects, workflows) {
 
   return `<div class="tree">${Object.entries(servers).map(([id, server]) => {
     const mine = projects.filter((p) => p.server === id);
-    const serverWf = Object.values(workflows).filter((w) => w.server === id);
+    const serverWf = Object.entries(workflows).map(([wid, w]) => ({ id: wid, ...w })).filter((w) => w.server === id);
     const unowned = serverWf.filter((w) => !owned.has(w.id) && !w.noise);
     const noise = serverWf.filter((w) => w.noise).length;
 
@@ -677,7 +811,7 @@ function renderTree(servers, projects, workflows) {
       </summary>
       <div class="tree-children">
         ${mine.map((p) => {
-    const wf = (p.workflows ?? []).map((w) => workflows[w]).filter(Boolean);
+    const wf = (p.workflows ?? []).map((w) => (workflows[w] ? { id: w, ...workflows[w] } : null)).filter(Boolean);
     const active = wf.filter((w) => w.active).length;
     return `<details class="tree-node"${wf.length ? '' : ' data-leaf'}>
           <summary>
@@ -704,7 +838,7 @@ function renderTree(servers, projects, workflows) {
     .sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
     .map((w) => `<div class="tree-leaf">
               <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
-              <span class="tree-name">${escapeHtml(w.name)}</span>
+              <span class="tree-name">${linkWorkflow(w.id, w.name)}</span>
               <span class="tree-meta">${escapeHtml(w.group ?? '')}</span>
             </div>`).join('')}</div>
         </details>` : ''}
@@ -747,9 +881,8 @@ function renderWorkflows(workflows, projects) {
       const own = owner.get(w.id);
       return `<div class="wf${w.noise ? ' wf--noise' : ''} searchable" data-search="${escapeHtml(`${w.name} ${w.id} ${group} ${w.server ?? ''}`.toLowerCase())}">
         <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
-        <span class="wf-name">${own
-    ? `<a href="#project=${escapeHtml(own.id)}" data-open="project:${escapeHtml(own.id)}">${escapeHtml(w.name)}</a>`
-    : escapeHtml(w.name)}</span>
+        <span class="wf-name">${linkWorkflow(w.id, w.name)}</span>
+        ${own ? `<span class="wf-id">${linkProject(own.id, own.name)}</span>` : ''}
         ${w.server ? `<span class="wf-id">${escapeHtml(w.server)}</span>` : ''}
         <span class="wf-id">${escapeHtml(w.id)}</span>
       </div>`;
@@ -882,6 +1015,7 @@ ${css}
   <div class="detail-body" id="detail-body">
     ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects })).join('')}
     ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues })).join('')}
+    ${Object.entries(workflows).map(([id, wf]) => renderWorkflowPanel(id, wf, { projects, workflows, servers, issues })).join('')}
   </div>
 </section>
 
@@ -963,6 +1097,11 @@ function clientScript() {
       var role = trigger ? trigger.querySelector('.server-role') : null;
       subEl.textContent = role ? role.textContent : '';
       dotEl.className = 'dot dot--live';
+    } else if (kind === 'workflow') {
+      var meta = panel.getAttribute('data-title') || id;
+      titleEl.textContent = meta;
+      subEl.textContent = panel.getAttribute('data-sub') || '';
+      dotEl.className = 'dot dot--' + (panel.getAttribute('data-state') || 'idle');
     } else {
       titleEl.textContent = id;
       subEl.textContent = '';
@@ -1026,7 +1165,7 @@ function clientScript() {
 
   // --- deep links -----------------------------------------------------
   function fromHash(push) {
-    var m = /^#(project|server)=(.+)$/.exec(location.hash);
+    var m = /^#(project|server|workflow)=(.+)$/.exec(location.hash);
     if (m) open(m[1] + ':' + decodeURIComponent(m[2]), push);
     else if (current) close();
   }
