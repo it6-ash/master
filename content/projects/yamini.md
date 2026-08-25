@@ -137,6 +137,113 @@ Clearing the entire unanalysed backlog costs **₹1,556** via the Batch API, whi
 is 0.31% of one month's Google Ads spend. The skipped conversations were never a
 cost decision. The job stopped running and nobody noticed.
 
+## Inbound conversation
+
+What happens between a lead's message and Yamini's reply. Every reply lands
+inside the 24-hour customer window, which makes it a service message and free.
+
+1. Lead sends a WhatsApp message
+2. Meta POSTs the inbound webhook
+3. The router identifies the project, D6 or Blue Pearl
+4. It routes to the agent
+5. The agent loads chat memory from MongoDB by `sessionId`
+6. Prior messages come back
+7. The LLM generates a reply
+8. Human and AI messages are appended to `customerChats`
+9. The reply goes out through Meta
+10. Meta delivers it to the lead
+
+A real exchange, session `919958926826`:
+
+| Turn | Speaker | Content |
+|---|---|---|
+| 1 | Lead | Yes |
+| 2 | Yamini | Great Sir, thank you for the confirmation. May I know your approx investment budget for a pre-leased commercial shop, for example ₹25-30L, ₹40-50L, or above? |
+
+## Two dashboards, two databases
+
+Yamini's output is read by two separate web apps on the same server. They are
+siblings, they show the same kind of data, and they read from **completely
+different databases**.
+
+| | LeadQ | LeadQ Overview V2 |
+|---|---|---|
+| URL | `leadq.co.in` | `overview.leadq.co.in` |
+| Service | `dashboard` :8001 | `dashboard2` :8002 |
+| Database | **MongoDB Atlas** `whatsapp_leads2` | **Local** `Yamini` |
+| Purpose | Operational, work the leads | Analytical, read the numbers |
+| Receiving Yamini's writes | unknown | yes |
+
+Nothing observed connects the local database Yamini writes to with the Atlas
+one LeadQ reads. See [LeadQ](#project=leadq) for the three hypotheses and the
+query that settles it.
+
+## n8n workflow map
+
+The workflows on `srv1340120` that make up this system. Live and off are read
+from the latest ingest, not from this document.
+
+| Workflow | Role |
+|---|---|
+| `KW WhatsApp — Main` | Webhook entry, routes by project |
+| `KW WhatsApp — Main` | Second workflow, identical name, different id |
+| `WhatsApp Chat Agent` | Live inbound agent |
+| `WhatsApp D6 Inbound AI Reply` | Delhi 6 variant |
+| `WhatsApp BP Inbound AI Reply` | Blue Pearl variant |
+| `D6 / BP Weekly Broadcast` | Outbound approved templates |
+| `Lead Qualification Agent` | Produces the verdict block |
+| `KW 3 · Qualification & CRM Writeback` | **Exists, inactive.** The missing link |
+
+## Where the leads come from
+
+All 26,437 records, by source. Ads are the driver; IVR and broadcast are a
+rounding error next to them.
+
+| Source | Count | Share |
+|---|---|---|
+| Meta ads, GBT_whatsapp D6 + BP | 24,417 | 92.4% |
+| IVR, kw-delhi-6-ivr-whatsapp | 1,441 | 5.5% |
+| Weekly broadcast templates | 579 | 2.2% |
+| **Total** | **26,437** | **100%** |
+
+## Parked versus broken
+
+An important distinction, and the reason the status banner at the top of this
+page exists.
+
+**Deliberately parked**, a decision somebody took: Google Customer Match and
+Google Enhanced Conversions. Files built, tested, waiting. The reason was
+"doing Meta first".
+
+**Silently broken**, no decision taken: the Qualification Agent running on 504
+of ~26,000 records, and the Cratio write-back that has never fired. Nobody
+chose to skip 25,933 conversations. The job stopped and went unnoticed.
+
+## Runbook
+
+What to do now, in order.
+
+1. **Get the real funnel and cost inputs.** Query `customerChats` for total,
+   analysed, qualified, distinct `sessionId`, and the average `messageLength`.
+   Turn count scales token cost linearly and is currently assumed, not measured.
+2. **Turn on prompt caching and check reply length.** The system prompt is
+   byte-identical on every turn, which is the textbook caching case and worth
+   34%. Output tokens cost 8x input, so shorter replies are the other lever.
+3. **Settle the split-brain.** Compare the newest document timestamp in the
+   local database and in Atlas. That single number picks the hypothesis.
+4. **Backfill the analysis.** ₹1,556 via the Batch API clears every unanalysed
+   conversation. This was never a budget decision.
+5. **Build the Cratio write-back**, or activate the workflow that already
+   exists for it.
+
+## Where Yamini sits in the estate
+
+| Server | Role | What runs |
+|---|---|---|
+| `srv1340120` | Apps and automation | n8n, MongoDB, the FastAPI read-outs. Yamini lives here |
+| `srv1900820` | Websites | Three production sites, no part of Yamini |
+| `srv1870078` | Second n8n | Idle. Three workflows, one active, none of them Yamini |
+
 ## Open questions
 
 Two inputs to the cost model are still estimated. Average `messageLength` scales

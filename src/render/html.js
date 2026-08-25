@@ -290,8 +290,35 @@ function renderIssue(issue) {
   </div>`;
 }
 
-function renderProjectPanel(project, { issues, workflows, servers }) {
-  const body = project.body ? renderMarkdown(project.body, {
+/**
+ * Split a project doc on its `##` headings so each section can be rendered as
+ * its own numbered panel. A dense board where everything is visible at once
+ * beats a linear scroll for a reference document you read by jumping around.
+ */
+function splitSections(body) {
+  const lines = String(body ?? '').split('\n');
+  const sections = [];
+  let current = { title: null, lines: [] };
+  let inFence = false;
+
+  for (const line of lines) {
+    if (/^([ \t]{0,3})(`{3,}|~{3,})/.test(line)) inFence = !inFence;
+    const heading = !inFence && /^##\s+(.*)$/.exec(line);
+    if (heading) {
+      if (current.title || current.lines.some((l) => l.trim())) sections.push(current);
+      current = { title: heading[1].trim(), lines: [] };
+      continue;
+    }
+    current.lines.push(line);
+  }
+  if (current.title || current.lines.some((l) => l.trim())) sections.push(current);
+
+  return sections.map((s) => ({ title: s.title, body: s.lines.join('\n').trim() }));
+}
+
+function renderProjectPanel(project, { issues, workflows, servers, allProjects }) {
+  let flowSeq = 0;
+  const renderBody = (markdown) => renderMarkdown(markdown, {
     onFence: (lang, code) => {
       if (lang !== 'flow') return null;
       const flow = parseFlow(code);
@@ -301,31 +328,99 @@ function renderProjectPanel(project, { issues, workflows, servers }) {
       // Both orientations ship; CSS picks one. Laying out the same graph twice
       // is a few KB, and it is the only way a ten-layer diagram is legible on a
       // phone without JavaScript re-running the layout at runtime.
-      const opts = { id: `f-${project.id}`, title: `${project.name} flow` };
+      flowSeq += 1;
+      const opts = { id: `f-${project.id}-${flowSeq}`, title: `${project.name} flow` };
       return `<div class="flow-wrap"><div class="flow-scroll">${
         renderFlowSvg(flow, opts)
       }${
-        renderFlowSvg(flow, { ...opts, id: `fv-${project.id}`, vertical: true })
+        renderFlowSvg(flow, { ...opts, id: `fv-${project.id}-${flowSeq}`, vertical: true })
       }</div></div>`;
     },
-  }) : '';
+  });
+
+  // Each `##` section becomes a numbered panel on a dense board.
+  const sections = splitSections(project.body ?? '');
+  const lead = sections.length && !sections[0].title ? renderBody(sections[0].body) : '';
+  const panels = sections.filter((s) => s.title);
+
+  const body = panels.length
+    ? `<div class="board">${panels.map((section, i) => {
+      const html = renderBody(section.body);
+      // Decide the span from the SOURCE, not from sniffing rendered HTML.
+      // Only widen what genuinely needs it: a diagram, or a table wide enough
+      // to be cramped in one track. Widening every table is what made the board
+      // sparse — panels spanning two of three tracks leave holes nothing fills.
+      const tableCols = (section.body.match(/^\|.*\|\s*$/gm) ?? [])
+        .map((row) => row.trim().split('|').length - 2)
+        .reduce((a, b) => Math.max(a, b), 0);
+      const hasFlow = /```flow/.test(section.body);
+      const wide = hasFlow || tableCols >= 3;
+      return `<section class="board-panel${hasFlow ? ' board-panel--flow' : wide ? ' board-panel--wide' : ''}">
+        <h2 class="board-title"><span class="board-num">${i + 1}</span>${escapeHtml(section.title)}</h2>
+        <div class="board-content">${html}</div>
+      </section>`;
+    }).join('')}</div>`
+    : renderBody(project.body ?? '');
 
   const mine = issues.filter((i) => i.project === project.id && !i.resolved).sort(bySeverity);
   const d = project.discovered;
 
-  const wfRows = (project.workflows ?? []).map((id) => {
-    const wf = workflows[id];
-    if (!wf) {
-      return `<div class="wf"><span class="dot dot--idle"></span>
-        <span class="wf-name faint">${escapeHtml(id)}</span><span class="wf-id">not in the ingested list</span></div>`;
-    }
-    return `<div class="wf">
-      <span class="dot dot--${wf.active ? 'live' : 'idle'}"></span>
-      <span class="wf-name">${escapeHtml(wf.name)}</span>
-      <span class="wf-id">${escapeHtml(wf.group ?? '')}</span>
-      <span class="pill">${wf.active ? 'active' : 'off'}</span>
-    </div>`;
-  }).join('');
+  // Every field we actually hold on each workflow, straight from the last
+  // ingest. The doc lists ids; everything else here is live.
+  const owned = (project.workflows ?? []).map((id) => ({ id, wf: workflows[id] }));
+  const liveCount = owned.filter((o) => o.wf?.active).length;
+
+  const wfRows = owned.length ? `<div class="table-wrap"><table>
+    <thead><tr><th>Workflow</th><th>State</th><th>Group</th><th>Server</th><th>First seen</th><th>Id</th></tr></thead>
+    <tbody>${owned.map(({ id, wf }) => (wf ? `<tr>
+      <td data-label="Workflow">${escapeHtml(wf.name)}</td>
+      <td data-label="State"><span class="dot dot--${wf.active ? 'live' : 'idle'}"></span> ${wf.active ? 'active' : 'off'}</td>
+      <td data-label="Group">${escapeHtml(wf.group ?? '')}</td>
+      <td data-label="Server">${wf.server ? `<a href="#server=${escapeHtml(wf.server)}" data-open="server:${escapeHtml(wf.server)}">${escapeHtml(wf.server)}</a>` : '—'}</td>
+      <td data-label="First seen" class="num">${escapeHtml(wf.firstSeen ?? '')}</td>
+      <td data-label="Id"><code>${escapeHtml(id)}</code></td>
+    </tr>` : `<tr>
+      <td data-label="Workflow" class="faint">unknown</td>
+      <td data-label="State" class="faint">not in the ingested list</td>
+      <td data-label="Group">—</td><td data-label="Server">—</td><td data-label="First seen">—</td>
+      <td data-label="Id"><code>${escapeHtml(id)}</code></td>
+    </tr>`)).join('')}</tbody>
+  </table></div>` : '';
+
+  /* ---- what this project is connected to, computed from live data ---- */
+  const server = project.server ? servers[project.server] : null;
+  const siblings = allProjects.filter((p) => p.id !== project.id && p.server === project.server);
+  const sharedService = allProjects.filter((p) => p.id !== project.id
+    && (p.services ?? []).some((svc) => (project.services ?? []).includes(svc)));
+
+  const dbs = [];
+  for (const [dbName, db] of Object.entries(server?.databases ?? {})) {
+    const mentioned = new RegExp(`\b${dbName}\b`).test(project.body ?? '')
+      || (project.stats ?? []).some((st) => String(st.ref ?? '').includes(dbName));
+    if (mentioned) dbs.push({ name: dbName, ...db });
+  }
+
+  const hostnames = project.discovered?.hostnames ?? [];
+
+  const connections = `
+    ${hostnames.length ? `<h3>Reachable at</h3><ul>${hostnames.map((h) => `<li><code>${escapeHtml(h)}</code>${project.discovered?.port ? ` → <code>127.0.0.1:${project.discovered.port}</code>` : ''}</li>`).join('')}</ul>` : ''}
+
+    ${dbs.length ? `<h3>Data it touches</h3><div class="table-wrap"><table>
+      <thead><tr><th>Collection</th><th>Documents</th><th>Database</th></tr></thead>
+      <tbody>${dbs.flatMap((db) => (db.collections ?? []).map((c) => `<tr>
+        <td data-label="Collection"><code>${escapeHtml(c.name)}</code></td>
+        <td data-label="Documents" class="num">${fmt(c.docs ?? 0)}</td>
+        <td data-label="Database">${escapeHtml(db.name)} · ${escapeHtml(db.engine ?? '')}</td>
+      </tr>`)).join('')}</tbody></table></div>` : ''}
+
+    ${sharedService.length ? `<h3>Shares a process with</h3><ul>${sharedService.map((p) => `<li>
+      <a href="#project=${escapeHtml(p.id)}" data-open="project:${escapeHtml(p.id)}">${escapeHtml(p.name)}</a>
+      <span class="faint">${escapeHtml((p.services ?? []).join(', '))}</span></li>`).join('')}</ul>` : ''}
+
+    ${siblings.length ? `<h3>Also on ${escapeHtml(project.server ?? '')}</h3>
+      <div class="chip-list">${siblings.map((p) => `<a class="pill" href="#project=${escapeHtml(p.id)}" data-open="project:${escapeHtml(p.id)}">
+        <span class="dot dot--${p.status}"></span>${escapeHtml(p.name)}</a>`).join('')}</div>` : ''}
+  `.trim();
 
   return `<section class="drawer-panel" data-panel="project:${escapeHtml(project.id)}">
     <div class="tags" style="margin-bottom:14px">
@@ -340,6 +435,7 @@ function renderProjectPanel(project, { issues, workflows, servers }) {
       <div class="stat-label">${escapeHtml(s.label)}${s.ref ? ` <span class="faint">· live</span>` : ''}</div>
     </div>`).join('')}</div>` : ''}
 
+    ${lead}
     ${body}
 
     ${d ? `<h2>Discovered on ${escapeHtml(project.server ?? '')}</h2>
@@ -353,11 +449,76 @@ function renderProjectPanel(project, { issues, workflows, servers }) {
       ${d.certExpiryDays != null ? `<dt>Certificate</dt><dd>${d.certExpiryDays} days remaining</dd>` : ''}
     </dl>` : ''}
 
-    ${wfRows ? `<h2>Workflows · ${(project.workflows ?? []).length}</h2>
-      <div class="wf-list" style="border:1px solid var(--line);border-radius:var(--r-sm)">${wfRows}</div>` : ''}
+    ${wfRows ? `<h2>Workflows · ${liveCount} active of ${owned.length}</h2>${wfRows}` : ''}
+
+    ${connections ? `<h2>Connected to</h2>${connections}` : ''}
 
     ${mine.length ? `<h2>Issues · ${mine.length}</h2>${mine.map(renderIssue).join('')}` : ''}
   </section>`;
+}
+
+
+/* ------------------------------------------------------------- tree */
+
+/**
+ * The estate as a tree: server, then its projects, then the workflows each one
+ * owns. Built from live data, so it is the actual shape of the estate rather
+ * than a drawing of it.
+ */
+function renderTree(servers, projects, workflows) {
+  const owned = new Map();
+  for (const p of projects) for (const id of p.workflows ?? []) owned.set(id, p.id);
+
+  return `<div class="tree">${Object.entries(servers).map(([id, server]) => {
+    const mine = projects.filter((p) => p.server === id);
+    const serverWf = Object.values(workflows).filter((w) => w.server === id);
+    const unowned = serverWf.filter((w) => !owned.has(w.id) && !w.noise);
+    const noise = serverWf.filter((w) => w.noise).length;
+
+    return `<details class="tree-node tree-node--server" open>
+      <summary>
+        <span class="dot dot--${server.state?.firewall === 'active' ? 'live' : 'broken'}"></span>
+        <a href="#server=${escapeHtml(id)}" data-open="server:${escapeHtml(id)}">${escapeHtml(id)}</a>
+        <span class="tree-meta">${escapeHtml(server.role ?? '')}</span>
+        <span class="tree-count">${mine.length} projects · ${serverWf.length} workflows</span>
+      </summary>
+      <div class="tree-children">
+        ${mine.map((p) => {
+    const wf = (p.workflows ?? []).map((w) => workflows[w]).filter(Boolean);
+    const active = wf.filter((w) => w.active).length;
+    return `<details class="tree-node"${wf.length ? '' : ' data-leaf'}>
+          <summary>
+            <span class="dot dot--${p.status}"></span>
+            <a href="#project=${escapeHtml(p.id)}" data-open="project:${escapeHtml(p.id)}">${escapeHtml(p.name)}</a>
+            ${p.discovered?.port ? `<span class="tree-meta">:${p.discovered.port}</span>` : ''}
+            ${wf.length ? `<span class="tree-count">${active} of ${wf.length} active</span>` : ''}
+          </summary>
+          ${wf.length ? `<div class="tree-children">${wf
+      .sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
+      .map((w) => `<div class="tree-leaf">
+              <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
+              <span class="tree-name">${escapeHtml(w.name)}</span>
+              <span class="tree-meta">${escapeHtml(w.group ?? '')}</span>
+            </div>`).join('')}</div>` : ''}
+        </details>`;
+  }).join('')}
+        ${unowned.length ? `<details class="tree-node">
+          <summary><span class="dot dot--idle"></span>
+            <span class="tree-name">Workflows with no project</span>
+            <span class="tree-count">${unowned.filter((w) => w.active).length} of ${unowned.length} active</span>
+          </summary>
+          <div class="tree-children">${unowned
+    .sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
+    .map((w) => `<div class="tree-leaf">
+              <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
+              <span class="tree-name">${escapeHtml(w.name)}</span>
+              <span class="tree-meta">${escapeHtml(w.group ?? '')}</span>
+            </div>`).join('')}</div>
+        </details>` : ''}
+        ${noise ? `<div class="tree-leaf faint">${noise} template imports, hidden</div>` : ''}
+      </div>
+    </details>`;
+  }).join('')}</div>`;
 }
 
 /* --------------------------------------------------- workflow explorer */
@@ -488,6 +649,9 @@ ${css}
     ${analysis.costScenarios ? costChart(analysis.costScenarios.rows, { title: analysis.costScenarios.title, id: 'cost' }) : ''}
   </div>
 
+  <h2 class="section">Estate tree <span class="count">server → project → workflow</span></h2>
+  ${renderTree(servers, projects, workflows)}
+
   <h2 class="section">Projects <span class="count">${projects.length} across ${serverIds.length} servers</span></h2>
   <div class="filter-row" id="project-filters">
     <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
@@ -523,7 +687,7 @@ ${css}
     </div>
   </div>
   <div class="detail-body" id="detail-body">
-    ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers })).join('')}
+    ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects })).join('')}
     ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues })).join('')}
   </div>
 </section>

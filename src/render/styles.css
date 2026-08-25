@@ -558,6 +558,58 @@ h2.section .count {
   .project-summary { display: none; }
 }
 
+/* -------------------------------------------------------------- tree */
+
+.tree {
+  background: linear-gradient(160deg, var(--surface-start), var(--surface-end));
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 6px 4px;
+}
+.tree-node > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  min-height: 34px;
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--fs-meta);
+  border-radius: var(--r-sm);
+  flex-wrap: wrap;
+}
+.tree-node > summary::-webkit-details-marker { display: none; }
+.tree-node > summary::before {
+  content: "B8";
+  color: var(--ink-3);
+  font-size: 9px;
+  width: 9px;
+  flex: none;
+}
+.tree-node[open] > summary::before { content: "BE"; }
+.tree-node[data-leaf] > summary::before { content: ""; }
+.tree-node > summary:hover { background: var(--sunken); }
+.tree-node--server > summary { font-weight: 700; font-size: var(--fs-body); }
+
+.tree-children {
+  margin-left: 18px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+.tree-leaf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+}
+.tree-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-meta { font: 10.5px var(--mono); color: var(--ink-3); }
+.tree-count { margin-left: auto; font: 10.5px var(--mono); color: var(--ink-3); flex: none; }
+
+.chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+
 /* --------------------------------------------------------- workflows */
 
 .wf-groups { display: grid; gap: 8px; }
@@ -778,6 +830,80 @@ body.detail-open .wrap { display: none; }
   max-width: 88ch;
 }
 .detail-body blockquote p:last-child { margin-bottom: 0; }
+/* ------------------------------------------------------- project board */
+
+/* A dense board, not a linear document. Every `##` section becomes a numbered
+   panel and the whole dossier is visible at once, which is how a reference
+   sheet actually gets read: by jumping to a panel, not by scrolling past the
+   nine you did not want. */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--gap);
+  align-items: start;
+  /* dense so a narrow panel backfills the track a wide one left open */
+  grid-auto-flow: row dense;
+  margin-bottom: var(--gap-lg);
+}
+.board-panel {
+  background: linear-gradient(160deg, var(--surface-start), var(--surface-end));
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 0 0 var(--pad-card);
+  overflow: hidden;
+  container-type: inline-size;
+}
+/* Panels carrying a diagram or a table get room to breathe. A flow diagram
+   takes the whole row: it is the widest thing on the page by an order of
+   magnitude, and every column it does not get is a column of scrolling. */
+.board-panel--wide { grid-column: span 2; }
+.board-panel--flow { grid-column: 1 / -1; }
+@media (max-width: 720px) {
+  .board-panel--wide, .board-panel--flow { grid-column: span 1; }
+}
+
+.board-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 11px var(--pad-card);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--ink-2);
+  background: var(--sunken);
+  border-bottom: 1px solid var(--border);
+}
+.board-num {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--primary);
+  color: var(--canvas);
+  font: 700 11px var(--mono);
+  letter-spacing: 0;
+  flex: none;
+}
+.board-content { padding: 0 var(--pad-card); font-size: var(--fs-meta); }
+.board-content > :last-child { margin-bottom: 0; }
+.board-content p { margin: 0 0 10px; max-width: none; }
+.board-content ul, .board-content ol { margin: 0 0 10px; padding-left: 18px; max-width: none; }
+.board-content h3 { margin: 14px 0 7px; font-size: 12.5px; }
+.board-content table { font-size: clamp(11px, 0.9vw, 12.5px); }
+.board-content th, .board-content td { padding: 6px 8px; }
+.board-content .flow-wrap { margin-bottom: 12px; }
+.board-content blockquote { margin-bottom: 10px; max-width: none; }
+.board-content pre.code { font-size: 11.5px; padding: 10px 11px; }
+
+@container (max-width: 340px) {
+  .board-content table { font-size: 11px; }
+}
+
 .drawer-panel { display: none; }
 .drawer-panel.is-active { display: block; }
 
