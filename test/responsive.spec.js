@@ -148,8 +148,14 @@ test('both themes actually repaint the surface, not just the attribute', async (
   await page.goto(PAGE);
   const dark = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   await page.locator('#theme-toggle').click();
-  const light = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  expect(dark).not.toBe(light);
+
+  // body transitions background-color over 260ms, so getComputedStyle right
+  // after the click returns the START of that transition — still the dark
+  // value. Reading once is a race with my own CSS: it passed on a laptop and
+  // failed on CI. Poll until the surface has actually repainted.
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor))
+    .not.toBe(dark);
 });
 
 /* -------------------------------------------------- responsive behaviour */
