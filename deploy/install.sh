@@ -65,8 +65,12 @@ fi
 
 # ------------------------------------------------------------- the checkout
 
+SELF="$DIR/deploy/install.sh"
+selfsum() { [ -f "$SELF" ] && sha256sum "$SELF" | cut -d' ' -f1 || echo none; }
+
 if [ -d "$DIR/.git" ]; then
   say "Updating the checkout at $DIR"
+  BEFORE="$(selfsum)"
   git -C "$DIR" fetch --quiet origin "$BRANCH"
   # Take code from origin without merging: data/ and dist/ on this box are
   # newer than anything in the repo and a pull would conflict on every run.
@@ -74,6 +78,16 @@ if [ -d "$DIR/.git" ]; then
     git -C "$DIR" checkout --quiet "origin/$BRANCH" -- "$p" 2>/dev/null || true
   done
   ok "code updated to origin/$BRANCH; data/ and dist/ left alone"
+
+  # This script updates itself. Bash reads a script incrementally by byte
+  # offset, so carrying on after the file changed underneath us runs a mix of
+  # old and new — which is exactly how a fixed bug appears to survive its fix.
+  # ponytail: re-exec here rather than wrapping the whole file in a main()
+  # function; the checkout is early enough that bash has not read past it.
+  if [ -z "${KW_ESTATE_REEXEC:-}" ] && [ "$BEFORE" != "$(selfsum)" ]; then
+    ok "install.sh changed; running the new one"
+    KW_ESTATE_REEXEC=1 exec bash "$SELF" "$@"
+  fi
 else
   say "Cloning into $DIR"
   git clone --quiet --branch "$BRANCH" "$REPO" "$DIR" \
