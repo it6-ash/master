@@ -204,6 +204,42 @@ function renderChanges(events) {
 
 /* ------------------------------------------------------- server cards */
 
+/** "Ubuntu 24.04.4 LTS" -> "Ubuntu 24.04". The patch level is on the detail page. */
+function shortOs(os) {
+  if (!os) return '';
+  const m = /^(\w+)\s+(\d+\.\d+)/.exec(os);
+  return m ? `${m[1]} ${m[2]}` : os.slice(0, 18);
+}
+
+/**
+ * Certificate renewal, summarised.
+ *
+ * A card cannot list a dozen expiry dates without becoming a table, and the
+ * only one that matters is the soonest — that is the date something breaks.
+ * The rest are a count, and the full list is one click away on the detail page.
+ */
+function certSummary(server) {
+  const certs = (server.vhosts ?? [])
+    .filter((v) => Number.isInteger(v.certExpiryDays))
+    .sort((a, b) => a.certExpiryDays - b.certExpiryDays);
+  if (!certs.length) return '';
+
+  const soonest = certs[0];
+  // certbot issues one certificate for several names, so count certificates,
+  // not hostnames, or a three-name cert reads as three renewals.
+  const distinct = new Set(certs.map((c) => c.certName ?? c.domain)).size;
+  const tone = soonest.certExpiryDays < 30 ? 'warn' : '';
+
+  const renews = new Date(Date.now() + soonest.certExpiryDays * 86400000)
+    .toISOString().slice(0, 10);
+
+  return `<span class="cert-next${tone ? ' cert-next--warn' : ''}">
+      next renewal ${soonest.certExpiryDays}d
+    </span>
+    <span class="cert-detail">${escapeHtml(soonest.certName ?? soonest.domain)} · ${escapeHtml(renews)}</span>
+    ${distinct > 1 ? `<span class="cert-detail">+${distinct - 1} more certificate${distinct === 2 ? '' : 's'}</span>` : ''}`;
+}
+
 function renderServerCard(id, server, { issues, history, staleDays, projects, workflows }) {
   const state = server.state ?? {};
   const failed = (server.services ?? []).filter((s) => s.state === 'failed');
@@ -305,8 +341,12 @@ function renderServerCard(id, server, { issues, history, staleDays, projects, wo
       ${server.specs?.cpu ? `<span>${server.specs.cpu} vCPU</span>` : ''}
       ${server.specs?.ram ? `<span>${escapeHtml(server.specs.ram)} RAM</span>` : ''}
       ${server.specs?.disk ? `<span>${escapeHtml(server.specs.disk)} disk</span>` : ''}
+      ${server.specs?.virt ? `<span title="Virtualisation">${escapeHtml(server.specs.virt)}</span>` : ''}
+      ${shortOs(state.os) ? `<span>${escapeHtml(shortOs(state.os))}</span>` : ''}
       ${state.uptime ? `<span>up ${escapeHtml(state.uptime)}</span>` : ''}
     </div>
+
+    ${certSummary(server) ? `<div class="cert-line">${certSummary(server)}</div>` : ''}
 
     <div class="meters">
       ${meter('disk', state.diskUsedPct, `${state.diskUsed ?? ''} of ${state.diskTotal ?? ''}`)}
