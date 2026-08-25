@@ -186,17 +186,44 @@ fi
 
 say "nginx ($MODE)"
 
-enable_vhost() {
-  install -m 644 "$DIR/deploy/$1" /etc/nginx/sites-available/kw-estate
+VHOST=/etc/nginx/sites-available/kw-estate
 
-  if [ "$AUTH" = "none" ]; then
-    # Comment rather than delete, so turning it back on is one sed away.
-    sed -i 's/^\( *\)auth_basic/\1# auth_basic/' /etc/nginx/sites-available/kw-estate
-    warn "AUTH=none — this page is now readable by anyone who resolves $DOMAIN."
-    warn "It lists every IP, open port, failed unit and unrotated credential here."
+# Idempotent, and safe to re-run after certbot has been at the file.
+enable_vhost() {
+  local wanted="$DIR/deploy/$1"
+
+  if grep -q "ssl_certificate" "$VHOST" 2>/dev/null; then
+    # certbot --nginx rewrites this file IN PLACE: it adds the 443 server and
+    # turns port 80 into a redirect. Overwriting it with the shipped template
+    # deletes the only TLS server for this hostname, and https then falls
+    # through to nginx's default site — the stock welcome page.
+    ok "existing vhost carries certbot's TLS; editing it, not replacing it"
+  elif grep -q "127.0.0.1:8060" "$VHOST" 2>/dev/null && [ "$MODE" = "public" ]; then
+    warn "replacing the tunnel vhost with the public one"
+    install -m 644 "$wanted" "$VHOST"
+  elif [ ! -f "$VHOST" ] || ! grep -q "kw-estate" "$VHOST" 2>/dev/null; then
+    install -m 644 "$wanted" "$VHOST"
+  else
+    ok "vhost already installed"
   fi
 
-  ln -sfn /etc/nginx/sites-available/kw-estate /etc/nginx/sites-enabled/kw-estate
+  # Auth is a two-line edit either way, so it applies to a certbot-rewritten
+  # file exactly as well as to a fresh one. Comment rather than delete, so
+  # turning it back on is the same edit in reverse.
+  case "$AUTH" in
+    none)
+      sed -i 's/^\( *\)auth_basic/\1# auth_basic/' "$VHOST"
+      warn "AUTH=none — this page is readable by anyone who resolves $DOMAIN."
+      warn "It lists every IP, open port, failed unit and unrotated credential here."
+      ;;
+    basic)
+      sed -i 's/^\( *\)# *auth_basic/\1auth_basic/' "$VHOST"
+      [ -f /etc/nginx/.kw-estate-htpasswd ] \
+        || warn "auth_basic is on but /etc/nginx/.kw-estate-htpasswd does not exist — nginx will 500"
+      ;;
+  esac
+
+  ln -sfn "$VHOST" /etc/nginx/sites-enabled/kw-estate
   if nginx -t 2>/dev/null; then
     systemctl reload nginx
     ok "vhost enabled and nginx reloaded"
@@ -207,23 +234,7 @@ enable_vhost() {
   fi
 }
 
-# Switching modes swaps which conf is installed, so a stale one must not win.
-if [ -e /etc/nginx/sites-enabled/kw-estate ] \
-   && grep -q "127.0.0.1:8060" /etc/nginx/sites-available/kw-estate 2>/dev/null \
-   && [ "$MODE" = "public" ]; then
-  warn "replacing the tunnel vhost with the public one"
-  rm -f /etc/nginx/sites-enabled/kw-estate
-fi
-
-# Same for changing AUTH: "already enabled" must not mean "keeps the old auth".
-if [ "$AUTH" = "none" ] && grep -qE '^\s*auth_basic' /etc/nginx/sites-available/kw-estate 2>/dev/null; then
-  warn "removing basic auth from the installed vhost"
-  rm -f /etc/nginx/sites-enabled/kw-estate
-fi
-
-if [ -e /etc/nginx/sites-enabled/kw-estate ]; then
-  ok "vhost already enabled"
-elif [ "$MODE" = "tunnel" ]; then
+if [ "$MODE" = "tunnel" ]; then
   enable_vhost kw-estate.tunnel.nginx.conf
   ok "listening on 127.0.0.1:8060 only — no public port claimed"
   warn "the tunnel half is yours: add the ingress rule, route the DNS, then put"
@@ -231,8 +242,8 @@ elif [ "$MODE" = "tunnel" ]; then
 elif [ "$AUTH" = "none" ] || [ -f /etc/nginx/.kw-estate-htpasswd ]; then
   enable_vhost kw-estate.nginx.conf
 else
-  warn "no /etc/nginx/.kw-estate-htpasswd yet, and MODE=public needs one."
-  warn "This page must not be public. Create it, then re-run:"
+  warn "no /etc/nginx/.kw-estate-htpasswd yet, and AUTH=basic needs one."
+  warn "Create it and re-run, or pass AUTH=none if you meant to publish this:"
   warn "  htpasswd -c /etc/nginx/.kw-estate-htpasswd <user>"
 fi
 
