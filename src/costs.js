@@ -42,6 +42,15 @@ const monthly = (amount, cycle) => {
   return amount;
 };
 
+/**
+ * The date that actually matters for this line.
+ *
+ * While it auto-renews that is the charge date — money leaves then, and the
+ * provider bills days or weeks before expiry. Once auto-renew is off it is the
+ * expiry date, because that is when the box stops, and no invoice will warn you.
+ */
+const nextDate = (line) => (line.autoRenew === false ? line.expiresOn : (line.chargeOn ?? line.expiresOn)) ?? null;
+
 /** Whole days from `today` to `date`, negative once it has passed. */
 export function daysUntil(date, today) {
   if (!date) return null;
@@ -96,13 +105,16 @@ export function buildCosts(servers, { today }) {
   }
 
   for (const line of lines) {
-    line.monthly = monthly(line.amount, line.cycle ?? 'monthly');
-    line.daysUntil = daysUntil(line.renewsOn, today);
+    // Tax is not a rounding error: 18% GST on a ₹31k VPS is ₹5,613.
+    line.gross = Number.isFinite(line.amount) ? line.amount + (line.tax ?? 0) : null;
+    line.monthly = monthly(line.gross, line.cycle ?? 'monthly');
+    line.nextDate = nextDate(line);
+    line.daysUntil = daysUntil(line.nextDate, today);
   }
 
-  // Soonest renewal first; lines with no date sink to the bottom rather than
-  // sorting as 1970 and shouting for attention they have not earned.
-  lines.sort((a, b) => (a.renewsOn ?? '9999').localeCompare(b.renewsOn ?? '9999') || a.label.localeCompare(b.label));
+  // Soonest first; lines with no date sink to the bottom rather than sorting as
+  // 1970 and shouting for attention they have not earned.
+  lines.sort((a, b) => (a.nextDate ?? '9999').localeCompare(b.nextDate ?? '9999') || a.label.localeCompare(b.label));
 
   const priced = lines.filter((l) => Number.isFinite(l.monthly));
   return {
@@ -112,5 +124,42 @@ export function buildCosts(servers, { today }) {
     recorded: priced.length,
     total: lines.length,
     monthlyTotal: priced.length ? Math.round(priced.reduce((sum, l) => sum + l.monthly, 0)) : null,
+    annualTotal: priced.length ? Math.round(priced.reduce((sum, l) => sum + l.monthly, 0) * 12) : null,
+    issues: costIssues(lines, { today }),
   };
+}
+
+/**
+ * A billing fact that is really an outage on a timer.
+ *
+ * A cancelled subscription is the one that matters. Nothing on the server
+ * reports it, no monitoring will catch it, and the first symptom is the box
+ * being gone — so it belongs in Issues next to the failing units, not only in
+ * a table of dates.
+ */
+export function costIssues(lines, { today }) {
+  const issues = [];
+
+  for (const line of lines) {
+    if (line.autoRenew !== false || !line.expiresOn) continue;
+    const days = daysUntil(line.expiresOn, today);
+    const what = line.kind === 'vps' ? 'server' : line.kind;
+
+    issues.push({
+      id: `subscription-cancelled-${line.label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`,
+      severity: days !== null && days <= 90 ? 'critical' : 'high',
+      title: `${line.label}: subscription cancelled, ${what} stops on ${line.expiresOn}`,
+      body: `Auto-renew is off. Hostinger will not bill again, so this ${what} shuts down on ${line.expiresOn}`
+        + `${days !== null ? ` — ${days} days from the last build` : ''}. `
+        + `Resuming the subscription costs ${line.gross !== null ? `₹${Math.round(line.gross).toLocaleString('en-IN')} a year` : 'the usual renewal price'}. `
+        + 'Nothing running on the box reports this and no monitoring will catch it; the first symptom is the box being gone.',
+      ...(line.server ? { server: line.server } : {}),
+      source: 'auto',
+      rule: 'subscription-cancelled',
+      evidence: `data/costs.json: autoRenew false, expiresOn ${line.expiresOn}`,
+      opened: today,
+    });
+  }
+
+  return issues;
 }

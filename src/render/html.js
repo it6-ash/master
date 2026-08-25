@@ -1317,7 +1317,11 @@ function renewalsPanel(costs) {
   const money = (n) => (Number.isFinite(n) ? `₹${Math.round(n).toLocaleString('en-IN')}` : null);
   const KIND = { vps: 'VPS', domain: 'Domain' };
 
+  /* Days-remaining is the ordinal scale. A cancelled line jumps straight to
+     critical whatever the count says: it is not a bill approaching, it is a
+     shutdown approaching, and those deserve different alarm. */
   const due = (line) => {
+    if (line.autoRenew === false) return { text: 'will not renew', tone: 'critical' };
     if (line.daysUntil === null || line.daysUntil === undefined) return { text: 'no date', tone: 'unknown' };
     if (line.daysUntil < 0) return { text: `${-line.daysUntil}d overdue`, tone: 'critical' };
     if (line.daysUntil <= 14) return { text: `in ${line.daysUntil}d`, tone: 'high' };
@@ -1328,15 +1332,24 @@ function renewalsPanel(costs) {
   const rows = costs.lines.map((line) => {
     const d = due(line);
     const label = line.kind === 'vps' && line.server ? linkServer(line.server, line.label) : escapeHtml(line.label);
-    const price = money(line.amount);
-    return `<tr>
+    const gross = money(line.gross);
+    const cycle = (line.cycle ?? 'monthly').startsWith('ye') ? 'yr' : 'mo';
+    // Charge date while it renews, expiry once it does not — different events,
+    // and the label has to say which one you are looking at.
+    const dateLabel = line.autoRenew === false ? 'expires' : 'charged';
+
+    return `<tr${line.autoRenew === false ? ' class="renewal-row--cancelled"' : ''}>
       <th scope="row" data-label="Line">${label}
-        <span class="renewal-kind">${escapeHtml(KIND[line.kind] ?? line.kind)}</span>
+        <span class="renewal-kind">${escapeHtml(line.plan ?? KIND[line.kind] ?? line.kind)}</span>
         ${line.detail ? `<span class="renewal-detail">${escapeHtml(line.detail)}</span>` : ''}
       </th>
       <td data-label="Provider">${line.provider ? escapeHtml(line.provider) : '<span class="unrecorded">—</span>'}</td>
-      <td class="num" data-label="Cost">${price ? `${price}<span class="renewal-cycle">/${(line.cycle ?? 'monthly').startsWith('ye') ? 'yr' : 'mo'}</span>` : '<span class="unrecorded">not recorded</span>'}</td>
-      <td data-label="Renews">${line.renewsOn ? escapeHtml(line.renewsOn) : '<span class="unrecorded">not recorded</span>'}</td>
+      <td class="num" data-label="Cost">${gross
+    ? `${gross}<span class="renewal-cycle">/${cycle}</span>${Number.isFinite(line.tax) && line.tax > 0 ? `<span class="renewal-detail">${money(line.amount)} + ${money(line.tax)} tax</span>` : ''}`
+    : '<span class="unrecorded">not recorded</span>'}</td>
+      <td data-label="Next">${line.nextDate
+    ? `${escapeHtml(line.nextDate)}<span class="renewal-detail">${dateLabel}</span>`
+    : '<span class="unrecorded">not recorded</span>'}</td>
       <td data-label="Due"><span class="renewal-due tone-${d.tone}">${escapeHtml(d.text)}</span></td>
     </tr>`;
   }).join('');
@@ -1347,7 +1360,7 @@ function renewalsPanel(costs) {
     <figcaption>Recurring cost and renewals</figcaption>
     <p class="chart-note">
       ${costs.monthlyTotal !== null
-    ? `<strong>${money(costs.monthlyTotal)}/month</strong> across ${costs.recorded} priced line${costs.recorded === 1 ? '' : 's'}.`
+    ? `<strong>${money(costs.monthlyTotal)}/month</strong>, ${money(costs.annualTotal)} a year including GST, across ${costs.recorded} priced line${costs.recorded === 1 ? '' : 's'}.`
     : 'Nothing is priced yet.'}
       ${missing > 0
     ? `${missing} line${missing === 1 ? '' : 's'} still ${missing === 1 ? 'has' : 'have'} no price or date — add them to <code>data/costs.json</code>. The list itself is derived from the servers, so a new domain appears here on its own.`

@@ -247,6 +247,14 @@ function main() {
 
   /* what it costs to keep the lights on, and when each line renews */
   const costs = buildCosts(serverData, { today });
+
+  // A cancelled subscription is an outage with a date on it. It belongs in
+  // Issues beside the failing units, not only in a table of renewal dates.
+  for (const issue of costs.issues) {
+    if (!reconciled.some((i) => i.id === issue.id)) reconciled.push(issue);
+    warnings.push(`costs: ${issue.title}`);
+  }
+
   if (costs.monthlyTotal !== null && analysis.costScenarios) {
     // The same fixed floor under every scenario. That is the point being made:
     // hosting does not move with volume, WhatsApp does.
@@ -279,7 +287,7 @@ function main() {
   process.stdout.write(
     `built ${rel(out)}  ${(bytes / 1024).toFixed(0)} KB\n`
     + `  ${Object.keys(serverData).length} servers · ${projects.length} projects · `
-    + `${Object.keys(workflows).length} workflows · ${issues.filter((i) => !i.resolved).length} open issues · ${events.length} change events\n`,
+    + `${Object.keys(workflows).length} workflows · ${reconciled.filter((i) => !i.resolved).length} open issues · ${events.length} change events\n`,
   );
   for (const w of warnings) process.stdout.write(`  warn  ${w}\n`);
 }

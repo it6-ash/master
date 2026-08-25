@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { planFor, registrableDomain, daysUntil } from '../src/costs.js';
+import { planFor, registrableDomain, daysUntil, costIssues } from '../src/costs.js';
 
 test('KVM tier comes from the vCPU count, not from a hardcoded list', () => {
   assert.equal(planFor({ virt: 'kvm', cpu: 4 }), 'KVM 4');
@@ -33,4 +33,23 @@ test('daysUntil counts whole days and goes negative once missed', () => {
   assert.equal(daysUntil('2026-08-25', '2026-08-25'), 0);
   assert.equal(daysUntil('2026-08-20', '2026-08-25'), -5);
   assert.equal(daysUntil(null, '2026-08-25'), null, 'no date is not "today"');
+});
+
+test('a cancelled subscription becomes an issue; a renewing one does not', () => {
+  const lines = [
+    { kind: 'vps', label: 'srv1900820', server: 'srv1900820', autoRenew: false, expiresOn: '2027-08-13', gross: 36801.84 },
+    { kind: 'vps', label: 'srv1340120', server: 'srv1340120', autoRenew: true, expiresOn: '2027-03-05', gross: 36801.84 },
+    { kind: 'domain', label: 'kwgroup.in', autoRenew: false, expiresOn: null },
+  ];
+
+  const issues = costIssues(lines, { today: '2026-08-25' });
+  assert.equal(issues.length, 1, 'only the cancelled line with a known date');
+  assert.equal(issues[0].server, 'srv1900820');
+  assert.equal(issues[0].source, 'auto');
+  assert.match(issues[0].id, /^[a-z0-9][a-z0-9-]*$/, 'id must satisfy the issues schema');
+  assert.match(issues[0].title, /stops on 2027-08-13/);
+
+  // Far out it is high; inside the last quarter there is no time left to argue.
+  assert.equal(issues[0].severity, 'high');
+  assert.equal(costIssues(lines, { today: '2027-07-01' })[0].severity, 'critical');
 });

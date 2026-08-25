@@ -1,34 +1,55 @@
 {
-  "_comment": "What the estate costs and when each line renews. The LIST of VPS and domains is derived from the servers themselves — do not maintain it here. This file supplies only what a dump cannot know: the price and the renewal date. Keys are vps:<server-id> and domain:<registrable-domain>. Anything else you pay for (an API plan, a mail plan) can be added with any key and a label. A line left at null renders as 'not recorded', which is the point: it names the bill nobody is tracking.",
+  "_comment": "What the estate costs and when each line renews. The LIST of VPS and domains is derived from the servers themselves — do not maintain it here. This file supplies only what a dump cannot know: price, dates and auto-renew state. Keys are vps:<server-id> and domain:<registrable-domain>. Anything else you pay for can be added with any key and a label. A line left at null renders as 'not recorded', which is the point: it names the bill nobody is tracking.",
   "currency": "INR",
-  "note": "Hosting is the fixed floor: it does not move with WhatsApp volume, which is what the bars below it do.",
+  "note": "Hosting is the fixed floor: it does not move with WhatsApp volume, which is what the bars above it do. Prices are the provider's quoted renewal price plus 18% GST, taken from the Hostinger subscription pages on 2026-08-25.",
 
   "items": {
     "vps:srv1340120": {
       "provider": "Hostinger",
-      "amount": null,
-      "cycle": "monthly",
-      "renewsOn": null,
-      "note": "the busy one — nginx, n8n, Mongo, and now this dashboard"
+      "plan": "KVM 4",
+      "amount": 31188,
+      "tax": 5613.84,
+      "cycle": "yearly",
+      "autoRenew": true,
+      "chargeOn": "2027-02-19",
+      "expiresOn": "2027-03-05",
+      "note": "the busy one — nginx, n8n, Mongo, and this dashboard"
     },
     "vps:srv1870078": {
       "provider": "Hostinger",
-      "amount": null,
-      "cycle": "monthly",
-      "renewsOn": null,
-      "note": "second n8n, largely idle"
+      "plan": "KVM 2",
+      "amount": 16788,
+      "tax": 3021.84,
+      "cycle": "yearly",
+      "autoRenew": true,
+      "chargeOn": "2027-07-17",
+      "expiresOn": "2027-07-31",
+      "note": "second n8n, largely idle — the cheapest thing here to switch off"
     },
     "vps:srv1900820": {
       "provider": "Hostinger",
-      "amount": null,
-      "cycle": "monthly",
-      "renewsOn": null,
-      "note": "the public websites"
+      "plan": "KVM 4",
+      "amount": 31188,
+      "tax": 5613.84,
+      "cycle": "yearly",
+      "autoRenew": false,
+      "chargeOn": null,
+      "expiresOn": "2027-08-13",
+      "note": "SUBSCRIPTION CANCELLED. Hostinger shows ₹0 tax because it does not intend to bill again; the figures here are what resuming would cost. Three public websites are on this box."
     },
 
-    "domain:leadq.co.in": { "provider": null, "amount": null, "cycle": "yearly", "renewsOn": null },
-    "domain:kwgroup.in": { "provider": null, "amount": null, "cycle": "yearly", "renewsOn": null },
-    "domain:kwbluepearl.com": { "provider": null, "amount": null, "cycle": "yearly", "renewsOn": null },
-    "domain:ghaziabadcommercialshops.org": { "provider": null, "amount": null, "cycle": "yearly", "renewsOn": null }
+    "domain:leadq.co.in": {
+      "provider": "Hostinger",
+      "amount": 799,
+      "tax": 143.82,
+      "cycle": "yearly",
+      "autoRenew": true,
+      "chargeOn": "2027-01-27",
+      "expiresOn": "2027-02-23",
+      "note": "every internal tool hangs off this zone"
+    },
+    "domain:kwgroup.in": { "provider": null, "amount": null, "cycle": "yearly", "chargeOn": null, "expiresOn": null },
+    "domain:kwbluepearl.com": { "provider": null, "amount": null, "cycle": "yearly", "chargeOn": null, "expiresOn": null },
+    "domain:ghaziabadcommercialshops.org": { "provider": null, "amount": null, "cycle": "yearly", "chargeOn": null, "expiresOn": null }
   }
 }
