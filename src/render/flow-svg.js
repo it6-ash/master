@@ -65,9 +65,12 @@ function findBackEdges(nodes, edges) {
 }
 
 /**
- * @returns {{ nodes: Array, edges: Array, width: number, height: number }}
+ * @param {object} flow parsed AST
+ * @param {{ vertical?: boolean }} [opts] vertical stacks layers top-to-bottom,
+ *   which is the only shape that fits a phone. Same graph, transposed axes.
+ * @returns {{ nodes: Array, edges: Array, width: number, height: number, vertical: boolean }}
  */
-export function layoutFlow(flow) {
+export function layoutFlow(flow, { vertical = false } = {}) {
   const nodes = flow.nodes.map((n) => ({ ...n }));
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const edges = flow.edges.filter((e) => byId.has(e.from) && byId.has(e.to));
@@ -121,34 +124,70 @@ export function layoutFlow(flow) {
     assignRows();
   }
 
-  /* pixel positions, each column vertically centred */
-  const tallest = Math.max(...[...columns.values()].map((l) => l.length));
-  const contentH = tallest * ROW_STRIDE - ROW_GAP;
+  /* pixel positions */
+  const widest = Math.max(...[...columns.values()].map((l) => l.length));
 
-  for (const [c, list] of columns) {
-    const columnH = list.length * ROW_STRIDE - ROW_GAP;
-    const top = PAD + (contentH - columnH) / 2;
-    list.forEach((n, i) => {
-      if (n.x === null || n.y === null) {
-        n.x = PAD + c * COL_STRIDE;
-        n.y = top + i * ROW_STRIDE;
-      }
-      n.w = NODE_W;
-      n.h = NODE_H;
-      n.col = c;
-    });
+  if (vertical) {
+    // Transposed: a layer becomes a ROW, siblings spread across it.
+    const V_COL = NODE_W + 16;
+    const V_ROW = NODE_H + 54;
+    const contentW = widest * V_COL - 16;
+
+    for (const [c, list] of columns) {
+      const rowW = list.length * V_COL - 16;
+      const left = PAD + (contentW - rowW) / 2;
+      list.forEach((n, i) => {
+        n.x = left + i * V_COL;
+        n.y = PAD + c * V_ROW;
+        n.w = NODE_W;
+        n.h = NODE_H;
+        n.col = c;
+      });
+    }
+  } else {
+    const contentH = widest * ROW_STRIDE - ROW_GAP;
+    for (const [c, list] of columns) {
+      const columnH = list.length * ROW_STRIDE - ROW_GAP;
+      const top = PAD + (contentH - columnH) / 2;
+      list.forEach((n, i) => {
+        // A manual @x,y always wins.
+        if (n.x === null || n.y === null) {
+          n.x = PAD + c * COL_STRIDE;
+          n.y = top + i * ROW_STRIDE;
+        }
+        n.w = NODE_W;
+        n.h = NODE_H;
+        n.col = c;
+      });
+    }
   }
 
   const width = Math.max(...nodes.map((n) => n.x + n.w)) + PAD;
   const height = Math.max(...nodes.map((n) => n.y + n.h)) + PAD;
 
   const placed = edges.map((e, i) => ({ ...e, back: backEdges.has(i) }));
-  return { nodes, edges: placed, width, height };
+  return { nodes, edges: placed, width, height, vertical };
 }
 
 /* -------------------------------------------------------------- drawing */
 
-function edgePath(a, b, back) {
+function edgePath(a, b, back, vertical) {
+  if (vertical) {
+    const startX = a.x + a.w / 2;
+    const startY = a.y + a.h;
+    const endX = b.x + b.w / 2;
+    const endY = b.y;
+
+    if (!back && endY >= startY - 4) {
+      const dy = Math.max(22, (endY - startY) * 0.5);
+      return `M ${startX} ${startY} C ${startX} ${startY + dy}, ${endX} ${endY - dy}, ${endX} ${endY}`;
+    }
+    // Returning edge: out the right, back up, in the right.
+    const out = 26;
+    return `M ${a.x + a.w} ${a.y + a.h / 2} C ${a.x + a.w + out} ${a.y + a.h / 2}, `
+      + `${b.x + b.w + out} ${b.y + b.h / 2}, ${b.x + b.w} ${b.y + b.h / 2}`;
+  }
+
   const startX = a.x + a.w;
   const startY = a.y + a.h / 2;
   const endX = b.x;
@@ -191,8 +230,8 @@ function nodeShape(n) {
  * @param {{ id?: string, title?: string }} [opts]
  * @returns {string} inline SVG
  */
-export function renderFlowSvg(flow, { id = 'flow', title = 'Flow diagram' } = {}) {
-  const { nodes, edges, width, height } = layoutFlow(flow);
+export function renderFlowSvg(flow, { id = 'flow', title = 'Flow diagram', vertical = false } = {}) {
+  const { nodes, edges, width, height } = layoutFlow(flow, { vertical });
   if (nodes.length === 0) return '<p class="muted">This flow declares no nodes.</p>';
 
   const byId = new Map(nodes.map((n) => [n.id, n]));
@@ -202,9 +241,18 @@ export function renderFlowSvg(flow, { id = 'flow', title = 'Flow diagram' } = {}
     const a = byId.get(e.from);
     const b = byId.get(e.to);
     const state = e.state ?? 'neutral';
-    const d = edgePath(a, b, e.back);
+    const d = edgePath(a, b, e.back, vertical);
+    // A plain midpoint label, not a textPath. Text on a path that runs
+    // right-to-left renders mirrored and unreadable, which is exactly what a
+    // returning edge does.
+    const midX = vertical
+      ? (a.x + a.w / 2 + b.x + b.w / 2) / 2
+      : (a.x + a.w + b.x) / 2;
+    const midY = vertical
+      ? (a.y + a.h + b.y) / 2
+      : (a.y + a.h / 2 + b.y + b.h / 2) / 2 - 7;
     const label = e.label
-      ? `<text class="flow-edge-label flow-edge-label--${state}"><textPath href="#${id}-e${i}" startOffset="50%">${escapeHtml(e.label)}</textPath></text>`
+      ? `<text class="flow-edge-label flow-edge-label--${state}" x="${midX.toFixed(1)}" y="${midY.toFixed(1)}">${escapeHtml(e.label)}</text>`
       : '';
     return `<path id="${id}-e${i}" class="flow-edge flow-edge--${state}" d="${d}" marker-end="url(#${markerId}-${state})" />${label}`;
   }).join('\n    ');
@@ -228,10 +276,11 @@ export function renderFlowSvg(flow, { id = 'flow', title = 'Flow diagram' } = {}
         <path class="flow-arrow flow-arrow--${state}" d="M 0 1 L 7 4 L 0 7 z" />
       </marker>`).join('');
 
-  // Render at natural size and let the wrapper scroll. Fitting a ten-node chain
+  // Render at natural size inside a scrolling wrapper. Fitting a ten-node chain
   // into an 800px drawer would scale 12px labels down to 4px, which is not a
-  // diagram any more.
-  return `<svg class="flow" width="${Math.round(width)}" height="${Math.round(height)}" viewBox="0 0 ${Math.round(width)} ${Math.round(height)}" role="img" aria-label="${escapeHtml(title)}" preserveAspectRatio="xMinYMin meet">
+  // diagram any more. The viewBox is still declared so the drawing stays
+  // resolution-independent and scales cleanly when it does have room.
+  return `<svg class="flow flow-${vertical ? 'vertical' : 'horizontal'}" width="${Math.round(width)}" height="${Math.round(height)}" viewBox="0 0 ${Math.round(width)} ${Math.round(height)}" role="img" aria-label="${escapeHtml(title)}" preserveAspectRatio="xMidYMin meet">
     <title>${escapeHtml(title)}</title>
     <defs>${markers}
     </defs>

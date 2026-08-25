@@ -104,7 +104,11 @@ function renderServerCard(id, server, { issues, history, staleDays, projects, wo
     server.containers?.length ? `${server.containers.length} containers` : null,
   ].filter(Boolean);
 
-  return `<button class="server searchable" type="button" data-open="server:${escapeHtml(id)}"
+  // The left edge carries health, so the state is readable before any text is.
+  const health = alerts.some((i) => i.severity === 'critical') ? 'critical'
+    : (failed.length || alerts.length) ? 'warning' : 'ok';
+
+  return `<button class="server searchable tilt server--${health}" type="button" data-open="server:${escapeHtml(id)}"
       data-search="${escapeHtml(`${id} ${server.role ?? ''} ${server.ip ?? ''}`.toLowerCase())}">
     <div class="server-head">
       <div>
@@ -159,9 +163,11 @@ function renderServerPanel(id, server, { projects, workflows, issues }) {
   const activeWf = wf.filter((w) => w.active);
   const mineIssues = issues.filter((i) => i.server === id && !i.resolved).sort(bySeverity);
 
+  // data-label carries the header down to narrow viewports, where the table
+  // restacks into one labelled card per row.
   const table = (headers, rows) => (rows.length ? `<div class="table-wrap"><table>
     <thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+    <tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td data-label="${escapeHtml(headers[i] ?? '')}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>` : '<p class="faint">Nothing recorded.</p>');
 
   const exposed = (server.ports ?? []).filter((p) => p.exposed);
@@ -241,7 +247,7 @@ function renderProjectCard(project) {
   const search = [project.id, project.name, project.summary, project.url, project.server,
     ...(project.tags ?? []), ...(project.services ?? [])].filter(Boolean).join(' ').toLowerCase();
 
-  return `<button class="project searchable" type="button" data-open="project:${escapeHtml(project.id)}"
+  return `<button class="project searchable tilt" type="button" data-open="project:${escapeHtml(project.id)}"
       data-server="${escapeHtml(project.server ?? '')}" data-status="${escapeHtml(project.status)}"
       data-search="${escapeHtml(search)}">
     <div class="project-head">
@@ -292,7 +298,15 @@ function renderProjectPanel(project, { issues, workflows, servers }) {
       if (flow.errors.length) {
         return `<div class="flow-wrap"><p class="faint">Flow could not be rendered: ${escapeHtml(flow.errors[0].message)}</p></div>`;
       }
-      return `<div class="flow-wrap">${renderFlowSvg(flow, { id: `f-${project.id}`, title: `${project.name} flow` })}</div>`;
+      // Both orientations ship; CSS picks one. Laying out the same graph twice
+      // is a few KB, and it is the only way a ten-layer diagram is legible on a
+      // phone without JavaScript re-running the layout at runtime.
+      const opts = { id: `f-${project.id}`, title: `${project.name} flow` };
+      return `<div class="flow-wrap"><div class="flow-scroll">${
+        renderFlowSvg(flow, opts)
+      }${
+        renderFlowSvg(flow, { ...opts, id: `fv-${project.id}`, vertical: true })
+      }</div></div>`;
     },
   }) : '';
 
@@ -413,18 +427,44 @@ export function renderPage({
 
   const serverIds = Object.keys(servers);
 
-  return `<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  return `<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
 <title>KW Estate</title>
+<script>
+/* Runs before first paint, so the chosen theme is never repainted in front of
+   the reader. Stored choice wins; otherwise the OS preference decides, with
+   dark as the fallback when neither says anything. */
+(function () {
+  try {
+    var saved = localStorage.getItem('kw-estate-theme');
+    var theme = (saved === 'light' || saved === 'dark') ? saved
+      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+}());
+</script>
 <style>
 ${css}
 </style>
+</head>
+<body>
 
 <header class="top">
   <div class="top-inner">
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
-    <div class="top-meta">built ${escapeHtml(builtAt)}</div>
+    <div class="top-actions">
+      <div class="built">built ${escapeHtml(builtAt)}</div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -470,26 +510,29 @@ ${css}
   <div class="wf-groups">${renderWorkflows(workflows, projects)}</div>
 </main>
 
-<div class="scrim" id="scrim"></div>
-
-<aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-  <div class="drawer-head">
-    <span class="dot" id="drawer-dot"></span>
-    <div>
-      <div class="drawer-title" id="drawer-title">—</div>
-      <div class="drawer-sub" id="drawer-sub"></div>
+<section class="detail" id="detail" aria-hidden="true" tabindex="-1" aria-labelledby="detail-title">
+  <div class="detail-head">
+    <button class="back" id="detail-close" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
+      Estate
+    </button>
+    <span class="dot" id="detail-dot"></span>
+    <div class="detail-heading">
+      <h1 class="detail-title" id="detail-title">—</h1>
+      <div class="detail-sub" id="detail-sub"></div>
     </div>
-    <button class="drawer-close" id="drawer-close" aria-label="Close">✕</button>
   </div>
-  <div class="drawer-body" id="drawer-body">
+  <div class="detail-body" id="detail-body">
     ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers })).join('')}
     ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues })).join('')}
   </div>
-</aside>
+</section>
 
 <script>
 ${clientScript()}
-</script>`;
+</script>
+</body>
+</html>`;
 }
 
 /* ------------------------------------------------------ client script */
@@ -499,12 +542,42 @@ function clientScript() {
   'use strict';
 
   var body = document.body;
-  var drawer = document.getElementById('drawer');
-  var titleEl = document.getElementById('drawer-title');
-  var subEl = document.getElementById('drawer-sub');
-  var dotEl = document.getElementById('drawer-dot');
+  var drawer = document.getElementById('detail');
+  var titleEl = document.getElementById('detail-title');
+  var subEl = document.getElementById('detail-sub');
+  var dotEl = document.getElementById('detail-dot');
   var search = document.getElementById('search');
   var current = null;
+
+  // --- theme ----------------------------------------------------------
+  var root = document.documentElement;
+  var toggle = document.getElementById('theme-toggle');
+  var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+
+  function syncToggle() {
+    var light = root.getAttribute('data-theme') === 'light';
+    toggle.setAttribute('aria-pressed', String(light));
+    toggle.title = light ? 'Switch to dark' : 'Switch to light';
+  }
+  syncToggle();
+
+  toggle.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('kw-estate-theme', next); } catch (e) { /* private mode */ }
+    syncToggle();
+  });
+
+  // Follow the OS only while the reader has never expressed a preference.
+  if (media && media.addEventListener) {
+    media.addEventListener('change', function (e) {
+      var stored = null;
+      try { stored = localStorage.getItem('kw-estate-theme'); } catch (err) { /* ignore */ }
+      if (stored) return;
+      root.setAttribute('data-theme', e.matches ? 'light' : 'dark');
+      syncToggle();
+    });
+  }
 
   function panelFor(key) {
     return document.querySelector('[data-panel="' + CSS.escape(key) + '"]');
@@ -538,9 +611,10 @@ function clientScript() {
       subEl.textContent = '';
     }
 
-    body.classList.add('drawer-open');
+    body.classList.add('detail-open');
     drawer.setAttribute('aria-hidden', 'false');
-    document.getElementById('drawer-body').scrollTop = 0;
+    window.scrollTo(0, 0);
+    drawer.focus({ preventScroll: true });
     current = key;
 
     var hash = '#' + kind + '=' + id;
@@ -548,7 +622,7 @@ function clientScript() {
   }
 
   function close() {
-    body.classList.remove('drawer-open');
+    body.classList.remove('detail-open');
     drawer.setAttribute('aria-hidden', 'true');
     var trigger = current ? triggerFor(current) : null;
     current = null;
@@ -563,8 +637,35 @@ function clientScript() {
     open(el.getAttribute('data-open'));
   });
 
-  document.getElementById('drawer-close').addEventListener('click', close);
-  document.getElementById('scrim').addEventListener('click', close);
+  document.getElementById('detail-close').addEventListener('click', close);
+
+  // --- swipe right to go back (touch only) ----------------------------
+  (function () {
+    var startX = 0;
+    var startY = 0;
+    var startedAt = 0;
+    var tracking = false;
+
+    drawer.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      tracking = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startedAt = e.timeStamp;
+    });
+
+    drawer.addEventListener('pointerup', function (e) {
+      if (!tracking) return;
+      tracking = false;
+      var dx = e.clientX - startX;
+      var dy = Math.abs(e.clientY - startY);
+      var velocity = dx / Math.max(1, e.timeStamp - startedAt);
+      // Mostly-horizontal, rightward, and either long or fast.
+      if (dx > 70 && dy < 60 && (dx > 130 || velocity > 0.4)) close();
+    });
+
+    drawer.addEventListener('pointercancel', function () { tracking = false; });
+  }());
 
   // --- deep links -----------------------------------------------------
   function fromHash(push) {
@@ -625,7 +726,7 @@ function clientScript() {
 
     if (e.key === 'Escape') {
       if (document.activeElement === search) { search.value = ''; applySearch(); search.blur(); return; }
-      if (body.classList.contains('drawer-open')) close();
+      if (body.classList.contains('detail-open')) close();
       return;
     }
     if (typing) return;
@@ -641,7 +742,7 @@ function clientScript() {
       var next = visible[(idx + step + visible.length) % visible.length];
       if (!next) return;
       e.preventDefault();
-      if (body.classList.contains('drawer-open')) open(next.getAttribute('data-open'));
+      if (body.classList.contains('detail-open')) open(next.getAttribute('data-open'));
       else next.focus();
     }
   });

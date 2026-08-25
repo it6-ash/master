@@ -2,9 +2,12 @@
  * Charts for the estate dashboard.
  *
  * Built to the dataviz method: form chosen by the data's job, color assigned by
- * the job it does, palette validated against this page's dark surface
- * (#14161c) before use. Every chart ships a table-view twin, so no value is
- * reachable only by hovering.
+ * the job it does, palette validated with the six-check validator against the
+ * real surface of BOTH themes before use. The six hues are led by the brand
+ * teal and violet rather than a generic blue/orange, then stepped into each
+ * theme's lightness band; both sets clear every check including 3:1 contrast.
+ * Every chart also ships a table-view twin, so no value is reachable only by
+ * hovering.
  *
  * All marks are plain SVG with CSS classes. No chart library, no runtime JS,
  * and hover tooltips come from native <title> so they survive file:// and print.
@@ -14,18 +17,22 @@ import { escapeHtml } from './markdown.js';
 
 const fmt = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : String(n ?? ''));
 
-/** Ordinal ramp, dark mode. Never darker than step 600 (the 2:1 floor). */
-const ORDINAL_DARK = ['#86b6ef', '#3987e5', '#1c5cab'];
+/* Colour comes from tokens, never from a literal in the markup. SVG presentation
+   attributes accept var() the same way CSS properties do, so a chart repaints
+   itself on a theme switch with no JavaScript and no re-render. */
+const ORDINAL = ['var(--ord-1)', 'var(--ord-2)', 'var(--ord-3)'];
 
 /**
  * A table-view twin for any chart. The WCAG-clean equivalent.
  */
 function tableView(headers, rows, { label = 'Table view' } = {}) {
+  // data-label carries the column header down to narrow viewports, where the
+  // table restacks into one labelled card per row.
   return `<details class="table-view">
     <summary>${escapeHtml(label)}</summary>
     <div class="table-wrap"><table>
       <thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
-      <tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td${i > 0 ? ' class="num"' : ''}>${escapeHtml(String(c))}</td>`).join('')}</tr>`).join('')}</tbody>
+      <tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td data-label="${escapeHtml(headers[i] ?? '')}"${i > 0 ? ' class="num"' : ''}>${escapeHtml(String(c))}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>
   </details>`;
 }
@@ -57,7 +64,7 @@ export function funnelChart(stages, { title = 'Funnel', id = 'funnel' } = {}) {
   const rows = stages.map((stage, i) => {
     const y = i * rowH + 12;
     const w = Math.max(0, (stage.value / max) * trackW);
-    const color = ORDINAL_DARK[Math.min(i, ORDINAL_DARK.length - 1)];
+    const color = ORDINAL[Math.min(i, ORDINAL.length - 1)];
     const pct = max > 0 ? ((stage.value / max) * 100) : 0;
 
     // A zero stage renders as the empty track only; the value sits outside it.
@@ -96,8 +103,8 @@ export function funnelChart(stages, { title = 'Funnel', id = 'funnel' } = {}) {
  * @param {Array<{group: string, active: number, inactive: number}>} groups
  */
 export function workflowChart(groups, { title = 'Workflows by group', id = 'wf-chart' } = {}) {
-  const ACTIVE = '#3987e5';
-  const IDLE = '#4a5163';
+  const ACTIVE = 'var(--s1)';
+  const IDLE = 'var(--idle)';
 
   const max = Math.max(...groups.map((g) => g.active + g.inactive), 1);
   const rowH = 34;
@@ -146,8 +153,8 @@ export function workflowChart(groups, { title = 'Workflows by group', id = 'wf-c
  * @param {Array<{scenario: string, whatsapp: number, openai: number, note?: string}>} rows
  */
 export function costChart(rows, { title = 'Monthly cost', id = 'cost-chart' } = {}) {
-  const WHATSAPP = '#d95926';
-  const OPENAI = '#3987e5';
+  const WHATSAPP = 'var(--s3)';
+  const OPENAI = 'var(--s1)';
 
   const max = Math.max(...rows.map((r) => r.whatsapp + r.openai), 1);
   const rowH = 52;
