@@ -85,7 +85,11 @@ export function writeJsonIfChanged(p, value) {
 export function writeTextIfChanged(p, text) {
   if (exists(p) && fs.readFileSync(p, 'utf8') === text) return false;
   ensureDir(path.dirname(p));
-  fs.writeFileSync(p, text, 'utf8');
+  // Write-then-rename: nginx may be serving this file while the timer rebuilds
+  // it, and a plain write hands out a truncated page for the length of the write.
+  const tmp = `${p}.tmp`;
+  fs.writeFileSync(tmp, text, 'utf8');
+  fs.renameSync(tmp, p);
   return true;
 }
 

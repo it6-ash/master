@@ -15,6 +15,7 @@
  */
 
 import path from 'node:path';
+import fs from 'node:fs';
 
 import {
   ROOT, abs, rel, exists, readJson, readText, writeJsonIfChanged,
@@ -158,6 +159,24 @@ function writeSnapshot(server, snapshot) {
   return { file, written: writeJsonIfChanged(file, snapshot) };
 }
 
+/**
+ * Keep the newest KEEP_SNAPSHOTS per server and delete the rest.
+ *
+ * Hand-fed, this never fires. On the 6-hourly timer it is the difference
+ * between a dashboard and a disk problem: each snapshot is ~45 KB, the build
+ * reads and diffs EVERY consecutive pair on every run, and validate parses all
+ * of them. 60 is a fortnight of 6-hourly collection, which is more history than
+ * the "what changed" panel shows.
+ */
+export const KEEP_SNAPSHOTS = 60;
+
+export function pruneSnapshots(server, keep = KEEP_SNAPSHOTS) {
+  const files = listFiles(abs('data', 'snapshots', server), isJson).sort(); // names sort chronologically
+  const doomed = files.slice(0, Math.max(0, files.length - keep));
+  for (const file of doomed) fs.rmSync(file, { force: true });
+  return doomed.length;
+}
+
 function main() {
   const files = targets.length
     ? targets.map((t) => path.resolve(ROOT, t))
@@ -285,6 +304,14 @@ function main() {
       process.stdout.write(`${green('✓')} ${source}\n    ${serverId}: ${Object.keys(databases).join(', ')}\n`);
       for (const w of warnings) process.stdout.write(`    ${yellow('warn')} ${w}\n`);
     }
+  }
+
+  /* ------------------------------------------------------- prune snapshots */
+
+  if (!dryRun) {
+    let dropped = 0;
+    for (const server of touchedServers) dropped += pruneSnapshots(server);
+    if (dropped) process.stdout.write(`${dim(`· pruned ${dropped} snapshot${dropped === 1 ? '' : 's'} beyond the newest ${KEEP_SNAPSHOTS}`)}\n`);
   }
 
   /* ------------------------------------------------- regenerate auto issues */

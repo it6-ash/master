@@ -1,0 +1,21 @@
+# Four passes a day, offset off the hour so it does not land with every other
+# cron on this box.
+#
+#   systemctl enable --now kw-estate.timer
+#   systemctl list-timers kw-estate.timer
+
+[Unit]
+Description=Rebuild the KW Estate dashboard four times a day
+
+[Timer]
+OnCalendar=00/6:07
+# Catch up after a reboot or a stretch of downtime instead of silently waiting
+# for the next slot — a dashboard six hours stale is worse than one that says so.
+Persistent=true
+OnBootSec=10min
+RandomizedDelaySec=3min
+AccuracySec=1min
+Unit=kw-estate.service
+
+[Install]
+WantedBy=timers.target

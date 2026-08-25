@@ -1,0 +1,43 @@
+# One collection pass: SSH to all three servers, run the collector, ingest,
+# rebuild /opt/kw-estate/dist/index.html in place. nginx serves that directory,
+# so there is no copy step and nothing to go stale between the two.
+#
+#   systemctl start kw-estate     run one pass now
+#   journalctl -u kw-estate -f    watch it
+#
+# Installed by deploy/install.sh.
+
+[Unit]
+Description=KW Estate — collect from every server and rebuild the dashboard
+Documentation=file:///opt/kw-estate/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/kw-estate
+ExecStart=/usr/bin/env node /opt/kw-estate/src/sync.js
+Environment=NO_COLOR=1
+
+# Three SSH round trips with a collector at the far end. Slow is normal; hung
+# is not, and a hung pass must not still be holding the timer six hours later.
+TimeoutStartSec=20min
+
+# This box serves live traffic. The dashboard is never the important workload.
+Nice=15
+IOSchedulingClass=idle
+
+# It runs as root because it needs root's SSH key to reach all three boxes and
+# the collector needs root on the far end. Narrow what root means here.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+# The repo, because the build writes into it. /root/.ssh, because
+# StrictHostKeyChecking=accept-new appends to known_hosts on a first contact.
+ReadWritePaths=/opt/kw-estate /root/.ssh

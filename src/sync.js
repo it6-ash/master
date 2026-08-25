@@ -144,7 +144,26 @@ async function collect(host) {
   const pull = await run('scp', [...sshArgs(host), `${target}:${remoteDump ?? ''}`, abs('raw', localName)]);
   if (pull.code !== 0) return { ok: false, reason: `could not fetch the dump (scp exit ${pull.code})` };
 
+  // Don't leave a pile of estate inventories in /root. On a timer that is four
+  // new ones per box per day, each naming every open port and cron credential.
+  if (remoteDump) await run('ssh', [...sshArgs(host), target, `rm -f ${remoteDump}`]);
+
   return { ok: true, file: rel(abs('raw', localName)) };
+}
+
+/**
+ * Keep the newest few dumps per host in raw/. They are the re-ingest source, so
+ * a handful is worth having; a year of 6-hourly collection is not.
+ */
+export function pruneRaw(hostId, keep = 5) {
+  const dir = abs('raw');
+  if (!exists(dir)) return 0;
+  const mine = fs.readdirSync(dir)
+    .filter((n) => n.startsWith(`kw-collect-${hostId}`) && n.endsWith('.txt'))
+    .sort(); // the collector's stamp sorts chronologically
+  const doomed = mine.slice(0, Math.max(0, mine.length - keep));
+  for (const name of doomed) fs.rmSync(path.join(dir, name), { force: true });
+  return doomed.length;
 }
 
 /* ---------------------------------------------------------------- pass */
@@ -184,6 +203,9 @@ async function once() {
 
   const ingest = await run(process.execPath, [abs('src', 'ingest', 'index.js')]);
   if (ingest.code !== 0) return ingest.code;
+
+  // After ingest, never before: a dump that has not been read yet is not spare.
+  if (!dryRun) for (const host of hosts) pruneRaw(host.id);
 
   const build = await run(process.execPath, [abs('src', 'build.js')]);
   return build.code;
