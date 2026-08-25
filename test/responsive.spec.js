@@ -315,3 +315,58 @@ test('a tag reveals its explanation on hover and on keyboard focus', async ({ pa
   await term.focus();
   await expect(card).toBeVisible();
 });
+
+/* --------------------------------------------------------- orientation */
+
+test('the dashboard says what it is before it says any numbers', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  const intro = page.locator('.intro');
+  await expect(intro).toBeVisible();
+  await expect(intro.locator('.intro-title')).toHaveText(/Everything KW Group runs/);
+
+  // The lead states the shape of the estate and where the numbers came from.
+  const text = await intro.textContent();
+  expect(text).toMatch(/3 servers/);
+  expect(text).toMatch(/Last collection/);
+  expect(text).toMatch(/How to read it/);
+});
+
+test('every dashboard section explains what it shows', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  const headings = page.locator('main.wrap h2.section');
+  const count = await headings.count();
+  expect(count).toBeGreaterThan(5);
+
+  for (let i = 0; i < count; i += 1) {
+    const note = headings.nth(i).locator('xpath=following-sibling::*[1]');
+    await expect(note, `section ${i} has no note`).toHaveClass(/section-note/);
+  }
+});
+
+test('an undocumented project describes itself from what was found', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#project=kwatch-leadq`);
+
+  const note = page.locator('[data-panel="project:kwatch-leadq"] .derived-note');
+  await expect(note).toBeVisible();
+  const text = await note.textContent();
+  expect(text).toMatch(/No write-up for this one yet/);
+  expect(text).toMatch(/kwatch\.leadq\.co\.in/);
+  expect(text).toMatch(/content\/projects\/kwatch-leadq\.md/);
+});
+
+test('a server page says what the server is for', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#server=srv1870078`);
+  const note = page.locator('[data-panel="server:srv1870078"] .section-note').first();
+  await expect(note).toContainText('Second n8n');
+  await expect(note).toContainText('200.141.9.83');
+});
+
+test('a workflow page says what a workflow even is', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(`${PAGE}#workflow=zNyAPupAI9GE1UYX`);
+  const note = page.locator('[data-panel="workflow:zNyAPupAI9GE1UYX"] .section-note');
+  await expect(note).toContainText('An automation running inside n8n');
+  await expect(note).toContainText('switched off');
+});

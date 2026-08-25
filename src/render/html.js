@@ -35,6 +35,58 @@ const EVENT_LABELS = {
   'db.growth': 'collection grew', 'server.stale': 'data stale',
 };
 
+/* -------------------------------------------------------- orientation */
+
+/**
+ * A section heading plus one line saying what the section shows and why it is
+ * worth looking at. Someone opening this for the first time should not have to
+ * infer what a panel is from its contents.
+ */
+function section(title, note, count) {
+  return `<h2 class="section">${escapeHtml(title)}${count ? ` <span class="count">${escapeHtml(count)}</span>` : ''}</h2>
+    ${note ? `<p class="section-note">${note}</p>` : ''}`;
+}
+
+/**
+ * The lead. What this page is, what it is built from, and how fresh it is —
+ * stated in the reader's terms rather than assumed.
+ */
+function renderIntro({ servers, projects, workflows, builtAt }) {
+  const ids = Object.keys(servers);
+  const collected = ids
+    .map((id) => servers[id].lastIngest)
+    .filter(Boolean)
+    .sort()
+    .pop();
+
+  const roles = ids.map((id) => `<strong>${escapeHtml(id)}</strong> (${escapeHtml(servers[id].role ?? 'unknown role')})`);
+  const activeWf = Object.values(workflows).filter((w) => w.active).length;
+  const realWf = Object.values(workflows).filter((w) => !w.noise).length;
+
+  return `<section class="intro">
+    <h1 class="intro-title">Everything KW Group runs, on one page</h1>
+    <p>
+      This is the whole estate: ${ids.length} servers, ${projects.length} projects and
+      ${Object.keys(workflows).length} n8n workflows, of which ${realWf} are real and
+      ${activeWf} are switched on. The servers are
+      ${roles.slice(0, -1).join(', ')} and ${roles[roles.length - 1]}.
+    </p>
+    <p>
+      Nothing here is typed by hand except the project write-ups. Everything else is
+      read out of diagnostic dumps taken off the servers themselves, so a number on
+      this page is a number that was true on the machine when it was collected.
+      Last collection: <strong>${escapeHtml(collected?.slice(0, 10) ?? 'never')}</strong>.
+    </p>
+    <p class="intro-how">
+      <strong>How to read it.</strong> Anything with a coloured dot has a state:
+      green is running, amber is partial, red is broken, grey is idle.
+      Anything underlined explains itself when you hover it. Click any server,
+      project or workflow to open its own page, and the address bar will hold a
+      link you can send to someone.
+    </p>
+  </section>`;
+}
+
 /* ------------------------------------------------------------ KPI row */
 
 function renderTiles({ servers, projects, workflows, issues, history }) {
@@ -369,6 +421,13 @@ function renderServerPanel(id, server, { projects, workflows, issues, glossary =
     ]))}<p class="faint">${wf.filter((w) => w.noise).length} template imports hidden.</p>` : '';
 
   return `<section class="drawer-panel" data-panel="server:${escapeHtml(id)}">
+    <p class="section-note">
+      One of the three Hostinger VPS behind KW Group. Its job is
+      <strong>${escapeHtml(server.role ?? 'not recorded')}</strong>, it answers on
+      <code>${escapeHtml(server.ip ?? 'an unknown address')}</code>, and everything below was read
+      out of a diagnostic dump taken on ${escapeHtml(server.lastIngest?.slice(0, 10) ?? 'an unknown date')}.
+      It carries ${mine.length} project${mine.length === 1 ? '' : 's'}${wf.length ? ` and ${wf.length} n8n workflows` : ' and no n8n instance'}.
+    </p>
     ${kpis}
 
     <div class="board">
@@ -479,6 +538,32 @@ function renderProjectCard(project) {
       ${(project.tags ?? []).slice(0, 4).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
     </div>
   </button>`;
+}
+
+/**
+ * One plain sentence about a project nobody has written up, assembled from
+ * what the dump actually contained. Better than an empty page, and honest
+ * about being inferred.
+ */
+function describeDerived(project) {
+  const d = project.discovered ?? {};
+  const bits = [];
+
+  if (d.hostnames?.length) {
+    bits.push(`it answers ${d.hostnames.map((h) => `<code>${escapeHtml(h)}</code>`).join(' and ')}`);
+  }
+  if (d.backend && d.port) {
+    bits.push(`traffic goes to <code>${escapeHtml(d.backend)}</code> on port <code>${d.port}</code>, currently ${escapeHtml(d.backendState ?? 'in an unknown state')}`);
+  } else if (d.backend) {
+    bits.push(`it runs as <code>${escapeHtml(d.backend)}</code>, currently ${escapeHtml(d.backendState ?? 'in an unknown state')}`);
+  }
+  if (d.directory) {
+    bits.push(`the code lives in <code>${escapeHtml(d.directory)}</code>${d.size ? ` (${escapeHtml(d.size)})` : ''}`);
+  }
+  if (d.remote) bits.push('it is a git checkout');
+  if (d.certExpiryDays != null) bits.push(`its certificate has ${d.certExpiryDays} days left`);
+
+  return bits.length ? `${bits.join('; ')}.` : 'the dump recorded little beyond its name.';
 }
 
 /* ----------------------------------------------------- project drawer */
@@ -653,6 +738,13 @@ function renderProjectPanel(project, { issues, workflows, servers, allProjects, 
     </div>`).join('')}</div>` : ''}
 
     ${lead}
+    ${project.origin === 'derived' ? `<p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      ${project.server ? linkServer(project.server) : 'the server'} rather than written down:
+      ${describeDerived(project)}
+      To document it, create <code>content/projects/${escapeHtml(project.id)}.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>` : ''}
     ${body}
 
     ${d ? `<h2>Discovered on ${escapeHtml(project.server ?? '')}</h2>
@@ -748,6 +840,13 @@ function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
   return `<section class="drawer-panel" data-panel="workflow:${escapeHtml(id)}"
       data-title="${escapeHtml(wf.name)}" data-state="${wf.active ? 'live' : 'idle'}"
       data-sub="${escapeHtml(`${wf.group ?? 'Ungrouped'} · ${id}`)}">
+    <p class="section-note">
+      An automation running inside n8n${wf.server ? ` on ${linkServer(wf.server)}` : ''}. It is currently
+      <strong>${wf.active ? 'switched on and running' : 'switched off'}</strong>.
+      ${wf.noise
+    ? 'This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.'
+    : 'Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.'}
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--${wf.active ? 'live' : 'idle'}"></span>${wf.active ? 'active' : 'off'}</span>
       <span class="pill">${escapeHtml(wf.group ?? 'Ungrouped')}</span>
@@ -985,29 +1084,30 @@ ${css}
 </header>
 
 <main class="wrap">
+  ${renderIntro({ servers, projects, workflows, builtAt })}
   ${renderTiles({ servers, projects, workflows, issues, history })}
 
-  <h2 class="section">What changed</h2>
+  ${section('What changed', 'Differences between the two most recent collections of each server: units that failed, ports that opened, certificates running down, workflows switched off. This is the thing a static inventory cannot tell you.')}
   ${renderChanges(events)}
 
-  <h2 class="section">Servers <span class="count">${serverIds.length}</span></h2>
+  ${section('Servers', 'The three Hostinger VPS the whole estate runs on. The stripe down the left edge is health, the bars are disk and memory at last collection. Open one for its full inventory.', String(serverIds.length))}
   <div class="servers">
     ${serverIds.map((id) => renderServerCard(id, servers[id], {
     issues: openIssues, history: history[id] ?? { disk: [] }, staleDays: staleness[id], projects, workflows,
   })).join('')}
   </div>
 
-  <h2 class="section">Analysis</h2>
+  ${section('Analysis', 'Three questions the raw inventory does not answer: where the leads stop, how many workflows actually run, and what the whole thing costs to operate each month.')}
   <div class="chart-grid">
     ${analysis.funnel ? funnelChart(analysis.funnel.stages, { title: analysis.funnel.title, id: 'funnel' }) : ''}
     ${workflowChart(wfGroups, { title: 'Workflows by group, template imports excluded', id: 'wf-chart' })}
     ${analysis.costScenarios ? costChart(analysis.costScenarios.rows, { title: analysis.costScenarios.title, id: 'cost' }) : ''}
   </div>
 
-  <h2 class="section">Estate tree <span class="count">server → project → workflow</span></h2>
+  ${section('Estate tree', 'The shape of the estate, generated from live data rather than drawn. Workflows belonging to no project are called out rather than quietly dropped.', 'server → project → workflow')}
   ${renderTree(servers, projects, workflows)}
 
-  <h2 class="section">Projects <span class="count">${projects.length} across ${serverIds.length} servers</span></h2>
+  ${section('Projects', 'Everything reachable at a hostname or running as a systemd unit, discovered from the servers themselves. A few carry a written brief; the rest are described from what was found on disk.', `${projects.length} across ${serverIds.length} servers`)}
   <div class="filter-row" id="project-filters">
     <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
     ${serverIds.map((id) => `<button class="chip" type="button" data-filter="${escapeHtml(id)}" aria-pressed="false">${escapeHtml(id)}</button>`).join('')}
@@ -1018,14 +1118,10 @@ ${css}
     ${projects.map(renderProjectCard).join('')}
   </div>
 
-  <h2 class="section">Issues
-    <span class="count">${openIssues.filter((i) => i.claimStatus !== 'reconciled').length} open${reconciled.length ? ` · ${reconciled.length} reconciled` : ''}</span>
-  </h2>
+  ${section('Issues', 'Findings written by hand plus findings detected automatically on every collection. A hand-written finding is re-tested against the newest data, so one that has since been fixed shows struck through rather than being repeated as fact.', `${openIssues.filter((i) => i.claimStatus !== 'reconciled').length} open${reconciled.length ? ` · ${reconciled.length} reconciled` : ''}`)}
   ${globalIssues.length ? globalIssues.map(renderIssue).join('') : '<div class="changes"><div class="empty">No estate-wide issues.</div></div>'}
 
-  <h2 class="section">Workflow inventory
-    <span class="count">${Object.values(workflows).filter((w) => w.active).length} active of ${Object.keys(workflows).length}</span>
-  </h2>
+  ${section('Workflow inventory', 'Every n8n workflow on every server, grouped by what it does. Roughly a hundred are demo templates that were imported and never removed; they are grouped separately and collapsed.', `${Object.values(workflows).filter((w) => w.active).length} active of ${Object.keys(workflows).length}`)}
   <div class="wf-groups">${renderWorkflows(workflows, projects)}</div>
 </main>
 

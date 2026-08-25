@@ -368,6 +368,46 @@ h2.section .count {
 .sev--low { color: var(--idle); }
 .sev--info { color: var(--info); }
 
+/* ------------------------------------------------------------- intro */
+
+.intro {
+  padding: var(--gap-lg) 0 0;
+  max-width: 78ch;
+}
+.intro-title {
+  font-size: clamp(21px, 2vw + 14px, 30px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.intro p { margin: 0 0 10px; color: var(--ink-2); }
+.intro strong { color: var(--ink); font-weight: 620; }
+.intro-how {
+  border-left: 2px solid var(--primary);
+  padding: 9px 0 9px 13px;
+  margin-top: 14px !important;
+}
+
+.section-note {
+  margin: -6px 0 var(--gap);
+  color: var(--ink-2);
+  font-size: var(--fs-meta);
+  max-width: 82ch;
+}
+h2.section + .section-note { margin-top: -8px; }
+
+.derived-note {
+  border: 1px dashed var(--border-hover);
+  border-radius: var(--r-inner);
+  padding: 12px 15px;
+  margin-bottom: var(--gap-lg);
+  color: var(--ink-2);
+  font-size: var(--fs-meta);
+  max-width: 82ch;
+}
+.derived-note strong { color: var(--ink); }
+
 /* --------------------------------------------------------- KPI strip */
 
 .tiles {
@@ -1220,7 +1260,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 06:27 UTC</div>
+      <div class="built">built 2026-08-25 06:47 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -1230,6 +1270,28 @@ body.searching .no-match { display: none !important; }
 </header>
 
 <main class="wrap">
+  <section class="intro">
+    <h1 class="intro-title">Everything KW Group runs, on one page</h1>
+    <p>
+      This is the whole estate: 3 servers, 17 projects and
+      138 n8n workflows, of which 32 are real and
+      13 are switched on. The servers are
+      <strong>srv1340120</strong> (Apps &amp; Automation), <strong>srv1870078</strong> (Second n8n (idle)) and <strong>srv1900820</strong> (Websites).
+    </p>
+    <p>
+      Nothing here is typed by hand except the project write-ups. Everything else is
+      read out of diagnostic dumps taken off the servers themselves, so a number on
+      this page is a number that was true on the machine when it was collected.
+      Last collection: <strong>2026-08-24</strong>.
+    </p>
+    <p class="intro-how">
+      <strong>How to read it.</strong> Anything with a coloured dot has a state:
+      green is running, amber is partial, red is broken, grey is idle.
+      Anything underlined explains itself when you hover it. Click any server,
+      project or workflow to open its own page, and the address bar will hold a
+      link you can send to someone.
+    </p>
+  </section>
   <div class="tiles">
     <div class="tile">
     <div class="tile-value">3</div>
@@ -1270,12 +1332,14 @@ body.searching .no-match { display: none !important; }
   </div>
 
   <h2 class="section">What changed</h2>
+    <p class="section-note">Differences between the two most recent collections of each server: units that failed, ports that opened, certificates running down, workflows switched off. This is the thing a static inventory cannot tell you.</p>
   <div class="changes"><div class="empty">
       <strong>No changes yet.</strong> Every server has exactly one snapshot, so there is nothing to compare against.
       Run <code>kw-collect.sh</code> again in a few days and this panel fills itself in.
     </div></div>
 
   <h2 class="section">Servers <span class="count">3</span></h2>
+    <p class="section-note">The three Hostinger VPS the whole estate runs on. The stripe down the left edge is health, the bars are disk and memory at last collection. Open one for its full inventory.</p>
   <div class="servers">
     <button class="server searchable tilt server--critical" type="button" data-open="server:srv1340120"
       data-search="srv1340120 apps &amp; automation 72.62.228.194">
@@ -1415,6 +1479,7 @@ body.searching .no-match { display: none !important; }
   </div>
 
   <h2 class="section">Analysis</h2>
+    <p class="section-note">Three questions the raw inventory does not answer: where the leads stop, how many workflows actually run, and what the whole thing costs to operate each month.</p>
   <div class="chart-grid">
     <figure class="chart" id="funnel">
     <figcaption>Yamini funnel: where the leads stop</figcaption>
@@ -1572,6 +1637,7 @@ body.searching .no-match { display: none !important; }
   </div>
 
   <h2 class="section">Estate tree <span class="count">server → project → workflow</span></h2>
+    <p class="section-note">The shape of the estate, generated from live data rather than drawn. Workflows belonging to no project are called out rather than quietly dropped.</p>
   <div class="tree"><details class="tree-node tree-node--server" open>
       <summary>
         <span class="dot dot--live"></span>
@@ -2299,6 +2365,7 @@ body.searching .no-match { display: none !important; }
     </details></div>
 
   <h2 class="section">Projects <span class="count">17 across 3 servers</span></h2>
+    <p class="section-note">Everything reachable at a hostname or running as a systemd unit, discovered from the servers themselves. A few carry a written brief; the rest are described from what was found on disk.</p>
   <div class="filter-row" id="project-filters">
     <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
     <button class="chip" type="button" data-filter="srv1340120" aria-pressed="false">srv1340120</button><button class="chip" type="button" data-filter="srv1870078" aria-pressed="false">srv1870078</button><button class="chip" type="button" data-filter="srv1900820" aria-pressed="false">srv1900820</button>
@@ -2591,9 +2658,8 @@ body.searching .no-match { display: none !important; }
   </button>
   </div>
 
-  <h2 class="section">Issues
-    <span class="count">19 open · 3 reconciled</span>
-  </h2>
+  <h2 class="section">Issues <span class="count">19 open · 3 reconciled</span></h2>
+    <p class="section-note">Findings written by hand plus findings detected automatically on every collection. A hand-written finding is re-tested against the newest data, so one that has since been fixed shows struck through rather than being repeated as fact.</p>
   <div class="issue issue--critical reconciled">
     <div class="issue-head">
       <span class="sev sev--critical">critical</span>
@@ -2769,9 +2835,8 @@ body.searching .no-match { display: none !important; }
     
   </div>
 
-  <h2 class="section">Workflow inventory
-    <span class="count">13 active of 138</span>
-  </h2>
+  <h2 class="section">Workflow inventory <span class="count">13 active of 138</span></h2>
+    <p class="section-note">Every n8n workflow on every server, grouped by what it does. Roughly a hundred are demo templates that were imported and never removed; they are grouped separately and collapsed.</p>
   <div class="wf-groups"><details class="wf-group" open>
       <summary>Yamini
         <span class="wf-count">6 active · 21 total · 7 imports</span>
@@ -3689,6 +3754,7 @@ body.searching .no-match { display: none !important; }
     </div></div>
 
     <blockquote><p><strong>Status correction.</strong> Yamini is <strong>running</strong>, not parked. The &quot;PARKED, we're doing Meta first&quot; banner belongs to the <em>Google Ads conversion-signal project</em> (Customer Match + Enhanced Conversions), which is a separate programme. What is broken inside Yamini, the Qualification Agent and the Cratio write-back, was not a decision.</p></blockquote>
+    
     <div class="board"><section class="board-panel board-panel--flow">
         <h2 class="board-title"><span class="board-num">1</span>Flow</h2>
         <div class="board-content"><div class="flow-wrap"><div class="flow-scroll"><svg class="flow flow-horizontal" width="1784" height="290" viewBox="0 0 1784 290" role="img" aria-label="Yamini flow" preserveAspectRatio="xMidYMin meet">
@@ -4179,6 +4245,7 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     </div></div>
 
     
+    
     <div class="board"><section class="board-panel board-panel--flow">
         <h2 class="board-title"><span class="board-num">1</span>Flow</h2>
         <div class="board-content"><div class="flow-wrap"><div class="flow-scroll"><svg class="flow flow-horizontal" width="1004" height="290" viewBox="0 0 1004 290" role="img" aria-label="LeadQ flow" preserveAspectRatio="xMidYMin meet">
@@ -4435,6 +4502,7 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     </div></div>
 
     
+    
     <div class="board"><section class="board-panel board-panel--flow">
         <h2 class="board-title"><span class="board-num">1</span>Flow</h2>
         <div class="board-content"><div class="flow-wrap"><div class="flow-scroll"><svg class="flow flow-horizontal" width="1524" height="114" viewBox="0 0 1524 114" role="img" aria-label="LeadQ Overview V2 flow" preserveAspectRatio="xMidYMin meet">
@@ -4652,6 +4720,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1900820" data-open="server:srv1900820">srv1900820</a> rather than written down:
+      it answers <code>ghaziabadcommercialshops.org</code>; traffic goes to <code>kwdelhi6-web-1</code> on port <code>8082</code>, currently running; its certificate has 78 days left.
+      To document it, create <code>content/projects/ghaziabadcommercialshops.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1900820</h2>
@@ -4692,6 +4767,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>hrportal.leadq.co.in</code>; traffic goes to <code>kw-manashi</code> on port <code>8100</code>, currently running; the code lives in <code>/opt/kw-manashi</code> (239M); it is a git checkout; its certificate has 34 days left.
+      To document it, create <code>content/projects/hrportal-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -4742,6 +4824,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>KW-Site-visit.leadq.co.in</code>; traffic goes to <code>kwsite</code> on port <code>8200</code>, currently running; the code lives in <code>/var/www/kwsite</code> (1.5G); it is a git checkout; its certificate has 62 days left.
+      To document it, create <code>content/projects/kw-site-visit-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -4795,6 +4884,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>kwatch.leadq.co.in</code>; traffic goes to <code>kwatch</code> on port <code>8050</code>, currently running; the code lives in <code>/var/www/kwatch</code> (154M); it is a git checkout.
+      To document it, create <code>content/projects/kwatch-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -4849,6 +4945,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1900820" data-open="server:srv1900820">srv1900820</a> rather than written down:
+      it answers <code>kwbluepearl.com</code>; traffic goes to <code>kw-blue-pearl-web-1</code> on port <code>8081</code>, currently running; the code lives in <code>/opt/kw-blue-pearl</code> (71M); it is a git checkout; its certificate has 78 days left.
+      To document it, create <code>content/projects/kwbluepearl.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1900820</h2>
@@ -4889,6 +4992,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1900820" data-open="server:srv1900820">srv1900820</a> rather than written down:
+      it answers <code>kwgroup.in</code>; traffic goes to <code>kwgroup-web-1</code> on port <code>8080</code>, currently running; the code lives in <code>/var/www/kwgroup</code> (363M); its certificate has 78 days left.
+      To document it, create <code>content/projects/kwgroup.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1900820</h2>
@@ -4929,6 +5039,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>mcp-cratio.leadq.co.in</code>; traffic goes to <code>cratio-mcp</code> on port <code>8791</code>, currently running; its certificate has 42 days left.
+      To document it, create <code>content/projects/mcp-cratio-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -4979,6 +5096,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>mcp-google-ads.leadq.co.in</code>; traffic goes to <code>google-ads-mcp</code> on port <code>8842</code>, currently running; its certificate has 58 days left.
+      To document it, create <code>content/projects/mcp-google-ads-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -5029,6 +5153,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1870078" data-open="server:srv1870078">srv1870078</a> rather than written down:
+      traffic goes to <code>n8n-vfa2-n8n-1</code> on port <code>32769</code>, currently running.
+      To document it, create <code>content/projects/n8n-vfa2-n8n-1.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1870078</h2>
@@ -5084,6 +5215,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>n8n.srv1340120.hstgr.cloud</code>; traffic goes to <code>n8n-n8n-1</code> on port <code>5678</code>, currently running; its certificate has 35 days left.
+      To document it, create <code>content/projects/n8n-srv1340120.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -6028,6 +6166,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>skills.leadq.co.in</code>; traffic goes to <code>kwskills-app</code> on port <code>3000</code>, currently running; the code lives in <code>/opt/kw-skills</code> (4.3M); its certificate has 80 days left.
+      To document it, create <code>content/projects/skills-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -6078,6 +6223,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      traffic goes to <code>lead-api</code> on port <code>8000</code>, currently failed; the code lives in <code>/opt/lead-api</code> (75M).
+      To document it, create <code>content/projects/lead-api.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -6122,6 +6274,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>gbt.leadq.co.in</code>; the code lives in <code>/opt/kw-gbt</code> (485M); its certificate has 84 days left.
+      To document it, create <code>content/projects/gbt-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -6172,6 +6331,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
 
     
+    <p class="derived-note">
+      <strong>No write-up for this one yet.</strong> Everything below was found on
+      <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a> rather than written down:
+      it answers <code>manashi.leadq.co.in</code>; the code lives in <code>/opt/kw-manashi</code> (239M); it is a git checkout; its certificate has 39 days left.
+      To document it, create <code>content/projects/manashi-leadq.md</code> and the
+      prose will appear here above the discovered facts.
+    </p>
     
 
     <h2>Discovered on srv1340120</h2>
@@ -6213,6 +6379,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     
   </section>
     <section class="drawer-panel" data-panel="server:srv1340120">
+    <p class="section-note">
+      One of the three Hostinger VPS behind KW Group. Its job is
+      <strong>Apps &amp; Automation</strong>, it answers on
+      <code>72.62.228.194</code>, and everything below was read
+      out of a diagnostic dump taken on 2026-08-24.
+      It carries 13 projects and 135 n8n workflows.
+    </p>
     <div class="tiles">
     <div class="tile">
     <div class="tile-value">19%</div>
@@ -6870,6 +7043,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     </section>
     </div>
   </section><section class="drawer-panel" data-panel="server:srv1870078">
+    <p class="section-note">
+      One of the three Hostinger VPS behind KW Group. Its job is
+      <strong>Second n8n (idle)</strong>, it answers on
+      <code>200.141.9.83</code>, and everything below was read
+      out of a diagnostic dump taken on 2026-08-24.
+      It carries 1 project and 3 n8n workflows.
+    </p>
     <div class="tiles">
     <div class="tile">
     <div class="tile-value">8%</div>
@@ -7080,6 +7260,13 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
       
     </div>
   </section><section class="drawer-panel" data-panel="server:srv1900820">
+    <p class="section-note">
+      One of the three Hostinger VPS behind KW Group. Its job is
+      <strong>Websites</strong>, it answers on
+      <code>200.234.35.172</code>, and everything below was read
+      out of a diagnostic dump taken on 2026-08-24.
+      It carries 3 projects and no n8n instance.
+    </p>
     <div class="tiles">
     <div class="tile">
     <div class="tile-value">5%</div>
@@ -7388,6 +7575,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
     <section class="drawer-panel" data-panel="workflow:077bV810y5Q4jUZ5"
       data-title="67-Automatic_Shopify_Order_Fulfillment_Process" data-state="idle"
       data-sub="Ungrouped · 077bV810y5Q4jUZ5">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7438,6 +7630,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:0MCRs1IboWc6GRUd"
       data-title="42-search-linkedin-companies,-score-with-ai-and-add-them-to-google-sheet-crm" data-state="idle"
       data-sub="Ungrouped · 0MCRs1IboWc6GRUd">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7488,6 +7685,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:0aWdCuqrqJEfmvgX"
       data-title="84-Gmail_MCP_Server___Your_All_in_One_AI_Email_Toolkit" data-state="idle"
       data-sub="Ungrouped · 0aWdCuqrqJEfmvgX">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7538,6 +7740,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:0iaqtcZ2nm2ARTHt"
       data-title="52-Analyze_Reddit_Posts_with_AI_to_Identify_Business_Opportunities" data-state="idle"
       data-sub="Ungrouped · 0iaqtcZ2nm2ARTHt">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7588,6 +7795,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:0xu8h5EZYGvngPbF"
       data-title="GB Blue Pearl" data-state="live"
       data-sub="KW GBT · 0xu8h5EZYGvngPbF">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">KW GBT</span>
@@ -7648,6 +7860,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:1OmPVKibN1EwKRCCLEb9G"
       data-title="WhatsApp Chat Agent" data-state="live"
       data-sub="Yamini · 1OmPVKibN1EwKRCCLEb9G">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Yamini</span>
@@ -7752,6 +7969,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:1PDBTJsZ1pNgzeQ0"
       data-title="12-Automate_WhatsApp_Booking_System_with_GPT_4_Assistant__Cal_com_and_SMS_Reminders" data-state="idle"
       data-sub="Yamini · 1PDBTJsZ1pNgzeQ0">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -7802,6 +8024,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:2TIXtqSAWxX1QjP9"
       data-title="39-upload-to-instagram-and-tiktok-from-google-drive" data-state="idle"
       data-sub="Ungrouped · 2TIXtqSAWxX1QjP9">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7852,6 +8079,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:2vsMJm8sVOmqtBjR"
       data-title="9-Automate_Blog_Content_Creation_with_Notion_MCP__DeepSeek_AI__and_WordPress" data-state="idle"
       data-sub="Ungrouped · 2vsMJm8sVOmqtBjR">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7902,6 +8134,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:34wzHyHojTdWHdC2"
       data-title="My workflow" data-state="idle"
       data-sub="Ungrouped · 34wzHyHojTdWHdC2">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1870078" data-open="server:srv1870078">srv1870078</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -7953,6 +8190,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:3T4zuEH0Ysf6mThU"
       data-title="81-Control_your_discord_server_with_natural_language_via_GPT4o_and_MCP_Client" data-state="idle"
       data-sub="Ungrouped · 3T4zuEH0Ysf6mThU">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8003,6 +8245,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:3mG8pAcZfH6AiWtP"
       data-title="3-Generate_AI_Viral_Videos_with_Seedance_and_Upload_to_TikTok__YouTube___Instagram" data-state="idle"
       data-sub="Ungrouped · 3mG8pAcZfH6AiWtP">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8053,6 +8300,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:4Bs80edTasB3Dwxy"
       data-title="79-Automate_LinkedIn_Candidates_Sourcing_with_Google_X_ray_Boolean_Search" data-state="idle"
       data-sub="Ungrouped · 4Bs80edTasB3Dwxy">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8103,6 +8355,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:4ZwAofqjnHnShiDL"
       data-title="37-ai-generated-linkedin-posts-with-openai,-google-sheets-&amp;-email-approval-workflow" data-state="idle"
       data-sub="Ungrouped · 4ZwAofqjnHnShiDL">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8153,6 +8410,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:4wscpGzlhWwSwJdX"
       data-title="46-Enhance Customer Chat Buffer Messages with Twilio and Redis" data-state="idle"
       data-sub="Ungrouped · 4wscpGzlhWwSwJdX">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8203,6 +8465,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:5D7MXjr4LQdypZqk"
       data-title="58-Post_New_YouTube_Videos_to_X" data-state="idle"
       data-sub="Ungrouped · 5D7MXjr4LQdypZqk">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8253,6 +8520,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:62MN6oqxOs3levjh"
       data-title="15-AI_Youtube_Trend_Finder_Based_On_Niche" data-state="idle"
       data-sub="Ungrouped · 62MN6oqxOs3levjh">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8303,6 +8575,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:7D9mWt3zJePCco3Q"
       data-title="25-scrape-business-emails-from-google-maps-without-the-use-of-any-third-party-apis" data-state="idle"
       data-sub="Ungrouped · 7D9mWt3zJePCco3Q">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8353,6 +8630,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:7WUUv3Cneyug0nd3"
       data-title="74-Invoice_data_extraction_with_LlamaParse_and_OpenAI" data-state="idle"
       data-sub="Ungrouped · 7WUUv3Cneyug0nd3">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8403,6 +8685,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:7sHYts3pBkYe3Kon"
       data-title="24-simple-telegram-ai-chatbot" data-state="idle"
       data-sub="Ungrouped · 7sHYts3pBkYe3Kon">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8453,6 +8740,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:8UpqTxZE8W7papQu"
       data-title="11-Auto_Publish_Social_Videos_to_9_Platforms_via_Google_Sheets_and_Blotato" data-state="idle"
       data-sub="Ungrouped · 8UpqTxZE8W7papQu">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8503,6 +8795,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:8o6MezK5LYNn7CBL"
       data-title="41-analyze-any-website-with-openai-and-get-on-page-seo-audit" data-state="idle"
       data-sub="Ungrouped · 8o6MezK5LYNn7CBL">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8553,6 +8850,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:99yXL5T7suCrTvYB"
       data-title="35-ai-agent-google-calendar-assistant-using-openai" data-state="idle"
       data-sub="Ungrouped · 99yXL5T7suCrTvYB">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8603,6 +8905,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:AJcl5Fq5ND2bqoro"
       data-title="100-Automated_Stock_Analysis_Reports_with_Technical___News_Sentiment_using_GPT_4o" data-state="idle"
       data-sub="Ungrouped · AJcl5Fq5ND2bqoro">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8653,6 +8960,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:AevCEffvMg3JjcQC"
       data-title="40-Telegram_Messaging_Agent_for_Text_Audio_Images" data-state="idle"
       data-sub="Ungrouped · AevCEffvMg3JjcQC">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8703,6 +9015,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:AyB7JjSTzAwt9myC"
       data-title="49-Respond to WhatsApp Messages with AI" data-state="idle"
       data-sub="Yamini · AyB7JjSTzAwt9myC">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -8753,6 +9070,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:BRHUxVlU8lpqoEwW"
       data-title="13-Convert_YouTube_Videos_to_Shorts_with_Klap___Auto_Post_to_Multiple_Social_Platforms" data-state="idle"
       data-sub="Ungrouped · BRHUxVlU8lpqoEwW">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8803,6 +9125,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:BlH769YZbjQ0rT4I"
       data-title="69-Automate_New_Customer_Onboarding_with_HubSpot__Google_Calendar__and_AI_Powered_Gmail" data-state="idle"
       data-sub="Ungrouped · BlH769YZbjQ0rT4I">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8853,6 +9180,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:BrgHeiVKtO0vUc5X"
       data-title="empty3" data-state="idle"
       data-sub="Ungrouped · BrgHeiVKtO0vUc5X">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8903,6 +9235,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:CGjSu6Enk5oPngL6"
       data-title="1-Clone_Viral_TikToks_with_AI_Avatars___Auto_Post_to_9_Platforms_using_Perplexity___Blotato" data-state="idle"
       data-sub="Ungrouped · CGjSu6Enk5oPngL6">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -8953,6 +9290,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:CPHGQjU1rybnc65K"
       data-title="empty4" data-state="idle"
       data-sub="Ungrouped · CPHGQjU1rybnc65K">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9003,6 +9345,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:CjloFf9OZBafHB9o"
       data-title="87-HR_Job_Posting_and_Evaluation_with_AI" data-state="idle"
       data-sub="Ungrouped · CjloFf9OZBafHB9o">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9053,6 +9400,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:D9SZmib0atDn3Qno"
       data-title="23-fully-automated-ai-video-generation-&amp;-multi-platform-publishing" data-state="idle"
       data-sub="Ungrouped · D9SZmib0atDn3Qno">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9103,6 +9455,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:EZo3IsptHq0d89C4"
       data-title="My workflow 2" data-state="idle"
       data-sub="Ungrouped · EZo3IsptHq0d89C4">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9153,6 +9510,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:EeroWXsAytgZm3ee"
       data-title="33-Automate Multi-Platform Social Media Content Creation" data-state="idle"
       data-sub="Ungrouped · EeroWXsAytgZm3ee">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9203,6 +9565,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Evemr7Ol2PwftvVL"
       data-title="empty2" data-state="idle"
       data-sub="Ungrouped · Evemr7Ol2PwftvVL">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9253,6 +9620,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:FIdLhfE1md7YYU2c"
       data-title="19-ai-marketing-report-(google-analytics-&amp;-ads,-meta-ads),-sent-via-email_telegram" data-state="idle"
       data-sub="Ungrouped · FIdLhfE1md7YYU2c">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9303,6 +9675,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:FLcj4EWmaPvsQmpj"
       data-title="20-building-your-first-whatsapp-chatbot" data-state="idle"
       data-sub="Yamini · FLcj4EWmaPvsQmpj">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -9353,6 +9730,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:FNvLFgtHlZ65P3O0"
       data-title="97-ai-prompt-generator-workflow" data-state="idle"
       data-sub="Ungrouped · FNvLFgtHlZ65P3O0">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9403,6 +9785,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:FQRXSTgz8uSs6WQrQ9_Fs"
       data-title="Isha Working" data-state="idle"
       data-sub="Ungrouped · FQRXSTgz8uSs6WQrQ9_Fs">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9475,6 +9862,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Fal5e8n3wZNQZphC"
       data-title="GB Delhi 6" data-state="live"
       data-sub="KW GBT · Fal5e8n3wZNQZphC">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">KW GBT</span>
@@ -9535,6 +9927,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:FhOqTJ2lAtR6MRWp"
       data-title="55-Real_Estate_Lead_Generation_with_BatchData_Skip_Tracing___CRM_Integration" data-state="idle"
       data-sub="Ungrouped · FhOqTJ2lAtR6MRWp">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9585,6 +9982,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:HEd07Mg7zIbBp2ti"
       data-title="90-Daily_AI_News_Translation___Summary_with_GPT_4_and_Telegram_Delivery" data-state="idle"
       data-sub="Ungrouped · HEd07Mg7zIbBp2ti">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9635,6 +10037,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:HKHtYpK4qR2dlwHe"
       data-title="18-automated-ai-content-creation-&amp;-instagram-publishing-from-google-sheets-" data-state="idle"
       data-sub="Ungrouped · HKHtYpK4qR2dlwHe">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9685,6 +10092,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:HejtDTtRsrkATYxv"
       data-title="Whatsapp Auto Reply with Followback" data-state="idle"
       data-sub="Yamini · HejtDTtRsrkATYxv">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -9789,6 +10201,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:IBbRJV2G7DyFN020"
       data-title="66-Automatic_Shopify_Order_Fulfillment_Process" data-state="idle"
       data-sub="Ungrouped · IBbRJV2G7DyFN020">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9839,6 +10256,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ILMUPuNWbBEtoWTk"
       data-title="21-scrape-and-summarize-webpages-with-ai" data-state="idle"
       data-sub="Ungrouped · ILMUPuNWbBEtoWTk">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9889,6 +10311,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:J2zsV8reeuJaPLNr"
       data-title="65-Extract_and_process_information_directly_from_PDF_using_Claude_and_Gemini" data-state="idle"
       data-sub="Ungrouped · J2zsV8reeuJaPLNr">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9939,6 +10366,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:JzBBDAfhcex4YIH6"
       data-title="94-multiple-websites-monitoring-with-notifications-including-phone-calls" data-state="idle"
       data-sub="Ungrouped · JzBBDAfhcex4YIH6">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -9989,6 +10421,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:KLlvvroNA04WBiE6"
       data-title="93-content-farming---_-ai-powered-blog-automation-for-wordpress-" data-state="idle"
       data-sub="Ungrouped · KLlvvroNA04WBiE6">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10039,6 +10476,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Lpe4XnpwnsuzH4H4Zwvk1"
       data-title="CRM Lead Agent" data-state="live"
       data-sub="Ungrouped · Lpe4XnpwnsuzH4H4Zwvk1">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Ungrouped</span>
@@ -10111,6 +10553,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:MvNmMAAtuakYjEfQ"
       data-title="36-personalize-marketing-emails-using-customer-data-and-ai" data-state="idle"
       data-sub="Ungrouped · MvNmMAAtuakYjEfQ">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10161,6 +10608,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:NWs0Zl6UrXShOIAr"
       data-title="My workflow 3" data-state="idle"
       data-sub="Ungrouped · NWs0Zl6UrXShOIAr">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10211,6 +10663,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:NfyiIZRuRiwTl1no"
       data-title="71-Breakdown_Documents_into_Study_Notes_using_Templating_MistralAI_and_Qdrant" data-state="idle"
       data-sub="Ungrouped · NfyiIZRuRiwTl1no">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10261,6 +10718,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Ntql6WamxvFSvBQW"
       data-title="59-Create_LinkedIn_Contributions_with_AI_and_Notify_Users_On_Slack" data-state="idle"
       data-sub="Ungrouped · Ntql6WamxvFSvBQW">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10311,6 +10773,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:O1vQmi3bXIqJ8dCb"
       data-title="50-Amazon_Product_Search_Scraper_with_BrightData__GPT_4__and_Google_Sheets" data-state="idle"
       data-sub="Ungrouped · O1vQmi3bXIqJ8dCb">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10361,6 +10828,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:OGn6dGGPCNUqvzJP"
       data-title="30-transcribe-audio-files,-summarize-with-gpt-4-and-store-in-notion" data-state="idle"
       data-sub="Ungrouped · OGn6dGGPCNUqvzJP">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10411,6 +10883,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ObCSdDVajfhBYY4A"
       data-title="62-Automated_Generation_of_AI_Advertising_Photos_for_Product_Marketing" data-state="idle"
       data-sub="Ungrouped · ObCSdDVajfhBYY4A">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10461,6 +10938,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:OiHsGnrs0QJyemfO"
       data-title="26-a***OPENAI_KEY***" data-state="idle"
       data-sub="Ungrouped · OiHsGnrs0QJyemfO">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10511,6 +10993,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Ok1bO3wdBvjttlhF"
       data-title="8-Automate_Lead_Qualification_with_RetellAI_Phone_Agent__OpenAI_GPT___Google_Sheet" data-state="idle"
       data-sub="Yamini · Ok1bO3wdBvjttlhF">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -10561,6 +11048,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:QOxVyLRx80QNkKfS"
       data-title="D6 WhatsApp Weekly Broadcast" data-state="live"
       data-sub="Yamini · QOxVyLRx80QNkKfS">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Yamini</span>
@@ -10665,6 +11157,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:RU6ZaTA3nCZeWdy9"
       data-title="99-Automated_Stock_Analysis_Reports_with_Technical___News_Sentiment_using_GPT_4o" data-state="idle"
       data-sub="Ungrouped · RU6ZaTA3nCZeWdy9">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -10715,6 +11212,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:RxfLvmFe4bAvfxEs"
       data-title="3 · KW META Custom Audiences · D6 + Blue Pearl" data-state="live"
       data-sub="Ungrouped · RxfLvmFe4bAvfxEs">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1870078" data-open="server:srv1870078">srv1870078</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Ungrouped</span>
@@ -10787,6 +11289,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:S3Yx1gWQAJYy7mYM"
       data-title="Lead Qualification Pipeline - CRM → Ringg AI → Scoring → DB" data-state="idle"
       data-sub="Yamini · S3Yx1gWQAJYy7mYM">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -10891,6 +11398,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:SYPcFVe16uzuCett"
       data-title="KW WhatsApp — Main (Single Webhook + Manual Test)" data-state="idle"
       data-sub="Yamini · SYPcFVe16uzuCett">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -10996,6 +11508,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Sxy3kN781MAZw71n"
       data-title="WhatsApp BP Inbound AI Reply" data-state="live"
       data-sub="Yamini · Sxy3kN781MAZw71n">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Yamini</span>
@@ -11100,6 +11617,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:SzxB0IQBRthioBDR"
       data-title="89-Translate_Telegram_audio_messages_with_AI__55_supported_languages_" data-state="idle"
       data-sub="Ungrouped · SzxB0IQBRthioBDR">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11150,6 +11672,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:T3VNbFLsRZEQjhAo"
       data-title="64-Integrating_AI_with_Open_Meteo_API_for_Enhanced_Weather_Forecasting" data-state="idle"
       data-sub="Ungrouped · T3VNbFLsRZEQjhAo">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11200,6 +11727,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:TcVKslh4l9CriUx0"
       data-title="92-Daily_AI_News_Translation___Summary_with_GPT_4_and_Telegram_Delivery" data-state="idle"
       data-sub="Ungrouped · TcVKslh4l9CriUx0">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11250,6 +11782,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Ufd0oZjrQuUixrU2"
       data-title="29-ai-researcher-for-sales" data-state="idle"
       data-sub="Ungrouped · Ufd0oZjrQuUixrU2">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11300,6 +11837,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:X0uSjcINb8pNndoU"
       data-title="32-notion-ai-assistant-generator" data-state="idle"
       data-sub="Ungrouped · X0uSjcINb8pNndoU">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11350,6 +11892,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:X1efkOass1xPVcCw"
       data-title="61-Transform_Gmail_Newsletters_into_Insightful_LinkedIn_Posts_Using_OpenAI" data-state="idle"
       data-sub="Ungrouped · X1efkOass1xPVcCw">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11400,6 +11947,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:XS6osnLbJDbsmeLe"
       data-title="77-Automate_Customer_Support_Issue_Resolution_using_AI_Text_Classifier" data-state="idle"
       data-sub="Ungrouped · XS6osnLbJDbsmeLe">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11450,6 +12002,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Y2MJTGvUzvOCkozQ"
       data-title="22-Automate_Multi_Platform_Social_Media_Content_Creation" data-state="idle"
       data-sub="Ungrouped · Y2MJTGvUzvOCkozQ">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11500,6 +12057,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Y4t0DOPGdYXQFoyx"
       data-title="6-Auto_create_and_publish_AI_social_videos_with_Telegram__GPT_4_and_Blotato" data-state="idle"
       data-sub="Ungrouped · Y4t0DOPGdYXQFoyx">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11550,6 +12112,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:Ybas1LAHGiMWtSM5"
       data-title="28-generate-instagram-content-from-top-trends-with-ai-image-generation" data-state="idle"
       data-sub="Ungrouped · Ybas1LAHGiMWtSM5">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11600,6 +12167,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:YfVJeScFyVKodWwA"
       data-title="85-Get_notified_when_your_competitors_change_their_pricing_with_Airtop_and_Slack" data-state="idle"
       data-sub="Ungrouped · YfVJeScFyVKodWwA">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11650,6 +12222,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:YpRmGANNPbwR1iun"
       data-title="4 · KW Google Enhanced Conversions · DAILY (with GCLID)" data-state="live"
       data-sub="Attribution · YpRmGANNPbwR1iun">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Attribution</span>
@@ -11718,6 +12295,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:_aZTVwAACkfsTan1J39YB"
       data-title="My workflow" data-state="idle"
       data-sub="Ungrouped · _aZTVwAACkfsTan1J39YB">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11769,6 +12351,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:a5FUYX4vVXPTACsn"
       data-title="Call Recording Analyser" data-state="idle"
       data-sub="Sales QA · a5FUYX4vVXPTACsn">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Sales QA</span>
@@ -11829,6 +12416,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:aJ0ZM1g2Z1dFhZnm"
       data-title="91-turn-google-sheets-ideas-into-ai-videos-with-gpt-4o-and-fal.ai-veo-3" data-state="idle"
       data-sub="Ungrouped · aJ0ZM1g2Z1dFhZnm">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11879,6 +12471,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ayIVK6sa3ymy7lU7"
       data-title="54-Automatic_Background_Removal_for_Images_in_Google_Drive" data-state="idle"
       data-sub="Ungrouped · ayIVK6sa3ymy7lU7">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -11929,6 +12526,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:bRQRKFKlDQGeA5yR"
       data-title="Summarize the news" data-state="idle"
       data-sub="Ungrouped · bRQRKFKlDQGeA5yR">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12001,6 +12603,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:bTiwxsf3heQmsDcA"
       data-title="95-build-custom-workflows-automatically-with-gpt-4o,-rag,-and-web-search" data-state="idle"
       data-sub="Ungrouped · bTiwxsf3heQmsDcA">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12051,6 +12658,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:bd8s6I7ahQnw7kbs"
       data-title="WhatsApp D6 Inbound AI Reply" data-state="live"
       data-sub="Yamini · bd8s6I7ahQnw7kbs">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Yamini</span>
@@ -12155,6 +12767,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:bnD70eUGTY1dc863"
       data-title="KW CV Screening Pipeline v7" data-state="idle"
       data-sub="HR · bnD70eUGTY1dc863">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">HR</span>
@@ -12219,6 +12836,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:cDkui7UtHcN4JJBo"
       data-title="27-flux-ai-image-generator" data-state="idle"
       data-sub="Ungrouped · cDkui7UtHcN4JJBo">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12269,6 +12891,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:dA0Cu0TRBOdmwheD"
       data-title="KW WhatsApp — Main (Single Webhook + Manual Test)" data-state="idle"
       data-sub="Yamini · dA0Cu0TRBOdmwheD">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -12374,6 +13001,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:dSPTj5H7hK4vSulG"
       data-title="BP WhatsApp Weekly Broadcast" data-state="live"
       data-sub="Yamini · dSPTj5H7hK4vSulG">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Yamini</span>
@@ -12478,6 +13110,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:dkILwdJwtinnWZ97"
       data-title="53-Invoice_data_extraction_with_LlamaParse_and_OpenAI" data-state="idle"
       data-sub="Ungrouped · dkILwdJwtinnWZ97">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12528,6 +13165,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:dvCmBSenNjiJlh1J"
       data-title="14-Generate_SEO_Optimized_WordPress_Content_with_AI_Powered_Perplexity_Research" data-state="idle"
       data-sub="Ungrouped · dvCmBSenNjiJlh1J">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12578,6 +13220,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:e7YOBL7bWtBgsz6B"
       data-title="68-Collect_LinkedIn_Profiles_with_AI_Processing_using_SerpAPI__OpenAI__and_NocoDB" data-state="idle"
       data-sub="Ungrouped · e7YOBL7bWtBgsz6B">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12628,6 +13275,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:eyXPtwAYcbebUEkJ"
       data-title="82-Google_Calendar_Reminder_System_with_GPT_4o_and_Telegram" data-state="idle"
       data-sub="Ungrouped · eyXPtwAYcbebUEkJ">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12678,6 +13330,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:fdummfmXRr5tXHRR"
       data-title="5-Automate_Product_Training___Customer_Support_via_WhatsApp__GPT_4___Google_Sheets" data-state="idle"
       data-sub="Yamini · fdummfmXRr5tXHRR">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -12728,6 +13385,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:hrZnFq3WccVtHH3d"
       data-title="SR's Combined Qualification Agent" data-state="idle"
       data-sub="Yamini · hrZnFq3WccVtHH3d">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -12832,6 +13494,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:hsMut1IvWs7WmrlR"
       data-title="63-Build_Your_Own_Counseling_Chatbot_on_LINE_to_Support_Mental_Health_Conversations" data-state="idle"
       data-sub="Ungrouped · hsMut1IvWs7WmrlR">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12882,6 +13549,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:i36e0Jd36SjBAaUa"
       data-title="51-Extract_Amazon_Best_Seller_Electronic_Info_with_Bright_Data_and_Google_Gemini" data-state="idle"
       data-sub="Ungrouped · i36e0Jd36SjBAaUa">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12932,6 +13604,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ip9QrWYS9byvDaRV"
       data-title="17-gmail-ai-auto-responder_-create-draft-replies-to-incoming-emails" data-state="idle"
       data-sub="Ungrouped · ip9QrWYS9byvDaRV">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -12982,6 +13659,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:iuR5O4JIeGsD7T23"
       data-title="KW Group: Cratio -&gt; Google Enhanced Conversions, Google Customer Match - MATCH LISTS" data-state="idle"
       data-sub="Attribution · iuR5O4JIeGsD7T23">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1870078" data-open="server:srv1870078">srv1870078</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Attribution</span>
@@ -13050,6 +13732,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:jYZ7aolsbsPiPV0m"
       data-title="Media prompt" data-state="idle"
       data-sub="Ungrouped · jYZ7aolsbsPiPV0m">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13122,6 +13809,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:k1Of0lacOqve3jmE"
       data-title="web-chat-kwbp" data-state="live"
       data-sub="Web chat · k1Of0lacOqve3jmE">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Web chat</span>
@@ -13182,6 +13874,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:kQ5T9A1C207XZaUa"
       data-title="hr screening system community1" data-state="idle"
       data-sub="HR · kQ5T9A1C207XZaUa">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">HR</span>
@@ -13246,6 +13943,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:kgNZoQxCOyDeSfbd"
       data-title="CV Filter Automation - KW Group" data-state="idle"
       data-sub="HR · kgNZoQxCOyDeSfbd">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">HR</span>
@@ -13310,6 +14012,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:kmzPOEewpVzQMOd9"
       data-title="78-Automated_Resume_Review_System_Using_OpenAI___Google_Sheets" data-state="idle"
       data-sub="Ungrouped · kmzPOEewpVzQMOd9">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13360,6 +14067,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:kvkhGWVUHPt5Yvip"
       data-title="web-chat-kwd6" data-state="live"
       data-sub="Web chat · kvkhGWVUHPt5Yvip">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Web chat</span>
@@ -13420,6 +14132,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:kzmOC4VXnTZe0PiO"
       data-title="70-Summarise_MS_Teams_Channel_Activity_for_Weekly_Reports_with_AI" data-state="idle"
       data-sub="Ungrouped · kzmOC4VXnTZe0PiO">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13470,6 +14187,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:naCuMZDRpdx5oufD"
       data-title="KW: Cratio -&gt; Meta CAPI (daily, by Updated Time)" data-state="idle"
       data-sub="Attribution · naCuMZDRpdx5oufD">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Attribution</span>
@@ -13538,6 +14260,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:oUG64DakWCzEe1Wv"
       data-title="34-ai-automated-hr-workflow-for-cv-analysis-and-candidate-evaluation" data-state="idle"
       data-sub="HR · oUG64DakWCzEe1Wv">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">HR</span>
@@ -13588,6 +14315,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ozphMdSSQrt1NPv2"
       data-title="75-Actioning_Your_Meeting_Next_Steps_using_Transcripts_and_AI" data-state="idle"
       data-sub="Ungrouped · ozphMdSSQrt1NPv2">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13638,6 +14370,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:pHL12UGf8Tt5IBIS"
       data-title="83-Build_a_Document_QA_System_with_RAG_using_Milvus__Cohere__and_OpenAI_for_Google_Drive" data-state="idle"
       data-sub="Ungrouped · pHL12UGf8Tt5IBIS">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13688,6 +14425,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:pNrfCo3EeTXnvTIr"
       data-title="80-Scrape_Indeed_Job_Listings_for_Hiring_Signals_Using_Bright_Data_and_LLMs" data-state="idle"
       data-sub="Ungrouped · pNrfCo3EeTXnvTIr">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13738,6 +14480,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:pegNjHaDbrHH5X43"
       data-title="73-Auto_Categorize_blog_posts_in_wordpress_using_A_I_" data-state="idle"
       data-sub="Ungrouped · pegNjHaDbrHH5X43">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13788,6 +14535,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ppXd4bTAUtLaBwB7"
       data-title="KW 3 · Qualification &amp; CRM Writeback" data-state="idle"
       data-sub="Yamini · ppXd4bTAUtLaBwB7">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -13892,6 +14644,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:px2ufO6KTxKcAMGC"
       data-title="48-Appointment_Scheduling_with_Twilio__Cal_com__and_AI" data-state="idle"
       data-sub="Ungrouped · px2ufO6KTxKcAMGC">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13942,6 +14699,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:q76O5UMoA8Btm5yQ"
       data-title="60-Generate_Graphic_Wallpaper_with_Midjourney__GPT_4o_mini_and_Canvas_APIs" data-state="idle"
       data-sub="Ungrouped · q76O5UMoA8Btm5yQ">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -13992,6 +14754,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:rgR2jrzNgxoSOkI7"
       data-title="47-AI_Powered_WooCommerce_Support_Agent" data-state="idle"
       data-sub="Ungrouped · rgR2jrzNgxoSOkI7">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14042,6 +14809,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:rsGNjWvAzXTxbil0"
       data-title="WhatsApp Inbound AI Reply" data-state="idle"
       data-sub="Yamini · rsGNjWvAzXTxbil0">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -14146,6 +14918,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:sGD3TeuFpZNxUB6s"
       data-title="43-sync-outlook-calendar-events-to-notion" data-state="idle"
       data-sub="Ungrouped · sGD3TeuFpZNxUB6s">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14196,6 +14973,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ssXTKiWQzvM8XaHj"
       data-title="10-Generate___Auto_Post_Social_Videos_to_Multiple_Platforms_with_GPT_4_and_Kling_AI" data-state="idle"
       data-sub="Ungrouped · ssXTKiWQzvM8XaHj">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14246,6 +15028,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:swSsUPvmiHAqz07J"
       data-title="4-Scrape_business_leads_from_Google_Maps_using_OpenAI_and_Google_Sheets__Use_for_free" data-state="idle"
       data-sub="Ungrouped · swSsUPvmiHAqz07J">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14296,6 +15083,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:tjmj6VvZdpWuJYQD"
       data-title="86-Zoom_AI_Meeting_Assistant_creates_mail_summary__ClickUp_tasks_and_follow_up_call" data-state="idle"
       data-sub="Ungrouped · tjmj6VvZdpWuJYQD">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14346,6 +15138,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:tm0g3UZ3Tl0ZxMb0"
       data-title="7-Automate_Blog_Content_Creation_with_GPT_4__Perplexity___WordPress" data-state="idle"
       data-sub="Ungrouped · tm0g3UZ3Tl0ZxMb0">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14396,6 +15193,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:u0Br3FJn0P2P7BY2"
       data-title="38-automate-sales-cold-calling-pipeline-with-apify,-gpt-4o,-and-whatsapp" data-state="idle"
       data-sub="Yamini · u0Br3FJn0P2P7BY2">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -14446,6 +15248,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:uAEfLPaShxPUoLSw"
       data-title="16-personalized-ai-tech-newsletter-using-rss,-openai-and-gmail" data-state="idle"
       data-sub="Ungrouped · uAEfLPaShxPUoLSw">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14496,6 +15303,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:uiswfg58jNjzKqNb"
       data-title="Call Auditor" data-state="idle"
       data-sub="Sales QA · uiswfg58jNjzKqNb">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Sales QA</span>
@@ -14556,6 +15368,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:uvF34jcQCb3yOIVC"
       data-title="88-Daily_Podcast_Summary" data-state="idle"
       data-sub="Ungrouped · uvF34jcQCb3yOIVC">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14606,6 +15423,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:w5TYszsGokwF3cjn"
       data-title="56-Create_Animated_Stories_using_GPT_4o_mini__Midjourney__Kling_and_Creatomate_API" data-state="idle"
       data-sub="Ungrouped · w5TYszsGokwF3cjn">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14656,6 +15478,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:wFKeTOHeTxandces"
       data-title="Cratio pull API → Meta CAPI (scheduled, lead_id match)" data-state="idle"
       data-sub="Attribution · wFKeTOHeTxandces">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Attribution</span>
@@ -14724,6 +15551,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:xqyQlvHel6vXea5R"
       data-title="98-Private___Local_Ollama_Self_Hosted_AI_Assistant" data-state="idle"
       data-sub="Ungrouped · xqyQlvHel6vXea5R">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14774,6 +15606,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:yrAIdTytSsUczphy"
       data-title="44-WooCommerce AI Chatbot Workflow for Post Sales Support" data-state="idle"
       data-sub="Ungrouped · yrAIdTytSsUczphy">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14824,6 +15661,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:ytKgfEaDImS0HBTU"
       data-title="57-Twitter_Virtual_AI_Influencer" data-state="idle"
       data-sub="Ungrouped · ytKgfEaDImS0HBTU">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14874,6 +15716,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zDsWN5ePbHLxyXRf"
       data-title="45-AI-Powered WooCommerce Support Agent" data-state="idle"
       data-sub="Ungrouped · zDsWN5ePbHLxyXRf">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14924,6 +15771,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zIJ0SQy81T36FRIu"
       data-title="72-Breakdown_Documents_into_Study_Notes_using_Templating_MistralAI_and_Qdrant" data-state="idle"
       data-sub="Ungrouped · zIJ0SQy81T36FRIu">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -14974,6 +15826,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zKgpO4-u-yu_-aVSCRgEj"
       data-title="Lead Qualification Agent" data-state="live"
       data-sub="Yamini · zKgpO4-u-yu_-aVSCRgEj">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched on and running</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--live"></span>active</span>
       <span class="pill">Yamini</span>
@@ -15078,6 +15935,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zNyAPupAI9GE1UYX"
       data-title="KW Group – YAMINI WhatsApp AI Support" data-state="idle"
       data-sub="Yamini · zNyAPupAI9GE1UYX">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -15182,6 +16044,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zUWf79L0yzlMdCMK"
       data-title="76-Automate_Sales_Meeting_Prep_with_AI___APIFY_Sent_To_WhatsApp" data-state="idle"
       data-sub="Yamini · zUWf79L0yzlMdCMK">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Yamini</span>
@@ -15232,6 +16099,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zoCQQgL9Ag9bLYWW"
       data-title="96-scrape-tiktok-influencer-profiles-with-bright-data-api-to-google-sheets" data-state="idle"
       data-sub="Ungrouped · zoCQQgL9Ag9bLYWW">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>
@@ -15282,6 +16154,11 @@ Business Solution Provider, a reseller that fronts the WhatsApp API. KW does not
   </section><section class="drawer-panel" data-panel="workflow:zwo0bDvYzyO0iZY1"
       data-title="2-Generate___Auto_post_AI_Videos_to_Social_Media_with_Veo3_and_Blotato" data-state="idle"
       data-sub="Ungrouped · zwo0bDvYzyO0iZY1">
+    <p class="section-note">
+      An automation running inside n8n on <a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>. It is currently
+      <strong>switched off</strong>.
+      This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.
+    </p>
     <div class="tags" style="margin-bottom:14px">
       <span class="pill"><span class="dot dot--idle"></span>off</span>
       <span class="pill">Ungrouped</span>

@@ -345,6 +345,46 @@ h2.section .count {
 .sev--low { color: var(--idle); }
 .sev--info { color: var(--info); }
 
+/* ------------------------------------------------------------- intro */
+
+.intro {
+  padding: var(--gap-lg) 0 0;
+  max-width: 78ch;
+}
+.intro-title {
+  font-size: clamp(21px, 2vw + 14px, 30px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.intro p { margin: 0 0 10px; color: var(--ink-2); }
+.intro strong { color: var(--ink); font-weight: 620; }
+.intro-how {
+  border-left: 2px solid var(--primary);
+  padding: 9px 0 9px 13px;
+  margin-top: 14px !important;
+}
+
+.section-note {
+  margin: -6px 0 var(--gap);
+  color: var(--ink-2);
+  font-size: var(--fs-meta);
+  max-width: 82ch;
+}
+h2.section + .section-note { margin-top: -8px; }
+
+.derived-note {
+  border: 1px dashed var(--border-hover);
+  border-radius: var(--r-inner);
+  padding: 12px 15px;
+  margin-bottom: var(--gap-lg);
+  color: var(--ink-2);
+  font-size: var(--fs-meta);
+  max-width: 82ch;
+}
+.derived-note strong { color: var(--ink); }
+
 /* --------------------------------------------------------- KPI strip */
 
 .tiles {
