@@ -1524,6 +1524,8 @@ body.searching .no-match { display: none !important; }
     padding: 6px 12px;
     overflow-wrap: anywhere;
   }
+  /* One grid item for the whole value, whatever it contains. */
+  .table-wrap td > .cell { display: block; min-width: 0; }
   .table-wrap td::before {
     content: attr(data-label);
     color: var(--ink-3);
@@ -1544,9 +1546,26 @@ body.searching .no-match { display: none !important; }
   }
 }
 
-@media (max-width: 480px) {
-  .change { grid-template-columns: 3px minmax(0, 1fr); row-gap: 2px; padding-right: 12px; }
-  .change-when { grid-column: 2; }
+@media (max-width: 560px) {
+  /* Four columns do not fit a phone. Two rows do: the type and the date share
+     a header row, the subject gets the full width below it, and the severity
+     stripe runs down the whole card.
+
+     Every child needs an explicit column here. The old rule only moved
+     .change-when, so auto-placement dropped the subject into column 1 — the
+     3px stripe track — where it overflowed and printed on top of the date. */
+  .change {
+    grid-template-columns: 3px minmax(0, 1fr) auto;
+    column-gap: 10px;
+    row-gap: 3px;
+    align-items: start;
+    padding: 10px 12px 10px 0;
+  }
+  .change-bar { grid-row: 1 / -1; }
+  .change-type { grid-column: 2; grid-row: 1; }
+  .change-when { grid-column: 3; grid-row: 1; }
+  .change-what { grid-column: 2 / -1; grid-row: 2; overflow-wrap: anywhere; }
+
   .wf-id { display: none; }
   .server-alerts .server-alert span:last-child { font-size: 12px; }
 }
@@ -1589,7 +1608,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 10:45 UTC</div>
+      <div class="built">built 2026-08-25 11:01 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -2105,37 +2124,53 @@ body.searching .no-match { display: none !important; }
         <span class="renewal-kind">Domain</span>
         <span class="renewal-detail">served by srv1340120</span>
       </th>
-      <td data-label="Provider">Hostinger</td>
-      <td class="num" data-label="Cost">₹943<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹799 + ₹144 tax</span></td>
-      <td data-label="Next">2027-01-27<span class="renewal-detail">charged</span></td>
-      <td data-label="Due"><span class="renewal-due tone-ok">in 155d</span></td>
+      <!-- Every cell's content is wrapped in one .cell. Under 768px each td
+           becomes a two-column grid (label | value), and a bare text node plus
+           two block spans would each be placed as separate grid items — "/yr"
+           and "charged" ended up in the label column as rows of their own. -->
+      <td data-label="Provider"><span class="cell">Hostinger</span></td>
+      <td class="num" data-label="Cost"><span class="cell">₹943<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹799 + ₹144 tax</span></span></td>
+      <td data-label="Next"><span class="cell">2027-01-27<span class="renewal-detail">charged</span></span></td>
+      <td data-label="Due"><span class="cell"><span class="renewal-due tone-ok">in 155d</span></span></td>
     </tr><tr>
       <th scope="row" data-label="Line"><a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>
         <span class="renewal-kind">KVM 4</span>
         <span class="renewal-detail">KVM 4 · 4 vCPU · 15Gi RAM · 193G disk</span>
       </th>
-      <td data-label="Provider">Hostinger</td>
-      <td class="num" data-label="Cost">₹36,802<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹31,188 + ₹5,614 tax</span></td>
-      <td data-label="Next">2027-02-19<span class="renewal-detail">charged</span></td>
-      <td data-label="Due"><span class="renewal-due tone-ok">in 178d</span></td>
+      <!-- Every cell's content is wrapped in one .cell. Under 768px each td
+           becomes a two-column grid (label | value), and a bare text node plus
+           two block spans would each be placed as separate grid items — "/yr"
+           and "charged" ended up in the label column as rows of their own. -->
+      <td data-label="Provider"><span class="cell">Hostinger</span></td>
+      <td class="num" data-label="Cost"><span class="cell">₹36,802<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹31,188 + ₹5,614 tax</span></span></td>
+      <td data-label="Next"><span class="cell">2027-02-19<span class="renewal-detail">charged</span></span></td>
+      <td data-label="Due"><span class="cell"><span class="renewal-due tone-ok">in 178d</span></span></td>
     </tr><tr>
       <th scope="row" data-label="Line"><a href="#server=srv1870078" data-open="server:srv1870078">srv1870078</a>
         <span class="renewal-kind">KVM 2</span>
         <span class="renewal-detail">KVM 2 · 2 vCPU · 7.8Gi RAM · 96G disk</span>
       </th>
-      <td data-label="Provider">Hostinger</td>
-      <td class="num" data-label="Cost">₹19,810<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹16,788 + ₹3,022 tax</span></td>
-      <td data-label="Next">2027-07-17<span class="renewal-detail">charged</span></td>
-      <td data-label="Due"><span class="renewal-due tone-ok">in 326d</span></td>
+      <!-- Every cell's content is wrapped in one .cell. Under 768px each td
+           becomes a two-column grid (label | value), and a bare text node plus
+           two block spans would each be placed as separate grid items — "/yr"
+           and "charged" ended up in the label column as rows of their own. -->
+      <td data-label="Provider"><span class="cell">Hostinger</span></td>
+      <td class="num" data-label="Cost"><span class="cell">₹19,810<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹16,788 + ₹3,022 tax</span></span></td>
+      <td data-label="Next"><span class="cell">2027-07-17<span class="renewal-detail">charged</span></span></td>
+      <td data-label="Due"><span class="cell"><span class="renewal-due tone-ok">in 326d</span></span></td>
     </tr><tr class="renewal-row--cancelled">
       <th scope="row" data-label="Line"><a href="#server=srv1900820" data-open="server:srv1900820">srv1900820</a>
         <span class="renewal-kind">KVM 4</span>
         <span class="renewal-detail">KVM 4 · 4 vCPU · 15Gi RAM · 193G disk</span>
       </th>
-      <td data-label="Provider">Hostinger</td>
-      <td class="num" data-label="Cost">₹36,802<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹31,188 + ₹5,614 tax</span></td>
-      <td data-label="Next">2027-08-13<span class="renewal-detail">expires</span></td>
-      <td data-label="Due"><span class="renewal-due tone-critical">will not renew</span></td>
+      <!-- Every cell's content is wrapped in one .cell. Under 768px each td
+           becomes a two-column grid (label | value), and a bare text node plus
+           two block spans would each be placed as separate grid items — "/yr"
+           and "charged" ended up in the label column as rows of their own. -->
+      <td data-label="Provider"><span class="cell">Hostinger</span></td>
+      <td class="num" data-label="Cost"><span class="cell">₹36,802<span class="renewal-cycle">/yr</span><span class="renewal-detail">₹31,188 + ₹5,614 tax</span></span></td>
+      <td data-label="Next"><span class="cell">2027-08-13<span class="renewal-detail">expires</span></span></td>
+      <td data-label="Due"><span class="cell"><span class="renewal-due tone-critical">will not renew</span></span></td>
     </tr></tbody>
       </table>
     </div>

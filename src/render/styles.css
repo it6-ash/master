@@ -1499,6 +1499,8 @@ body.searching .no-match { display: none !important; }
     padding: 6px 12px;
     overflow-wrap: anywhere;
   }
+  /* One grid item for the whole value, whatever it contains. */
+  .table-wrap td > .cell { display: block; min-width: 0; }
   .table-wrap td::before {
     content: attr(data-label);
     color: var(--ink-3);
@@ -1519,9 +1521,26 @@ body.searching .no-match { display: none !important; }
   }
 }
 
-@media (max-width: 480px) {
-  .change { grid-template-columns: 3px minmax(0, 1fr); row-gap: 2px; padding-right: 12px; }
-  .change-when { grid-column: 2; }
+@media (max-width: 560px) {
+  /* Four columns do not fit a phone. Two rows do: the type and the date share
+     a header row, the subject gets the full width below it, and the severity
+     stripe runs down the whole card.
+
+     Every child needs an explicit column here. The old rule only moved
+     .change-when, so auto-placement dropped the subject into column 1 — the
+     3px stripe track — where it overflowed and printed on top of the date. */
+  .change {
+    grid-template-columns: 3px minmax(0, 1fr) auto;
+    column-gap: 10px;
+    row-gap: 3px;
+    align-items: start;
+    padding: 10px 12px 10px 0;
+  }
+  .change-bar { grid-row: 1 / -1; }
+  .change-type { grid-column: 2; grid-row: 1; }
+  .change-when { grid-column: 3; grid-row: 1; }
+  .change-what { grid-column: 2 / -1; grid-row: 2; overflow-wrap: anywhere; }
+
   .wf-id { display: none; }
   .server-alerts .server-alert span:last-child { font-size: 12px; }
 }

@@ -201,7 +201,7 @@ function renderChanges(events) {
     return `<div class="change change--${e.severity ?? 'info'}">
       <div class="change-bar"></div>
       <div class="change-type">${escapeHtml(EVENT_LABELS[e.type] ?? e.type)}</div>
-      <div><strong>${escapeHtml(String(subject))}</strong> ${delta}
+      <div class="change-what"><strong>${escapeHtml(String(subject))}</strong> ${delta}
         ${e.server ? `<span class="faint">on ${escapeHtml(e.server)}</span>` : ''}</div>
       <div class="change-when num">${escapeHtml(e.at ?? '')}</div>
     </div>`;
@@ -1357,14 +1357,18 @@ function renewalsPanel(costs) {
         <span class="renewal-kind">${escapeHtml(line.plan ?? KIND[line.kind] ?? line.kind)}</span>
         ${line.detail ? `<span class="renewal-detail">${escapeHtml(line.detail)}</span>` : ''}
       </th>
-      <td data-label="Provider">${line.provider ? escapeHtml(line.provider) : '<span class="unrecorded">—</span>'}</td>
-      <td class="num" data-label="Cost">${gross
+      <!-- Every cell's content is wrapped in one .cell. Under 768px each td
+           becomes a two-column grid (label | value), and a bare text node plus
+           two block spans would each be placed as separate grid items — "/yr"
+           and "charged" ended up in the label column as rows of their own. -->
+      <td data-label="Provider"><span class="cell">${line.provider ? escapeHtml(line.provider) : '<span class="unrecorded">—</span>'}</span></td>
+      <td class="num" data-label="Cost"><span class="cell">${gross
     ? `${gross}<span class="renewal-cycle">/${cycle}</span>${Number.isFinite(line.tax) && line.tax > 0 ? `<span class="renewal-detail">${money(line.amount)} + ${money(line.tax)} tax</span>` : ''}`
-    : '<span class="unrecorded">not recorded</span>'}</td>
-      <td data-label="Next">${line.nextDate
+    : '<span class="unrecorded">not recorded</span>'}</span></td>
+      <td data-label="Next"><span class="cell">${line.nextDate
     ? `${escapeHtml(line.nextDate)}<span class="renewal-detail">${dateLabel}</span>`
-    : '<span class="unrecorded">not recorded</span>'}</td>
-      <td data-label="Due"><span class="renewal-due tone-${d.tone}">${escapeHtml(d.text)}</span></td>
+    : '<span class="unrecorded">not recorded</span>'}</span></td>
+      <td data-label="Due"><span class="cell"><span class="renewal-due tone-${d.tone}">${escapeHtml(d.text)}</span></span></td>
     </tr>`;
   }).join('');
 
