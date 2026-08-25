@@ -542,41 +542,82 @@ h2.section .count {
 .server--warning { border-left-color: var(--warning); }
 .server--critical { border-left-color: var(--critical); }
 
-.server-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.server-name { font-weight: 700; letter-spacing: -0.01em; font-size: 15px; }
+.server-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.server-name { font-weight: 700; letter-spacing: -0.015em; font-size: 16px; }
 .server-role { color: var(--ink-2); font-size: var(--fs-meta); margin-top: 1px; }
-.server-ip { font: var(--fs-meta) var(--mono); color: var(--ink-3); }
-.stale { color: var(--warning); font: var(--fs-meta) var(--mono); }
+.server-meta { text-align: right; flex: none; }
+.server-ip { font: var(--fs-meta) var(--mono); color: var(--ink-2); }
+.server-meta .faint, .stale { font: 10.5px var(--mono); }
+.stale { color: var(--warning); }
 
-.meters { display: grid; gap: 9px; margin: 15px 0 12px; }
+.server-spec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 10px 0;
+  font: 11px var(--mono);
+  color: var(--ink-3);
+}
+
+.meters { display: grid; gap: 8px; padding: 4px 0 12px; }
 .meter-row { display: flex; align-items: center; gap: 10px; font-size: var(--fs-meta); }
-.meter-label { color: var(--ink-2); width: 54px; flex: none; }
-.meter { flex: 1; height: 5px; background: var(--track); border-radius: 3px; overflow: hidden; }
-.meter-fill { height: 100%; background: var(--s1); border-radius: 3px; }
+.meter-label { color: var(--ink-2); width: 52px; flex: none; }
+.meter {
+  flex: 1;
+  height: 7px;
+  background: var(--track);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 40px;
+}
+/* The number carries the value; the bar only supports it. A 5% fill is
+   invisible on its own, so it is never the sole encoding. */
+.meter-fill { height: 100%; background: var(--s1); border-radius: 4px; }
 .meter-fill--warn { background: var(--warning); }
 .meter-fill--bad { background: var(--critical); }
 .meter-value {
   font: var(--fs-meta) var(--mono);
   font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
-  width: 72px;
-  text-align: right;
+  color: var(--ink-3);
   flex: none;
+  min-width: 118px;
+  text-align: right;
 }
-@container (max-width: 300px) {
-  .meter-label { width: 40px; }
-  .meter-value { width: 58px; }
+.meter-value strong { color: var(--ink); font-weight: 650; }
+
+.server-counts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 4px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
+.count-cell { display: grid; gap: 1px; text-align: center; }
+.count-cell strong { font: 600 17px/1.1 var(--mono); color: var(--ink); }
+.count-cell span { font-size: 10.5px; color: var(--ink-3); }
 
-.spark { display: block; width: 100%; height: 28px; }
-.spark-line { fill: none; stroke: var(--s1); stroke-width: 1.5; }
-.spark-baseline { stroke: var(--s1); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: 0.45; }
-.spark-area { fill: var(--s1); opacity: 0.14; stroke: none; }
-.spark-dot { fill: var(--s1); }
+.runs-here { padding: 12px 0 4px; display: grid; gap: 6px; }
+.runs-title {
+  font: 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.runs-row { display: flex; align-items: baseline; gap: 8px; font-size: var(--fs-meta); }
+.runs-name { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runs-meta { margin-left: auto; font: 10.5px var(--mono); color: var(--ink-3); flex: none; }
 
-.facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.server-foot { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 14px; }
 
-.server-alerts { margin-top: 12px; display: grid; gap: 6px; }
+.server-alerts { margin-top: 10px; display: grid; gap: 5px; }
 .server-alert { font-size: var(--fs-meta); display: flex; gap: 7px; align-items: baseline; }
 .server-alert span:last-child { color: var(--ink-2); }
 
@@ -1348,7 +1389,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 07:09 UTC</div>
+      <div class="built">built 2026-08-25 07:27 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -1448,47 +1489,76 @@ body.searching .no-match { display: none !important; }
         <div class="server-name">srv1340120</div>
         <div class="server-role">Apps &amp; Automation</div>
       </div>
-      <div style="text-align:right">
+      <div class="server-meta">
         <div class="server-ip">72.62.228.194</div>
-        <div class="faint" style="font:11.5px var(--mono)">2026-08-24</div>
+        <div class="faint">collected 2026-08-24</div>
       </div>
+    </div>
+
+    <div class="server-spec">
+      <span>4 vCPU</span>
+      <span>15Gi RAM</span>
+      <span>193G disk</span>
+      <span>up 115 days</span>
     </div>
 
     <div class="meters">
       <div class="meter-row">
-        <span class="meter-label">disk</span>
-        <span class="meter"><span class="meter-fill " style="width:19%"></span></span>
-        <span class="meter-value">19% · 35G</span>
-      </div>
+      <span class="meter-label">disk</span>
+      <span class="meter"><span class="meter-fill " style="width:19%"></span></span>
+      <span class="meter-value"><strong>19%</strong> 35G of 193G</span>
+    </div>
       <div class="meter-row">
-        <span class="meter-label">memory</span>
-        <span class="meter"><span class="meter-fill " style="width:24%"></span></span>
-        <span class="meter-value">24% · 3.6Gi</span>
-      </div>
-      <div class="meter-row">
-        <span class="meter-label">history</span><svg class="spark" viewBox="0 0 190 28" preserveAspectRatio="none" aria-hidden="true">
-      <line class="spark-baseline" x1="0" y1="5" x2="190" y2="5" />
-      <circle class="spark-dot" cx="186" cy="5" r="2.5" />
-    </svg>
-        <span class="meter-value">1 snap</span>
+      <span class="meter-label">memory</span>
+      <span class="meter"><span class="meter-fill " style="width:24%"></span></span>
+      <span class="meter-value"><strong>24%</strong> 3.6Gi of 15Gi</span>
+    </div>
+    </div>
+
+    <div class="server-counts"><span class="count-cell">
+      <strong>13</strong><span>projects</span>
+    </span><span class="count-cell">
+      <strong>135</strong><span>workflows</span>
+    </span><span class="count-cell">
+      <strong>8</strong><span>containers</span>
+    </span><span class="count-cell">
+      <strong>38</strong><span>units up</span>
+    </span></div>
+
+    <div class="runs-here">
+      <div class="runs-title">What runs here</div>
+      <div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">n8n-n8n-1</span>
+        <span class="runs-meta">12 of 135 workflows active</span>
+      </div><div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">Yamini</span>
+        <span class="runs-meta">3 collections · 27,503 documents</span>
+      </div><div class="runs-row">
+        <span class="dot dot--broken"></span>
+        <span class="runs-name">traefik-iyg2-traefik-1</span>
+        <span class="runs-meta">container restarting</span>
+      </div><div class="runs-row">
+        <span class="dot dot--idle"></span>
+        <span class="runs-name">n8n-traefik-1</span>
+        <span class="runs-meta">container created</span>
       </div>
     </div>
 
-    <div class="facts">
-      <span class="pill">4 vCPU</span><span class="pill">15Gi</span><span class="pill">up 115 days</span><span class="pill">13 projects</span><span class="pill">135 workflows</span><span class="pill">8 containers</span>
+    <div class="server-foot">
       <span class="pill">
         <span class="dot dot--live"></span>ufw active</span>
-      <span class="pill" style="border-color:var(--critical);color:var(--critical)">
-        <span class="dot dot--broken"></span>2 failed</span>
+      <span class="pill pill--bad"><span class="dot dot--broken"></span>2 failed</span>
+      <span class="pill">reboot pending</span>
+      <span class="pill pill--bad">17 open issues, 2 critical</span>
     </div>
 
     <div class="server-alerts"><div class="server-alert">
       <span class="sev sev--critical">critical</span><span>Yamini's verdicts never reach Cratio</span>
     </div><div class="server-alert">
       <span class="sev sev--critical">critical</span><span>LeadQ's Atlas credentials belong to a departed employee, username reused as password</span>
-    </div><div class="server-alert">
-      <span class="sev sev--high">high</span><span>LeadQ and Overview read different databases and nobody knows which is true</span>
-    </div></div>
+    </div><div class="server-alert faint">and 15 more</div></div>
   </button><button class="server searchable tilt server--warning" type="button" data-open="server:srv1870078"
       data-search="srv1870078 second n8n (idle) 200.141.9.83">
     <div class="server-head">
@@ -1496,37 +1566,61 @@ body.searching .no-match { display: none !important; }
         <div class="server-name">srv1870078</div>
         <div class="server-role">Second n8n (idle)</div>
       </div>
-      <div style="text-align:right">
+      <div class="server-meta">
         <div class="server-ip">200.141.9.83</div>
-        <div class="faint" style="font:11.5px var(--mono)">2026-08-24</div>
+        <div class="faint">collected 2026-08-24</div>
       </div>
+    </div>
+
+    <div class="server-spec">
+      <span>2 vCPU</span>
+      <span>7.8Gi RAM</span>
+      <span>96G disk</span>
+      <span>up 23 days</span>
     </div>
 
     <div class="meters">
       <div class="meter-row">
-        <span class="meter-label">disk</span>
-        <span class="meter"><span class="meter-fill " style="width:8%"></span></span>
-        <span class="meter-value">8% · 7.0G</span>
-      </div>
+      <span class="meter-label">disk</span>
+      <span class="meter"><span class="meter-fill " style="width:8%"></span></span>
+      <span class="meter-value"><strong>8%</strong> 7.0G of 96G</span>
+    </div>
       <div class="meter-row">
-        <span class="meter-label">memory</span>
-        <span class="meter"><span class="meter-fill " style="width:15%"></span></span>
-        <span class="meter-value">15% · 1.2Gi</span>
-      </div>
-      <div class="meter-row">
-        <span class="meter-label">history</span><svg class="spark" viewBox="0 0 190 28" preserveAspectRatio="none" aria-hidden="true">
-      <line class="spark-baseline" x1="0" y1="5" x2="190" y2="5" />
-      <circle class="spark-dot" cx="186" cy="5" r="2.5" />
-    </svg>
-        <span class="meter-value">1 snap</span>
+      <span class="meter-label">memory</span>
+      <span class="meter"><span class="meter-fill " style="width:15%"></span></span>
+      <span class="meter-value"><strong>15%</strong> 1.2Gi of 7.8Gi</span>
+    </div>
+    </div>
+
+    <div class="server-counts"><span class="count-cell">
+      <strong>1</strong><span>projects</span>
+    </span><span class="count-cell">
+      <strong>3</strong><span>workflows</span>
+    </span><span class="count-cell">
+      <strong>2</strong><span>containers</span>
+    </span><span class="count-cell">
+      <strong>20</strong><span>units up</span>
+    </span></div>
+
+    <div class="runs-here">
+      <div class="runs-title">What runs here</div>
+      <div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">n8n-vfa2-n8n-1</span>
+        <span class="runs-meta">1 of 3 workflows active</span>
+      </div><div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">traefik-traefik-1</span>
+        <span class="runs-meta">traefik:latest</span>
       </div>
     </div>
 
-    <div class="facts">
-      <span class="pill">2 vCPU</span><span class="pill">7.8Gi</span><span class="pill">up 23 days</span><span class="pill">1 projects</span><span class="pill">3 workflows</span><span class="pill">2 containers</span>
+    <div class="server-foot">
       <span class="pill">
         <span class="dot dot--live"></span>ufw active</span>
       
+      <span class="pill">reboot pending</span>
+      <span class="pill">1 open issue</span>
     </div>
 
     <div class="server-alerts"><div class="server-alert">
@@ -1539,37 +1633,67 @@ body.searching .no-match { display: none !important; }
         <div class="server-name">srv1900820</div>
         <div class="server-role">Websites</div>
       </div>
-      <div style="text-align:right">
+      <div class="server-meta">
         <div class="server-ip">200.234.35.172</div>
-        <div class="faint" style="font:11.5px var(--mono)">2026-08-24</div>
+        <div class="faint">collected 2026-08-24</div>
       </div>
+    </div>
+
+    <div class="server-spec">
+      <span>4 vCPU</span>
+      <span>15Gi RAM</span>
+      <span>193G disk</span>
+      <span>up 11 days</span>
     </div>
 
     <div class="meters">
       <div class="meter-row">
-        <span class="meter-label">disk</span>
-        <span class="meter"><span class="meter-fill " style="width:5%"></span></span>
-        <span class="meter-value">5% · 8.3G</span>
-      </div>
+      <span class="meter-label">disk</span>
+      <span class="meter"><span class="meter-fill " style="width:5%"></span></span>
+      <span class="meter-value"><strong>5%</strong> 8.3G of 193G</span>
+    </div>
       <div class="meter-row">
-        <span class="meter-label">memory</span>
-        <span class="meter"><span class="meter-fill " style="width:21%"></span></span>
-        <span class="meter-value">21% · 3.1Gi</span>
-      </div>
-      <div class="meter-row">
-        <span class="meter-label">history</span><svg class="spark" viewBox="0 0 190 28" preserveAspectRatio="none" aria-hidden="true">
-      <line class="spark-baseline" x1="0" y1="5" x2="190" y2="5" />
-      <circle class="spark-dot" cx="186" cy="5" r="2.5" />
-    </svg>
-        <span class="meter-value">1 snap</span>
+      <span class="meter-label">memory</span>
+      <span class="meter"><span class="meter-fill " style="width:21%"></span></span>
+      <span class="meter-value"><strong>21%</strong> 3.1Gi of 15Gi</span>
+    </div>
+    </div>
+
+    <div class="server-counts"><span class="count-cell">
+      <strong>3</strong><span>projects</span>
+    </span><span class="count-cell">
+      <strong>7</strong><span>containers</span>
+    </span><span class="count-cell">
+      <strong>23</strong><span>units up</span>
+    </span></div>
+
+    <div class="runs-here">
+      <div class="runs-title">What runs here</div>
+      <div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">ghaziabadcommercialshops.org</span>
+        <span class="runs-meta">port 8082</span>
+      </div><div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">kwbluepearl.com</span>
+        <span class="runs-meta">port 8081</span>
+      </div><div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">kwgroup.in</span>
+        <span class="runs-meta">port 8080</span>
+      </div><div class="runs-row">
+        <span class="dot dot--live"></span>
+        <span class="runs-name">kwdelhi6-web-1</span>
+        <span class="runs-meta">kwdelhi6-web</span>
       </div>
     </div>
 
-    <div class="facts">
-      <span class="pill">4 vCPU</span><span class="pill">15Gi</span><span class="pill">up 11 days</span><span class="pill">3 projects</span><span class="pill">7 containers</span>
+    <div class="server-foot">
       <span class="pill">
         <span class="dot dot--live"></span>ufw active</span>
       
+      <span class="pill">reboot pending</span>
+      <span class="pill">1 open issue</span>
     </div>
 
     <div class="server-alerts"><div class="server-alert">

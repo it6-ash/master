@@ -519,41 +519,82 @@ h2.section .count {
 .server--warning { border-left-color: var(--warning); }
 .server--critical { border-left-color: var(--critical); }
 
-.server-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.server-name { font-weight: 700; letter-spacing: -0.01em; font-size: 15px; }
+.server-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.server-name { font-weight: 700; letter-spacing: -0.015em; font-size: 16px; }
 .server-role { color: var(--ink-2); font-size: var(--fs-meta); margin-top: 1px; }
-.server-ip { font: var(--fs-meta) var(--mono); color: var(--ink-3); }
-.stale { color: var(--warning); font: var(--fs-meta) var(--mono); }
+.server-meta { text-align: right; flex: none; }
+.server-ip { font: var(--fs-meta) var(--mono); color: var(--ink-2); }
+.server-meta .faint, .stale { font: 10.5px var(--mono); }
+.stale { color: var(--warning); }
 
-.meters { display: grid; gap: 9px; margin: 15px 0 12px; }
+.server-spec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 10px 0;
+  font: 11px var(--mono);
+  color: var(--ink-3);
+}
+
+.meters { display: grid; gap: 8px; padding: 4px 0 12px; }
 .meter-row { display: flex; align-items: center; gap: 10px; font-size: var(--fs-meta); }
-.meter-label { color: var(--ink-2); width: 54px; flex: none; }
-.meter { flex: 1; height: 5px; background: var(--track); border-radius: 3px; overflow: hidden; }
-.meter-fill { height: 100%; background: var(--s1); border-radius: 3px; }
+.meter-label { color: var(--ink-2); width: 52px; flex: none; }
+.meter {
+  flex: 1;
+  height: 7px;
+  background: var(--track);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 40px;
+}
+/* The number carries the value; the bar only supports it. A 5% fill is
+   invisible on its own, so it is never the sole encoding. */
+.meter-fill { height: 100%; background: var(--s1); border-radius: 4px; }
 .meter-fill--warn { background: var(--warning); }
 .meter-fill--bad { background: var(--critical); }
 .meter-value {
   font: var(--fs-meta) var(--mono);
   font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
-  width: 72px;
-  text-align: right;
+  color: var(--ink-3);
   flex: none;
+  min-width: 118px;
+  text-align: right;
 }
-@container (max-width: 300px) {
-  .meter-label { width: 40px; }
-  .meter-value { width: 58px; }
+.meter-value strong { color: var(--ink); font-weight: 650; }
+
+.server-counts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 4px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
+.count-cell { display: grid; gap: 1px; text-align: center; }
+.count-cell strong { font: 600 17px/1.1 var(--mono); color: var(--ink); }
+.count-cell span { font-size: 10.5px; color: var(--ink-3); }
 
-.spark { display: block; width: 100%; height: 28px; }
-.spark-line { fill: none; stroke: var(--s1); stroke-width: 1.5; }
-.spark-baseline { stroke: var(--s1); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: 0.45; }
-.spark-area { fill: var(--s1); opacity: 0.14; stroke: none; }
-.spark-dot { fill: var(--s1); }
+.runs-here { padding: 12px 0 4px; display: grid; gap: 6px; }
+.runs-title {
+  font: 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.runs-row { display: flex; align-items: baseline; gap: 8px; font-size: var(--fs-meta); }
+.runs-name { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runs-meta { margin-left: auto; font: 10.5px var(--mono); color: var(--ink-3); flex: none; }
 
-.facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.server-foot { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 14px; }
 
-.server-alerts { margin-top: 12px; display: grid; gap: 6px; }
+.server-alerts { margin-top: 10px; display: grid; gap: 5px; }
 .server-alert { font-size: var(--fs-meta); display: flex; gap: 7px; align-items: baseline; }
 .server-alert span:last-child { color: var(--ink-2); }
 

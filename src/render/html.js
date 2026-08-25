@@ -207,25 +207,84 @@ function renderChanges(events) {
 function renderServerCard(id, server, { issues, history, staleDays, projects, workflows }) {
   const state = server.state ?? {};
   const failed = (server.services ?? []).filter((s) => s.state === 'failed');
+  const running = (server.services ?? []).filter((s) => s.state === 'running');
   const mine = projects.filter((p) => p.server === id);
   const wf = Object.values(workflows).filter((w) => w.server === id);
-  const meterClass = (p) => (p >= 90 ? 'meter-fill--bad' : p >= 80 ? 'meter-fill--warn' : '');
+  const containers = server.containers ?? [];
 
   const alerts = issues.filter((i) => i.server === id && !i.resolved && i.claimStatus !== 'reconciled')
-    .sort(bySeverity).slice(0, 3);
+    .sort(bySeverity);
+  const critical = alerts.filter((i) => i.severity === 'critical').length;
 
-  const facts = [
-    server.specs?.cpu ? `${server.specs.cpu} vCPU` : null,
-    server.specs?.ram ?? null,
-    state.uptime ? `up ${state.uptime}` : null,
-    `${mine.length} projects`,
-    wf.length ? `${wf.length} workflows` : null,
-    server.containers?.length ? `${server.containers.length} containers` : null,
-  ].filter(Boolean);
+  const health = critical ? 'critical' : (failed.length || alerts.length) ? 'warning' : 'ok';
 
-  // The left edge carries health, so the state is readable before any text is.
-  const health = alerts.some((i) => i.severity === 'critical') ? 'critical'
-    : (failed.length || alerts.length) ? 'warning' : 'ok';
+  /* --- meters ------------------------------------------------------- */
+  // A 5% fill on a low-contrast track is invisible, so the number carries the
+  // value and the bar only supports it. The bar is never the only encoding.
+  const meter = (label, pct, detail) => {
+    if (!Number.isInteger(pct)) return '';
+    const tone = pct >= 90 ? 'bad' : pct >= 80 ? 'warn' : '';
+    return `<div class="meter-row">
+      <span class="meter-label">${escapeHtml(label)}</span>
+      <span class="meter"><span class="meter-fill ${tone ? `meter-fill--${tone}` : ''}" style="width:${Math.max(pct, 1.5)}%"></span></span>
+      <span class="meter-value"><strong>${pct}%</strong> ${escapeHtml(detail)}</span>
+    </div>`;
+  };
+
+  /* --- what actually runs here -------------------------------------- */
+  // Two of the three cards used to end in dead space. Showing the three biggest
+  // things on the box fills it with something worth reading, and makes the
+  // cards comparable rather than one dense and two hollow.
+  const notable = [];
+  if (server.n8n?.container) {
+    notable.push({
+      name: server.n8n.container,
+      meta: `${wf.filter((w) => w.active).length} of ${wf.length} workflows active`,
+      state: 'live',
+    });
+  }
+  for (const [dbName, db] of Object.entries(server.databases ?? {})) {
+    if (!db.collections?.length) continue;
+    notable.push({
+      name: dbName,
+      meta: `${db.collections.length} collections · ${fmt(db.collections.reduce((a, c) => a + (c.docs ?? 0), 0))} documents`,
+      state: 'live',
+    });
+    break;
+  }
+  // Anything unhealthy jumps the queue: a restarting container is more worth
+  // a line than a project that is quietly fine.
+  for (const c of containers.filter((x) => x.state !== 'running')) {
+    if (notable.length >= 4) break;
+    notable.push({ name: c.name, meta: `container ${c.state}`, state: c.state === 'restarting' ? 'broken' : 'idle' });
+  }
+  for (const p of mine.filter((x) => x.status === 'live' && x.discovered?.port)) {
+    if (notable.length >= 4) break;
+    if (notable.some((n) => n.name === p.name || n.name === p.discovered?.backend)) continue;
+    notable.push({ name: p.name, meta: `port ${p.discovered.port}`, state: 'live' });
+  }
+  // Fill from running containers so a quiet box still says what it is doing,
+  // rather than ending in dead space beside a busier neighbour.
+  for (const c of containers.filter((x) => x.state === 'running')) {
+    if (notable.length >= 4) break;
+    if (notable.some((n) => n.name === c.name)) continue;
+    notable.push({ name: c.name, meta: escapeHtml(c.image ?? 'container'), state: 'live' });
+  }
+  const SYSTEM_DIR = /\/(containerd|html|lost\+found|media)$/;
+  for (const dir of (server.projects ?? []).filter((d) => d.sizeBytes && !SYSTEM_DIR.test(d.path))) {
+    if (notable.length >= 4) break;
+    const base = dir.path.split('/').pop();
+    if (notable.some((n) => n.name === base)) continue;
+    notable.push({ name: base, meta: `${dir.size} on disk`, state: 'idle' });
+  }
+
+  /* --- counts strip -------------------------------------------------- */
+  const counts = [
+    [mine.length, 'projects'],
+    [wf.length, 'workflows'],
+    [containers.length, 'containers'],
+    [running.length, 'units up'],
+  ].filter(([n]) => n > 0);
 
   return `<button class="server searchable tilt server--${health}" type="button" data-open="server:${escapeHtml(id)}"
       data-search="${escapeHtml(`${id} ${server.role ?? ''} ${server.ip ?? ''}`.toLowerCase())}">
@@ -234,42 +293,52 @@ function renderServerCard(id, server, { issues, history, staleDays, projects, wo
         <div class="server-name">${escapeHtml(id)}</div>
         <div class="server-role">${escapeHtml(server.role ?? '')}</div>
       </div>
-      <div style="text-align:right">
+      <div class="server-meta">
         <div class="server-ip">${escapeHtml(server.ip ?? '')}</div>
         ${staleDays != null && staleDays > 7
-    ? `<div class="stale">ingested ${staleDays}d ago</div>`
-    : `<div class="faint" style="font:11.5px var(--mono)">${escapeHtml(server.lastIngest?.slice(0, 10) ?? 'never ingested')}</div>`}
+    ? `<div class="stale">collected ${staleDays}d ago</div>`
+    : `<div class="faint">collected ${escapeHtml(server.lastIngest?.slice(0, 10) ?? 'never')}</div>`}
       </div>
     </div>
 
+    <div class="server-spec">
+      ${server.specs?.cpu ? `<span>${server.specs.cpu} vCPU</span>` : ''}
+      ${server.specs?.ram ? `<span>${escapeHtml(server.specs.ram)} RAM</span>` : ''}
+      ${server.specs?.disk ? `<span>${escapeHtml(server.specs.disk)} disk</span>` : ''}
+      ${state.uptime ? `<span>up ${escapeHtml(state.uptime)}</span>` : ''}
+    </div>
+
     <div class="meters">
-      ${Number.isInteger(state.diskUsedPct) ? `<div class="meter-row">
-        <span class="meter-label">disk</span>
-        <span class="meter"><span class="meter-fill ${meterClass(state.diskUsedPct)}" style="width:${state.diskUsedPct}%"></span></span>
-        <span class="meter-value">${state.diskUsedPct}% · ${escapeHtml(state.diskUsed ?? '')}</span>
-      </div>` : ''}
-      ${Number.isInteger(state.memUsedPct) ? `<div class="meter-row">
-        <span class="meter-label">memory</span>
-        <span class="meter"><span class="meter-fill ${meterClass(state.memUsedPct)}" style="width:${state.memUsedPct}%"></span></span>
-        <span class="meter-value">${state.memUsedPct}% · ${escapeHtml(state.memUsed ?? '')}</span>
-      </div>` : ''}
-      ${history.disk?.length ? `<div class="meter-row">
-        <span class="meter-label">history</span>${sparkline(history.disk)}
-        <span class="meter-value">${history.disk.length} snap${history.disk.length === 1 ? '' : 's'}</span>
-      </div>` : ''}
+      ${meter('disk', state.diskUsedPct, `${state.diskUsed ?? ''} of ${state.diskTotal ?? ''}`)}
+      ${meter('memory', state.memUsedPct, `${state.memUsed ?? ''} of ${state.memTotal ?? ''}`)}
     </div>
 
-    <div class="facts">
-      ${facts.map((f) => `<span class="pill">${escapeHtml(f)}</span>`).join('')}
-      <span class="pill${state.firewall === 'active' ? '' : ' pill--accent'}">
-        <span class="dot dot--${state.firewall === 'active' ? 'live' : 'broken'}"></span>ufw ${escapeHtml(state.firewall ?? 'unknown')}</span>
-      ${failed.length ? `<span class="pill" style="border-color:${'var(--critical)'};color:var(--critical)">
-        <span class="dot dot--broken"></span>${failed.length} failed</span>` : ''}
+    ${counts.length ? `<div class="server-counts">${counts.map(([n, label]) => `<span class="count-cell">
+      <strong>${n}</strong><span>${escapeHtml(label)}</span>
+    </span>`).join('')}</div>` : ''}
+
+    ${notable.length ? `<div class="runs-here">
+      <div class="runs-title">What runs here</div>
+      ${notable.slice(0, 4).map((n) => `<div class="runs-row">
+        <span class="dot dot--${n.state}"></span>
+        <span class="runs-name">${escapeHtml(n.name)}</span>
+        <span class="runs-meta">${escapeHtml(n.meta)}</span>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <div class="server-foot">
+      <span class="pill${state.firewall === 'active' ? '' : ' pill--bad'}">
+        <span class="dot dot--${state.firewall === 'active' ? 'live' : 'broken'}"></span>ufw ${escapeHtml(state.firewall ?? '?')}</span>
+      ${failed.length ? `<span class="pill pill--bad"><span class="dot dot--broken"></span>${failed.length} failed</span>` : ''}
+      ${state.rebootPending ? '<span class="pill">reboot pending</span>' : ''}
+      ${alerts.length
+    ? `<span class="pill${critical ? ' pill--bad' : ''}">${alerts.length} open issue${alerts.length === 1 ? '' : 's'}${critical ? `, ${critical} critical` : ''}</span>`
+    : '<span class="pill"><span class="dot dot--live"></span>no open issues</span>'}
     </div>
 
-    ${alerts.length ? `<div class="server-alerts">${alerts.map((i) => `<div class="server-alert">
+    ${alerts.length ? `<div class="server-alerts">${alerts.slice(0, 2).map((i) => `<div class="server-alert">
       <span class="sev sev--${i.severity}">${i.severity}</span><span>${escapeHtml(i.title)}</span>
-    </div>`).join('')}</div>` : ''}
+    </div>`).join('')}${alerts.length > 2 ? `<div class="server-alert faint">and ${alerts.length - 2} more</div>` : ''}</div>` : ''}
   </button>`;
 }
 

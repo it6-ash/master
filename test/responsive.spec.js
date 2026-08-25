@@ -518,3 +518,48 @@ test('nginx answers for hostnames and links each one to its project', async ({ p
   const panel = page.locator('[data-panel="project:n8n-srv1340120"]');
   await expect(panel.locator('h3', { hasText: 'Hostnames it answers for' })).toHaveCount(0);
 });
+
+/* ------------------------------------------------------- server cards */
+
+test('every server card carries the same sections, not just the busy one', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  const cards = page.locator('.servers .server');
+  const n = await cards.count();
+  expect(n).toBe(3);
+
+  for (let i = 0; i < n; i += 1) {
+    const card = cards.nth(i);
+    await expect(card.locator('.server-spec'), `card ${i} spec`).toBeVisible();
+    await expect(card.locator('.meter-row').first(), `card ${i} meters`).toBeVisible();
+    await expect(card.locator('.server-counts'), `card ${i} counts`).toBeVisible();
+    await expect(card.locator('.runs-here'), `card ${i} runs-here`).toBeVisible();
+    await expect(card.locator('.server-foot'), `card ${i} footer`).toBeVisible();
+  }
+});
+
+test('a low percentage is still readable, because the number carries it', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  // srv1900820 sits at 5% disk, where a bar alone is invisible.
+  const row = page.locator('[data-open="server:srv1900820"] .meter-row').first();
+  await expect(row.locator('.meter-value strong')).toHaveText('5%');
+  await expect(row.locator('.meter-value')).toContainText('of');
+});
+
+test('a quiet server still says what it is doing', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  // srv1870078 runs an n8n nobody uses and a Traefik. Two rows is genuinely
+  // everything on it, and a sparser card than its neighbours is the finding
+  // rather than a defect, so this asserts it names them rather than that it
+  // fills an arbitrary quota.
+  const rows = page.locator('[data-open="server:srv1870078"] .runs-row');
+  expect(await rows.count()).toBeGreaterThanOrEqual(2);
+  await expect(rows.first()).toContainText('n8n');
+  await expect(page.locator('[data-open="server:srv1870078"] .runs-here')).toContainText('traefik');
+});
+
+test('system directories are not presented as things that run', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  const text = await page.locator('.servers').textContent();
+  expect(text).not.toContain('containerd');
+  expect(text).not.toMatch(/lost\+found/);
+});
