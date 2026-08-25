@@ -60,13 +60,30 @@ hairpin, no firewall rule, one code path for all three. The other two need this
 box's public key in `root@authorized_keys`; `install.sh` prints it and refuses
 to enable the timer until all three answer.
 
-**This page must not be public.** It lists every server's IP and open ports,
-which units are failing, which hostnames have no certificate, where credentials
-sit in crontabs, and the text of every open security finding. It is a map of
-how to attack this estate. The vhost sets HTTP basic auth over TLS, which is the
-minimum; putting it behind the Cloudflare tunnel that already serves
-kwatch.leadq.co.in and using Cloudflare Access would be better. `install.sh`
-will not enable the vhost until an htpasswd file exists.
+### Who can read it
+
+Live at **https://estate.leadq.co.in**, nginx on srv1340120, Let's Encrypt via
+`certbot --nginx`. Deployed with `AUTH=none` at the owner's instruction, so it
+is readable by anyone who resolves the hostname.
+
+Know what that means. The page lists every server's IP and open ports, which
+units are failing, which hostnames have no certificate, where credentials sit
+in crontabs, and the text of every open security finding. It is a map of how to
+attack this estate.
+
+```bash
+AUTH=basic bash deploy/install.sh   # htpasswd prompt; needs /etc/nginx/.kw-estate-htpasswd
+AUTH=none  bash deploy/install.sh   # no auth at all
+```
+
+For no prompt without publishing it, keep `AUTH=basic` and swap the two
+`auth_basic` lines in the vhost for `allow <your.ip>; deny all;`. Better still,
+`MODE=tunnel` puts it behind the cloudflared already serving kwatch.leadq.co.in,
+where Cloudflare Access gives named identities and no public port — that needs
+an ingress rule and an Access policy, and is worthless without both.
+
+`install.sh` never overwrites a vhost carrying certbot's `ssl_certificate`; it
+edits it. Re-running the installer must not silently undo TLS.
 
 **What this costs the box it monitors.** One more `server_name` on an nginx that
 already terminates several; no new port, no change to any existing server block,
