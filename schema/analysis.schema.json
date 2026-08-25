@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "analysis.schema.json",
+  "title": "data/analysis.json",
+  "description": "Hand-maintained analytical model: the funnel and the cost scenarios. Kept in data/ rather than hardcoded in the renderer so the numbers can be corrected without touching code. Values may be literals or $references resolved from ingested data, exactly like project stats.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "funnel": {
+      "type": "object",
+      "required": ["title", "stages"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "project": { "type": ["string", "null"], "description": "Project id this funnel belongs to" },
+        "stages": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "required": ["label", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string" },
+              "value": {
+                "type": ["number", "string"],
+                "description": "A number, or a $reference such as $mongo.Yamini.customerChats.docs"
+              },
+              "note": { "type": "string", "description": "Provenance. Say where the number came from." },
+              "broken": { "type": "boolean", "description": "Renders the value in the critical status color, with a label" }
+            }
+          }
+        }
+      }
+    },
+
+    "costScenarios": {
+      "type": "object",
+      "required": ["title", "rows"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "currency": { "type": "string" },
+        "note": { "type": "string" },
+        "rows": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "required": ["scenario", "whatsapp", "openai"],
+            "additionalProperties": false,
+            "properties": {
+              "scenario": { "type": "string" },
+              "whatsapp": { "type": "number", "minimum": 0, "description": "Meta per-message fees, incl GST" },
+              "openai": { "type": "number", "minimum": 0, "description": "Model tokens" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

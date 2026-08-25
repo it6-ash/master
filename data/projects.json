@@ -1,0 +1,745 @@
+{
+  "gbt-leadq": {
+    "id": "gbt-leadq",
+    "name": "gbt.leadq.co.in",
+    "server": "srv1340120",
+    "status": "idle",
+    "discovered": {
+      "backend": null,
+      "backendState": null,
+      "certExpiryDays": 84,
+      "directory": "/opt/kw-gbt",
+      "git": true,
+      "hasEnv": false,
+      "hostnames": [
+        "gbt.leadq.co.in"
+      ],
+      "port": null,
+      "remote": null,
+      "size": "485M",
+      "ssl": true
+    },
+    "href": "https://gbt.leadq.co.in",
+    "origin": "derived",
+    "services": [],
+    "tags": [
+      "nginx"
+    ],
+    "url": "kw_gbt_api",
+    "workflows": []
+  },
+  "ghaziabadcommercialshops": {
+    "id": "ghaziabadcommercialshops",
+    "name": "ghaziabadcommercialshops.org",
+    "server": "srv1900820",
+    "status": "live",
+    "discovered": {
+      "backend": "kwdelhi6-web-1",
+      "backendState": "running",
+      "certExpiryDays": 78,
+      "directory": null,
+      "git": false,
+      "hasEnv": false,
+      "hostnames": [
+        "ghaziabadcommercialshops.org"
+      ],
+      "port": 8082,
+      "remote": null,
+      "size": null,
+      "ssl": true
+    },
+    "href": "https://ghaziabadcommercialshops.org",
+    "origin": "derived",
+    "services": [
+      "kwdelhi6-web-1"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":8082"
+    ],
+    "url": "kwdelhi6-web",
+    "workflows": []
+  },
+  "hrportal-leadq": {
+    "id": "hrportal-leadq",
+    "name": "hrportal.leadq.co.in",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "kw-manashi",
+      "backendState": "running",
+      "certExpiryDays": 34,
+      "directory": "/opt/kw-manashi",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "hrportal.leadq.co.in"
+      ],
+      "port": 8100,
+      "remote": "git@github-kw:mdo39-ash/kw_manashi.git",
+      "size": "239M",
+      "ssl": true
+    },
+    "href": "https://hrportal.leadq.co.in",
+    "origin": "derived",
+    "services": [
+      "kw-manashi"
+    ],
+    "tags": [
+      "nginx",
+      "systemd",
+      ":8100"
+    ],
+    "url": "KW Manashi — Resume Screener",
+    "workflows": []
+  },
+  "kw-site-visit-leadq": {
+    "id": "kw-site-visit-leadq",
+    "name": "KW-Site-visit.leadq.co.in",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "kwsite",
+      "backendState": "running",
+      "certExpiryDays": 62,
+      "directory": "/var/www/kwsite",
+      "git": true,
+      "hasEnv": false,
+      "hostnames": [
+        "KW-Site-visit.leadq.co.in"
+      ],
+      "port": 8200,
+      "remote": "https://***GITHUB_TOKEN***@github.com/ManishKumar9494/KW-Site-visit.git",
+      "size": "1.5G",
+      "ssl": true
+    },
+    "href": "https://KW-Site-visit.leadq.co.in",
+    "origin": "derived",
+    "services": [
+      "kwsite"
+    ],
+    "tags": [
+      "nginx",
+      "systemd",
+      ":8200"
+    ],
+    "url": "KW Site Visit Tool",
+    "workflows": []
+  },
+  "kwatch-leadq": {
+    "id": "kwatch-leadq",
+    "name": "kwatch.leadq.co.in",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "kwatch",
+      "backendState": "running",
+      "certExpiryDays": null,
+      "directory": "/var/www/kwatch",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "kwatch.leadq.co.in"
+      ],
+      "port": 8050,
+      "remote": "https://ManishKumar9494:***GITHUB_TOKEN***@github.com/ManishKumar9494/Protocor.git",
+      "size": "154M",
+      "ssl": true
+    },
+    "href": "https://kwatch.leadq.co.in",
+    "origin": "derived",
+    "services": [
+      "kwatch"
+    ],
+    "tags": [
+      "cloudflared",
+      "systemd",
+      ":8050"
+    ],
+    "url": "KWatch Flask app",
+    "workflows": []
+  },
+  "kwbluepearl": {
+    "id": "kwbluepearl",
+    "name": "kwbluepearl.com",
+    "server": "srv1900820",
+    "status": "live",
+    "discovered": {
+      "backend": "kw-blue-pearl-web-1",
+      "backendState": "running",
+      "certExpiryDays": 78,
+      "directory": "/opt/kw-blue-pearl",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "kwbluepearl.com"
+      ],
+      "port": 8081,
+      "remote": "git@github.com:it6-ash/kwbp.git",
+      "size": "71M",
+      "ssl": true
+    },
+    "href": "https://kwbluepearl.com",
+    "origin": "derived",
+    "services": [
+      "kw-blue-pearl-web-1"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":8081"
+    ],
+    "url": "kw-blue-pearl-web",
+    "workflows": []
+  },
+  "kwgroup": {
+    "id": "kwgroup",
+    "name": "kwgroup.in",
+    "server": "srv1900820",
+    "status": "live",
+    "discovered": {
+      "backend": "kwgroup-web-1",
+      "backendState": "running",
+      "certExpiryDays": 78,
+      "directory": "/var/www/kwgroup",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "kwgroup.in"
+      ],
+      "port": 8080,
+      "remote": null,
+      "size": "363M",
+      "ssl": true
+    },
+    "href": "https://kwgroup.in",
+    "origin": "derived",
+    "services": [
+      "kwgroup-web-1"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":8080"
+    ],
+    "url": "nginx:1.27-alpine",
+    "workflows": []
+  },
+  "lead-api": {
+    "id": "lead-api",
+    "name": "lead-api",
+    "server": "srv1340120",
+    "status": "broken",
+    "discovered": {
+      "backend": "lead-api",
+      "backendState": "failed",
+      "certExpiryDays": null,
+      "directory": "/opt/lead-api",
+      "git": false,
+      "hasEnv": true,
+      "hostnames": [],
+      "port": 8000,
+      "remote": null,
+      "size": "75M",
+      "ssl": false
+    },
+    "origin": "derived",
+    "services": [
+      "lead-api"
+    ],
+    "tags": [
+      "systemd",
+      ":8000"
+    ],
+    "url": "Lead API",
+    "workflows": []
+  },
+  "leadq": {
+    "id": "leadq",
+    "name": "LeadQ",
+    "server": "srv1340120",
+    "status": "partial",
+    "summary": "The operational dashboard where the sales floor works the leads. Capture, assignment, stage tracking, agent activity logs and reporting across all KW projects.",
+    "discovered": {
+      "backend": "dashboard",
+      "backendState": "running",
+      "certExpiryDays": 34,
+      "directory": "/var/www/Lead-Qualification-Agent-Dashboard",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "leadq.co.in"
+      ],
+      "port": 8001,
+      "remote": "https://github.com/Priyanshu-SR/Lead-Qualification-Agent-Dashboard.git",
+      "size": "82M",
+      "ssl": true
+    },
+    "flows": 1,
+    "href": "https://leadq.co.in",
+    "order": 2,
+    "origin": "documented",
+    "services": [
+      "dashboard"
+    ],
+    "sourceFile": "content/projects/leadq.md",
+    "stats": [
+      {
+        "label": "Port",
+        "value": "8001"
+      },
+      {
+        "state": "broken",
+        "label": "Database",
+        "value": "Atlas"
+      },
+      {
+        "state": "broken",
+        "label": "Failed units",
+        "value": "2"
+      }
+    ],
+    "tags": [
+      "FastAPI",
+      "MongoDB Atlas",
+      "sales floor"
+    ],
+    "updated": "2026-08-24",
+    "url": "Operational lead dashboard",
+    "workflows": []
+  },
+  "manashi-leadq": {
+    "id": "manashi-leadq",
+    "name": "manashi.leadq.co.in",
+    "server": "srv1340120",
+    "status": "idle",
+    "discovered": {
+      "backend": null,
+      "backendState": null,
+      "certExpiryDays": 39,
+      "directory": "/opt/kw-manashi",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "manashi.leadq.co.in"
+      ],
+      "port": null,
+      "remote": "git@github-kw:mdo39-ash/kw_manashi.git",
+      "size": "239M",
+      "ssl": true
+    },
+    "href": "https://manashi.leadq.co.in",
+    "origin": "derived",
+    "services": [],
+    "tags": [
+      "nginx"
+    ],
+    "url": "static · /var/www/html",
+    "workflows": []
+  },
+  "mcp-cratio-leadq": {
+    "id": "mcp-cratio-leadq",
+    "name": "mcp-cratio.leadq.co.in",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "cratio-mcp",
+      "backendState": "running",
+      "certExpiryDays": 42,
+      "directory": null,
+      "git": false,
+      "hasEnv": false,
+      "hostnames": [
+        "mcp-cratio.leadq.co.in"
+      ],
+      "port": 8791,
+      "remote": null,
+      "size": null,
+      "ssl": true
+    },
+    "href": "https://mcp-cratio.leadq.co.in",
+    "origin": "derived",
+    "services": [
+      "cratio-mcp"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":8791"
+    ],
+    "url": "cratio-mcp:latest",
+    "workflows": []
+  },
+  "mcp-google-ads-leadq": {
+    "id": "mcp-google-ads-leadq",
+    "name": "mcp-google-ads.leadq.co.in",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "google-ads-mcp",
+      "backendState": "running",
+      "certExpiryDays": 58,
+      "directory": null,
+      "git": false,
+      "hasEnv": false,
+      "hostnames": [
+        "mcp-google-ads.leadq.co.in"
+      ],
+      "port": 8842,
+      "remote": null,
+      "size": null,
+      "ssl": true
+    },
+    "href": "https://mcp-google-ads.leadq.co.in",
+    "origin": "derived",
+    "services": [
+      "google-ads-mcp"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":8842"
+    ],
+    "url": "google-ads-mcp-google-ads-mcp",
+    "workflows": []
+  },
+  "n8n-srv1340120": {
+    "id": "n8n-srv1340120",
+    "name": "n8n.srv1340120.hstgr.cloud",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "n8n-n8n-1",
+      "backendState": "running",
+      "certExpiryDays": 35,
+      "directory": null,
+      "git": false,
+      "hasEnv": false,
+      "hostnames": [
+        "n8n.srv1340120.hstgr.cloud"
+      ],
+      "port": 5678,
+      "remote": null,
+      "size": null,
+      "ssl": true
+    },
+    "href": "https://n8n.srv1340120.hstgr.cloud",
+    "origin": "derived",
+    "services": [
+      "n8n-n8n-1"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":5678"
+    ],
+    "url": "docker.n8n.io/n8nio/n8n",
+    "workflows": [
+      "077bV810y5Q4jUZ5",
+      "0MCRs1IboWc6GRUd",
+      "0aWdCuqrqJEfmvgX",
+      "0iaqtcZ2nm2ARTHt",
+      "0xu8h5EZYGvngPbF",
+      "1PDBTJsZ1pNgzeQ0",
+      "2TIXtqSAWxX1QjP9",
+      "2vsMJm8sVOmqtBjR",
+      "3T4zuEH0Ysf6mThU",
+      "3mG8pAcZfH6AiWtP",
+      "4Bs80edTasB3Dwxy",
+      "4ZwAofqjnHnShiDL",
+      "4wscpGzlhWwSwJdX",
+      "5D7MXjr4LQdypZqk",
+      "62MN6oqxOs3levjh",
+      "7D9mWt3zJePCco3Q",
+      "7WUUv3Cneyug0nd3",
+      "7sHYts3pBkYe3Kon",
+      "8UpqTxZE8W7papQu",
+      "8o6MezK5LYNn7CBL",
+      "99yXL5T7suCrTvYB",
+      "AJcl5Fq5ND2bqoro",
+      "AevCEffvMg3JjcQC",
+      "AyB7JjSTzAwt9myC",
+      "BRHUxVlU8lpqoEwW",
+      "BlH769YZbjQ0rT4I",
+      "BrgHeiVKtO0vUc5X",
+      "CGjSu6Enk5oPngL6",
+      "CPHGQjU1rybnc65K",
+      "CjloFf9OZBafHB9o",
+      "D9SZmib0atDn3Qno",
+      "EZo3IsptHq0d89C4",
+      "EeroWXsAytgZm3ee",
+      "Evemr7Ol2PwftvVL",
+      "FIdLhfE1md7YYU2c",
+      "FLcj4EWmaPvsQmpj",
+      "FNvLFgtHlZ65P3O0",
+      "FQRXSTgz8uSs6WQrQ9_Fs",
+      "Fal5e8n3wZNQZphC",
+      "FhOqTJ2lAtR6MRWp",
+      "HEd07Mg7zIbBp2ti",
+      "HKHtYpK4qR2dlwHe",
+      "HejtDTtRsrkATYxv",
+      "IBbRJV2G7DyFN020",
+      "ILMUPuNWbBEtoWTk",
+      "J2zsV8reeuJaPLNr",
+      "JzBBDAfhcex4YIH6",
+      "KLlvvroNA04WBiE6",
+      "Lpe4XnpwnsuzH4H4Zwvk1",
+      "MvNmMAAtuakYjEfQ",
+      "NWs0Zl6UrXShOIAr",
+      "NfyiIZRuRiwTl1no",
+      "Ntql6WamxvFSvBQW",
+      "O1vQmi3bXIqJ8dCb",
+      "OGn6dGGPCNUqvzJP",
+      "ObCSdDVajfhBYY4A",
+      "OiHsGnrs0QJyemfO",
+      "Ok1bO3wdBvjttlhF",
+      "RU6ZaTA3nCZeWdy9",
+      "S3Yx1gWQAJYy7mYM",
+      "SYPcFVe16uzuCett",
+      "SzxB0IQBRthioBDR",
+      "T3VNbFLsRZEQjhAo",
+      "TcVKslh4l9CriUx0",
+      "Ufd0oZjrQuUixrU2",
+      "X0uSjcINb8pNndoU",
+      "X1efkOass1xPVcCw",
+      "XS6osnLbJDbsmeLe",
+      "Y2MJTGvUzvOCkozQ",
+      "Y4t0DOPGdYXQFoyx",
+      "Ybas1LAHGiMWtSM5",
+      "YfVJeScFyVKodWwA",
+      "YpRmGANNPbwR1iun",
+      "_aZTVwAACkfsTan1J39YB",
+      "a5FUYX4vVXPTACsn",
+      "aJ0ZM1g2Z1dFhZnm",
+      "ayIVK6sa3ymy7lU7",
+      "bRQRKFKlDQGeA5yR",
+      "bTiwxsf3heQmsDcA",
+      "bnD70eUGTY1dc863",
+      "cDkui7UtHcN4JJBo",
+      "dA0Cu0TRBOdmwheD",
+      "dkILwdJwtinnWZ97",
+      "dvCmBSenNjiJlh1J",
+      "e7YOBL7bWtBgsz6B",
+      "eyXPtwAYcbebUEkJ",
+      "fdummfmXRr5tXHRR",
+      "hrZnFq3WccVtHH3d",
+      "hsMut1IvWs7WmrlR",
+      "i36e0Jd36SjBAaUa",
+      "ip9QrWYS9byvDaRV",
+      "jYZ7aolsbsPiPV0m",
+      "k1Of0lacOqve3jmE",
+      "kQ5T9A1C207XZaUa",
+      "kgNZoQxCOyDeSfbd",
+      "kmzPOEewpVzQMOd9",
+      "kvkhGWVUHPt5Yvip",
+      "kzmOC4VXnTZe0PiO",
+      "naCuMZDRpdx5oufD",
+      "oUG64DakWCzEe1Wv",
+      "ozphMdSSQrt1NPv2",
+      "pHL12UGf8Tt5IBIS",
+      "pNrfCo3EeTXnvTIr",
+      "pegNjHaDbrHH5X43",
+      "px2ufO6KTxKcAMGC",
+      "q76O5UMoA8Btm5yQ",
+      "rgR2jrzNgxoSOkI7",
+      "rsGNjWvAzXTxbil0",
+      "sGD3TeuFpZNxUB6s",
+      "ssXTKiWQzvM8XaHj",
+      "swSsUPvmiHAqz07J",
+      "tjmj6VvZdpWuJYQD",
+      "tm0g3UZ3Tl0ZxMb0",
+      "u0Br3FJn0P2P7BY2",
+      "uAEfLPaShxPUoLSw",
+      "uiswfg58jNjzKqNb",
+      "uvF34jcQCb3yOIVC",
+      "w5TYszsGokwF3cjn",
+      "wFKeTOHeTxandces",
+      "xqyQlvHel6vXea5R",
+      "yrAIdTytSsUczphy",
+      "ytKgfEaDImS0HBTU",
+      "zDsWN5ePbHLxyXRf",
+      "zIJ0SQy81T36FRIu",
+      "zUWf79L0yzlMdCMK",
+      "zoCQQgL9Ag9bLYWW",
+      "zwo0bDvYzyO0iZY1"
+    ]
+  },
+  "n8n-vfa2-n8n-1": {
+    "id": "n8n-vfa2-n8n-1",
+    "name": "n8n-vfa2-n8n-1",
+    "server": "srv1870078",
+    "status": "live",
+    "discovered": {
+      "backend": "n8n-vfa2-n8n-1",
+      "backendState": "running",
+      "certExpiryDays": null,
+      "directory": null,
+      "git": false,
+      "hasEnv": false,
+      "hostnames": [],
+      "port": 32769,
+      "remote": null,
+      "size": null,
+      "ssl": false
+    },
+    "origin": "derived",
+    "services": [
+      "n8n-vfa2-n8n-1"
+    ],
+    "tags": [
+      "docker",
+      ":32769",
+      "published"
+    ],
+    "url": "docker.n8n.io/n8nio/n8n",
+    "workflows": [
+      "34wzHyHojTdWHdC2",
+      "RxfLvmFe4bAvfxEs",
+      "iuR5O4JIeGsD7T23"
+    ]
+  },
+  "overview-leadq": {
+    "id": "overview-leadq",
+    "name": "LeadQ Overview V2",
+    "server": "srv1340120",
+    "status": "live",
+    "summary": "Summary dashboard above LeadQ. Aggregated KPIs, funnel snapshots and project-wise performance for leadership and strategy reviews, read straight from the local Yamini database.",
+    "discovered": {
+      "backend": "dashboard2",
+      "backendState": "running",
+      "certExpiryDays": null,
+      "directory": "/var/www/Dashborad_Overview",
+      "git": true,
+      "hasEnv": false,
+      "hostnames": [
+        "overview.leadq.co.in"
+      ],
+      "port": 8002,
+      "remote": "https://github.com/Priyanshu-SR/Dashborad_Overview.git",
+      "size": "93M",
+      "ssl": true
+    },
+    "flows": 1,
+    "href": "https://overview.leadq.co.in",
+    "order": 3,
+    "origin": "documented",
+    "services": [
+      "dashboard2"
+    ],
+    "sourceFile": "content/projects/overview-leadq.md",
+    "stats": [
+      {
+        "label": "Records read",
+        "ref": "$mongo.Yamini.customerChats.docs",
+        "value": "27,368"
+      },
+      {
+        "label": "Port",
+        "value": "8002"
+      },
+      {
+        "state": "live",
+        "label": "Database",
+        "value": "Local"
+      }
+    ],
+    "tags": [
+      "FastAPI",
+      "MongoDB",
+      "Google Sign-In",
+      "leadership"
+    ],
+    "updated": "2026-08-24",
+    "url": "Analytical dashboard over Yamini",
+    "workflows": []
+  },
+  "skills-leadq": {
+    "id": "skills-leadq",
+    "name": "skills.leadq.co.in",
+    "server": "srv1340120",
+    "status": "live",
+    "discovered": {
+      "backend": "kwskills-app",
+      "backendState": "running",
+      "certExpiryDays": 80,
+      "directory": "/opt/kw-skills",
+      "git": true,
+      "hasEnv": true,
+      "hostnames": [
+        "skills.leadq.co.in"
+      ],
+      "port": 3000,
+      "remote": null,
+      "size": "4.3M",
+      "ssl": true
+    },
+    "href": "https://skills.leadq.co.in",
+    "origin": "derived",
+    "services": [
+      "kwskills-app"
+    ],
+    "tags": [
+      "nginx",
+      "docker",
+      ":3000"
+    ],
+    "url": "kwskills-app",
+    "workflows": []
+  },
+  "yamini": {
+    "id": "yamini",
+    "name": "Yamini",
+    "server": "srv1340120",
+    "status": "partial",
+    "summary": "n8n AI agent that talks to inbound WhatsApp leads for KW Delhi 6 and KW Blue Pearl, qualifies them on budget and intent, and stores every conversation in MongoDB.",
+    "flows": 1,
+    "order": 1,
+    "origin": "documented",
+    "services": [
+      "n8n-n8n-1",
+      "mongod"
+    ],
+    "sourceFile": "content/projects/yamini.md",
+    "stats": [
+      {
+        "label": "Conversations",
+        "ref": "$mongo.Yamini.customerChats.docs",
+        "value": "27,368"
+      },
+      {
+        "label": "Analysed",
+        "value": "504"
+      },
+      {
+        "label": "Cost per lead",
+        "value": "₹0.59"
+      },
+      {
+        "state": "broken",
+        "label": "Reached CRM",
+        "value": "0"
+      }
+    ],
+    "tags": [
+      "n8n",
+      "MongoDB",
+      "GPT-5 mini",
+      "WhatsApp Cloud API",
+      "Delhi 6",
+      "Blue Pearl"
+    ],
+    "updated": "2026-08-24",
+    "url": "WhatsApp lead qualification agent",
+    "workflows": [
+      "zNyAPupAI9GE1UYX",
+      "bd8s6I7ahQnw7kbs",
+      "Sxy3kN781MAZw71n",
+      "1OmPVKibN1EwKRCCLEb9G",
+      "QOxVyLRx80QNkKfS",
+      "dSPTj5H7hK4vSulG",
+      "ppXd4bTAUtLaBwB7",
+      "zKgpO4-u-yu_-aVSCRgEj"
+    ]
+  }
+}

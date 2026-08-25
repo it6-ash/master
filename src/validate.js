@@ -261,9 +261,12 @@ for (const issue of issues) {
 }
 
 if (projectsJson) {
-  for (const id of Object.keys(projectsJson)) {
-    if (!seenProjectIds.has(id)) {
-      warn('data/projects.json', `derived project "${id}" has no content/projects/${id}.md — stale, rerun build`);
+  for (const [id, project] of Object.entries(projectsJson)) {
+    // A derived project having no Markdown file is the normal case — most
+    // things deployed on these servers will never be written up. Only a
+    // project that CLAIMS to be documented and has lost its file is stale.
+    if (project.origin === 'documented' && !seenProjectIds.has(id)) {
+      warn('data/projects.json', `project "${id}" is marked documented but content/projects/${id}.md is gone — rerun build`);
     }
   }
 }

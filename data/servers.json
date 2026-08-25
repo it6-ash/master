@@ -4,25 +4,3802 @@
     "role": "Apps & Automation",
     "ip": "72.62.228.194",
     "provider": "Hostinger",
+    "state": {
+      "diskAvail": "158G",
+      "diskTotal": "193G",
+      "diskUsed": "35G",
+      "diskUsedPct": 19,
+      "firewall": "active",
+      "firewallDefault": "deny (incoming), allow (outgoing), allow (routed)",
+      "firewallRules": [
+        "80 ALLOW IN Anywhere",
+        "443 ALLOW IN Anywhere",
+        "22/tcp (OpenSSH) ALLOW IN Anywhere",
+        "8443 ALLOW IN Anywhere",
+        "8002/tcp ALLOW IN Anywhere",
+        "22/tcp ALLOW IN Anywhere",
+        "80/tcp ALLOW IN Anywhere",
+        "443/tcp ALLOW IN Anywhere",
+        "8100/tcp DENY IN Anywhere",
+        "Anywhere ALLOW IN 172.17.0.0/16",
+        "Anywhere ALLOW IN 172.18.0.0/16"
+      ],
+      "kernel": "6.8.0-110-generic",
+      "kernelInstalled": [
+        "6.8.0-110-generic",
+        "6.8.0-138-generic"
+      ],
+      "load": [
+        0.71,
+        0.79,
+        0.58
+      ],
+      "memAvailable": "11Gi",
+      "memTotal": "15Gi",
+      "memUsed": "3.6Gi",
+      "memUsedPct": 24,
+      "mounts": [
+        {
+          "avail": "158G",
+          "fs": "/dev/sda1",
+          "mount": "/",
+          "size": "193G",
+          "usePct": 19,
+          "used": "35G"
+        },
+        {
+          "avail": "614M",
+          "fs": "/dev/sda16",
+          "mount": "/boot",
+          "size": "881M",
+          "usePct": 26,
+          "used": "206M"
+        },
+        {
+          "avail": "99M",
+          "fs": "/dev/sda15",
+          "mount": "/boot/efi",
+          "size": "105M",
+          "usePct": 6,
+          "used": "6.2M"
+        }
+      ],
+      "os": "Ubuntu 24.04.4 LTS",
+      "rebootPending": true,
+      "swapTotal": "0B",
+      "swapUsed": "0B",
+      "uptime": "115 days",
+      "uptimeSeconds": 10009860
+    },
+    "specs": {
+      "arch": "x86-64",
+      "cpu": 4,
+      "cpuModel": "AMD EPYC 7543P 32-Core Processor",
+      "disk": "193G",
+      "diskBytes": 207232172032,
+      "ram": "15Gi",
+      "ramBytes": 16106127360,
+      "virt": "kvm"
+    },
+    "containers": [
+      {
+        "name": "traefik-iyg2-traefik-1",
+        "status": "Restarting (1) 38 seconds ago",
+        "state": "restarting",
+        "ageDays": 0,
+        "createdAt": "2026-08-24 12:03:05 +0000 UTC",
+        "image": "traefik:latest"
+      },
+      {
+        "name": "n8n-n8n-1",
+        "status": "Up 7 minutes",
+        "state": "running",
+        "ageDays": 0,
+        "createdAt": "2026-08-24 11:48:40 +0000 UTC",
+        "image": "docker.n8n.io/n8nio/n8n",
+        "ports": "127.0.0.1:5678->5678/tcp"
+      },
+      {
+        "name": "google-ads-mcp",
+        "status": "Up 4 weeks",
+        "state": "running",
+        "ageDays": 31,
+        "createdAt": "2026-07-24 11:24:03 +0000 UTC",
+        "image": "google-ads-mcp-google-ads-mcp",
+        "ports": "127.0.0.1:8842->8842/tcp"
+      },
+      {
+        "name": "kwskills-app",
+        "status": "Up 5 weeks",
+        "state": "running",
+        "ageDays": 37,
+        "createdAt": "2026-07-18 10:29:44 +0000 UTC",
+        "image": "kwskills-app",
+        "ports": "127.0.0.1:3000->3000/tcp"
+      },
+      {
+        "name": "cratio-mcp",
+        "status": "Up 6 weeks",
+        "state": "running",
+        "ageDays": 44,
+        "createdAt": "2026-07-11 06:49:18 +0000 UTC",
+        "image": "cratio-mcp:latest",
+        "ports": "127.0.0.1:8791->8000/tcp"
+      },
+      {
+        "name": "kwskills-db",
+        "status": "Up 2 months (healthy)",
+        "state": "running",
+        "ageDays": 69,
+        "createdAt": "2026-06-16 05:27:40 +0000 UTC",
+        "image": "postgres:17-alpine",
+        "ports": "5432/tcp"
+      },
+      {
+        "name": "n8n-traefik-1",
+        "status": "Created",
+        "state": "created",
+        "ageDays": 115,
+        "createdAt": "2026-05-01 06:35:43 +0000 UTC",
+        "image": "9004e1cd1e33"
+      },
+      {
+        "name": "n8n-kw-dashboard-1",
+        "status": "Up 3 months",
+        "state": "running",
+        "ageDays": 115,
+        "createdAt": "2026-05-01 06:35:43 +0000 UTC",
+        "image": "python:3.11-slim"
+      }
+    ],
+    "cron": [
+      {
+        "source": "crontab",
+        "cmd": "mongodump --uri=\"mongodb://kwadmin:***REDACTED***@localhost:27017/?authSource=admin\" --out=/root/backups/$(date +\\%Y-\\%m-\\%d)",
+        "hasSecret": true,
+        "schedule": "0 2 * * 0",
+        "secretKinds": [
+          "collector-redacted"
+        ],
+        "user": "root"
+      },
+      {
+        "source": "crontab",
+        "cmd": "/usr/local/bin/kw-manashi-backup.sh >> /var/log/kw-manashi-backup.log 2>&1",
+        "hasSecret": false,
+        "schedule": "15 2 * * *",
+        "user": "claude-deploy"
+      },
+      {
+        "source": "crontab",
+        "cmd": "/usr/local/bin/kw-manashi-autodeploy.sh >> /var/log/kw-manashi-autodeploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "* * * * *",
+        "user": "claude-deploy"
+      },
+      {
+        "source": "crontab",
+        "cmd": "/usr/local/bin/kw-skills-autodeploy.sh >> /var/log/kw-skills-autodeploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "* * * * *",
+        "user": "claude-deploy"
+      },
+      {
+        "source": "crontab",
+        "cmd": "curl -fsS -X POST -H \"Authorization: Bearer ***REDACTED***\" http://127.0.0.1:3000/api/cron/extract-transcripts >> /var/log/kw-skills-cron.log 2>&1",
+        "hasSecret": true,
+        "schedule": "0 3 * * *",
+        "secretKinds": [
+          "collector-redacted"
+        ],
+        "user": "claude-deploy"
+      },
+      {
+        "source": "crontab",
+        "cmd": "/usr/local/bin/kw-gbt-autodeploy.sh >> /var/log/kw-gbt-autodeploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "* * * * *",
+        "user": "claude-deploy"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -x /usr/bin/certbot -a \\! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew --no-random-sleep-on-renew",
+        "hasSecret": false,
+        "schedule": "0 */12 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "docker builder prune -f > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "20 3 * * 5",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "docker image prune -af --filter \"until=24h\" > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "36 0 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron",
+        "hasSecret": false,
+        "schedule": "30 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r",
+        "hasSecret": false,
+        "schedule": "10 3 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 1 1",
+        "hasSecret": false,
+        "schedule": "5-55/10 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 60 2",
+        "hasSecret": false,
+        "schedule": "59 23 * * *",
+        "user": "root"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-collect.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:10:00 UTC",
+        "unit": "sysstat-collect.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "fwupd-refresh.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 13:55:05 UTC",
+        "unit": "fwupd-refresh.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-download.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 15:56:56 UTC",
+        "unit": "update-notifier-download.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "systemd-tmpfiles-clean.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 16:07:01 UTC",
+        "unit": "systemd-tmpfiles-clean.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 17:39:24 UTC",
+        "unit": "apt-daily.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "certbot.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 22:22:56 UTC",
+        "unit": "certbot.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "motd-news.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 23:01:32 UTC",
+        "unit": "motd-news.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "dpkg-db-backup.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "dpkg-db-backup.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "logrotate.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "logrotate.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-summary.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:07:00 UTC",
+        "unit": "sysstat-summary.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "man-db.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 05:49:19 UTC",
+        "unit": "man-db.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily-upgrade.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:59:44 UTC",
+        "unit": "apt-daily-upgrade.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "e2scrub_all.service",
+        "hasSecret": false,
+        "schedule": "next: Sun 2026-08-30 03:10:35 UTC",
+        "unit": "e2scrub_all.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "fstrim.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-31 01:07:03 UTC",
+        "unit": "fstrim.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-motd.service",
+        "hasSecret": false,
+        "schedule": "next: Sun 2026-09-06 04:00:00 UTC 1 week 5 days Mon 2026-08-24 06:30:33 UTC 5h 34min ago update-notifier-motd.timer",
+        "unit": "update-notifier-motd.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apport-autoreport.service",
+        "hasSecret": false,
+        "schedule": "inactive",
+        "unit": "apport-autoreport.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "snapd.snap-repair.service",
+        "hasSecret": false,
+        "schedule": "inactive",
+        "unit": "snapd.snap-repair.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "ua-timer.service",
+        "hasSecret": false,
+        "schedule": "inactive",
+        "unit": "ua-timer.timer"
+      }
+    ],
+    "databaseEngines": {
+      "mariadb": "absent",
+      "mongod": "active",
+      "mysql": "absent",
+      "postgresql": "active",
+      "redis-server": "absent"
+    },
+    "databases": {
+      "Yamini": {
+        "collections": [
+          {
+            "name": "customerChats",
+            "docs": 27368
+          },
+          {
+            "name": "authLogs",
+            "docs": 130
+          },
+          {
+            "name": "allowedUsers",
+            "docs": 5
+          }
+        ],
+        "engine": "mongodb"
+      },
+      "kw_manashi": {
+        "engine": "postgres"
+      },
+      "kwatch": {
+        "engine": "postgres"
+      },
+      "postgres": {
+        "engine": "postgres"
+      }
+    },
+    "docker": {
+      "compose": [
+        {
+          "name": "google-ads-mcp",
+          "status": "running(1)",
+          "configFile": "/opt/google-ads-connector/docker-compose.yml"
+        },
+        {
+          "name": "kwskills",
+          "status": "running(2)",
+          "configFile": "/opt/kw-skills/docker-compose.yml"
+        },
+        {
+          "name": "n8n",
+          "status": "running(2)",
+          "configFile": "/docker/n8n/docker-compose.yml"
+        },
+        {
+          "name": "traefik-iyg2",
+          "status": "restarting(1)",
+          "configFile": "/docker/traefik-iyg2/docker-compose.yml"
+        }
+      ],
+      "containersRunning": 6,
+      "containersTotal": 8,
+      "diskUsage": {
+        "buildCache": "2.217GB",
+        "containers": "109MB",
+        "images": "8.992GB",
+        "reclaimable": "6.731GB",
+        "volumes": "2.662GB"
+      },
+      "images": 10,
+      "version": "29.2.1",
+      "volumes": 4
+    },
+    "firstSeen": "2026-08-24",
+    "lastIngest": "2026-08-24T12:03:33Z",
+    "logs": {
+      "journalSize": "215.6M",
+      "largest": [
+        {
+          "path": "/var/log/mongodb/mongod.log",
+          "size": "3.5G",
+          "sizeBytes": 3758096384
+        },
+        {
+          "path": "/var/log/auth.log.1",
+          "size": "7.2M",
+          "sizeBytes": 7549747
+        },
+        {
+          "path": "/var/log/syslog.1",
+          "size": "7.2M",
+          "sizeBytes": 7549747
+        },
+        {
+          "path": "/var/log/syslog",
+          "size": "3.0M",
+          "sizeBytes": 3145728
+        },
+        {
+          "path": "/var/log/auth.log",
+          "size": "1.9M",
+          "sizeBytes": 1992294
+        },
+        {
+          "path": "/var/log/btmp.1",
+          "size": "1.8M",
+          "sizeBytes": 1887437
+        },
+        {
+          "path": "/var/log/kern.log",
+          "size": "1.6M",
+          "sizeBytes": 1677722
+        },
+        {
+          "path": "/var/log/ufw.log",
+          "size": "1.6M",
+          "sizeBytes": 1677722
+        },
+        {
+          "path": "/var/log/kern.log.1",
+          "size": "1.5M",
+          "sizeBytes": 1572864
+        },
+        {
+          "path": "/var/log/ufw.log.1",
+          "size": "962K",
+          "sizeBytes": 985088
+        },
+        {
+          "path": "/var/log/auth.log.4.gz",
+          "size": "490K",
+          "sizeBytes": 501760
+        },
+        {
+          "path": "/var/log/auth.log.3.gz",
+          "size": "488K",
+          "sizeBytes": 499712
+        }
+      ],
+      "recentErrors": 15,
+      "varLogTotal": "3.8G"
+    },
+    "n8n": {
+      "activeCount": 12,
+      "container": "n8n-n8n-1",
+      "dbSizeBytes": 2509012992,
+      "workflowCount": 135
+    },
     "notes": "The important one. n8n, MongoDB, LeadQ dashboards, HR portal. Multi-tenant: ports 80/443 are owned by Traefik inside the n8n docker-compose stack, not by the host nginx.",
-    "lastIngest": null,
-    "sourceFile": null
+    "packages": {
+      "aptCache": "142M",
+      "upgradable": 66
+    },
+    "ports": [
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 2478338,
+        "port": 22,
+        "proc": "sshd",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 2439184,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 2439184,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 2439184,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 2439184,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 1683935,
+        "port": 80,
+        "proc": "nginx",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 1683935,
+        "port": 443,
+        "proc": "nginx",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 1801481,
+        "port": 3000,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 652336,
+        "port": 3001,
+        "proc": "postgrest",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 1345493,
+        "port": 3100,
+        "proc": "next-server (v1",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 1345279,
+        "port": 4100,
+        "proc": "node",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2458970,
+        "port": 5432,
+        "proc": "postgres",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3339860,
+        "port": 5678,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 2478490,
+        "port": 8001,
+        "proc": "uvicorn",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 592750,
+        "port": 8002,
+        "proc": "uvicorn",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2478439,
+        "port": 8050,
+        "proc": "gunicorn",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 2478397,
+        "port": 8100,
+        "proc": "uvicorn",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2478438,
+        "port": 8200,
+        "proc": "gunicorn",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2478372,
+        "port": 8765,
+        "proc": "python3",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3271758,
+        "port": 8791,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 4091480,
+        "port": 8842,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 2478347,
+        "port": 8899,
+        "proc": "python3",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2478345,
+        "port": 9000,
+        "proc": "python3",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 725,
+        "port": 20241,
+        "proc": "cloudflared",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2145741,
+        "port": 27017,
+        "proc": "mongod",
+        "proto": "tcp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 725,
+        "port": 40281,
+        "proc": "cloudflared",
+        "proto": "udp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 725,
+        "port": 55569,
+        "proc": "cloudflared",
+        "proto": "udp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 725,
+        "port": 57899,
+        "proc": "cloudflared",
+        "proto": "udp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 725,
+        "port": 59219,
+        "proc": "cloudflared",
+        "proto": "udp"
+      }
+    ],
+    "projects": [
+      {
+        "git": true,
+        "path": "/var/www/kwsite",
+        "remote": "https://***GITHUB_TOKEN***@github.com/ManishKumar9494/KW-Site-visit.git",
+        "size": "1.5G",
+        "sizeBytes": 1610612736
+      },
+      {
+        "git": true,
+        "path": "/opt/kw-gbt",
+        "size": "485M",
+        "sizeBytes": 508559360
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/opt/kw-manashi",
+        "remote": "git@github-kw:mdo39-ash/kw_manashi.git",
+        "size": "239M",
+        "sizeBytes": 250609664
+      },
+      {
+        "path": "/var/www/media",
+        "size": "236M",
+        "sizeBytes": 247463936
+      },
+      {
+        "path": "/home/claude-deploy",
+        "size": "172M",
+        "sizeBytes": 180355072
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/var/www/kwatch",
+        "remote": "https://ManishKumar9494:***GITHUB_TOKEN***@github.com/ManishKumar9494/Protocor.git",
+        "size": "154M",
+        "sizeBytes": 161480704
+      },
+      {
+        "git": true,
+        "path": "/var/www/Dashborad_Overview",
+        "remote": "https://github.com/Priyanshu-SR/Dashborad_Overview.git",
+        "size": "93M",
+        "sizeBytes": 97517568
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/var/www/Lead-Qualification-Agent-Dashboard",
+        "remote": "https://github.com/Priyanshu-SR/Lead-Qualification-Agent-Dashboard.git",
+        "size": "82M",
+        "sizeBytes": 85983232
+      },
+      {
+        "hasEnv": true,
+        "path": "/opt/lead-api",
+        "size": "75M",
+        "sizeBytes": 78643200
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/opt/kw-skills",
+        "size": "4.3M",
+        "sizeBytes": 4508877
+      },
+      {
+        "hasEnv": true,
+        "path": "/opt/google-ads-connector",
+        "size": "76K",
+        "sizeBytes": 77824
+      },
+      {
+        "path": "/home/ubuntu",
+        "size": "32K",
+        "sizeBytes": 32768
+      },
+      {
+        "hasEnv": true,
+        "path": "/opt/cratio-connector",
+        "size": "24K",
+        "sizeBytes": 24576
+      },
+      {
+        "path": "/var/www/html",
+        "size": "20K",
+        "sizeBytes": 20480
+      },
+      {
+        "path": "/opt/containerd",
+        "size": "12K",
+        "sizeBytes": 12288
+      }
+    ],
+    "services": [
+      {
+        "name": "apparmor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "apport",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "blk-availability",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-config",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-final",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init-local",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloudflared",
+        "state": "running",
+        "desc": "cloudflared",
+        "enabled": "enabled",
+        "port": 20241,
+        "restart": "on-failure",
+        "sub": "running"
+      },
+      {
+        "name": "cloudflared-update",
+        "state": "unknown",
+        "desc": "Update cloudflared",
+        "port": 20241
+      },
+      {
+        "name": "console-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "containerd",
+        "state": "running",
+        "desc": "containerd container runtime",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "cron",
+        "state": "running",
+        "desc": "Regular background program processing daemon",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "dashboard",
+        "state": "running",
+        "desc": "Lead Qualification Dashboard",
+        "enabled": "enabled",
+        "port": 8001,
+        "restart": "always",
+        "sub": "running",
+        "user": "root",
+        "workingDir": "/var/www/Lead-Qualification-Agent-Dashboard"
+      },
+      {
+        "name": "dashboard2",
+        "state": "running",
+        "desc": "LeadQ Dashboard V2",
+        "enabled": "enabled",
+        "port": 8002,
+        "restart": "always",
+        "sub": "running",
+        "user": "root",
+        "workingDir": "/var/www/Dashborad_Overview"
+      },
+      {
+        "name": "dbus",
+        "state": "running",
+        "desc": "D-Bus System Message Bus",
+        "sub": "running"
+      },
+      {
+        "name": "dbus-org.freedesktop.ModemManager1",
+        "state": "unknown",
+        "desc": "Modem Manager",
+        "restart": "on-abort",
+        "user": "root"
+      },
+      {
+        "name": "dbus-org.freedesktop.resolve1",
+        "state": "unknown",
+        "desc": "Network Name Resolution",
+        "restart": "always",
+        "user": "systemd-resolve"
+      },
+      {
+        "name": "dbus-org.freedesktop.thermald",
+        "state": "unknown",
+        "desc": "Thermal Daemon Service",
+        "restart": "on-failure"
+      },
+      {
+        "name": "dbus-org.freedesktop.timesync1",
+        "state": "unknown",
+        "desc": "Network Time Synchronization",
+        "restart": "always",
+        "user": "systemd-timesync"
+      },
+      {
+        "name": "dmesg",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "docker",
+        "state": "running",
+        "desc": "Docker Application Container Engine",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "e2scrub_reap",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "fastapi_app",
+        "state": "failed",
+        "desc": "Gunicorn instance to serve FastAPI Dashboard",
+        "enabled": "enabled",
+        "port": 8001,
+        "sub": "failed",
+        "user": "root",
+        "workingDir": "/var/www/Lead-Qualification-Agent-Dashboard"
+      },
+      {
+        "name": "finalrd",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "fwupd",
+        "state": "running",
+        "desc": "Firmware update daemon",
+        "sub": "running"
+      },
+      {
+        "name": "getty@",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@tty1",
+        "state": "running",
+        "desc": "Getty on tty1",
+        "sub": "running"
+      },
+      {
+        "name": "grub-common",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "grub-initrd-fallback",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "iscsi",
+        "state": "unknown",
+        "desc": "Login to default iSCSI targets"
+      },
+      {
+        "name": "keyboard-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "kw-gbt-api",
+        "state": "running",
+        "desc": "KW-GBT API (Express + Socket.IO + MongoDB change streams)",
+        "enabled": "enabled",
+        "envFile": "/etc/kw-gbt/api.env",
+        "restart": "always",
+        "sub": "running",
+        "user": "claude-deploy",
+        "workingDir": "/opt/kw-gbt"
+      },
+      {
+        "name": "kw-gbt-web",
+        "state": "running",
+        "desc": "KW-GBT web (Next.js 15 frontend)",
+        "enabled": "enabled",
+        "port": 3100,
+        "restart": "always",
+        "sub": "running",
+        "user": "claude-deploy",
+        "workingDir": "/opt/kw-gbt"
+      },
+      {
+        "name": "kw-manashi",
+        "state": "running",
+        "desc": "KW Manashi — Resume Screener",
+        "enabled": "enabled",
+        "envFile": "/opt/kw-manashi/.env",
+        "port": 8100,
+        "restart": "on-failure",
+        "sub": "running",
+        "user": "claude-deploy",
+        "workingDir": "/opt/kw-manashi"
+      },
+      {
+        "name": "kwatch",
+        "state": "running",
+        "desc": "KWatch Flask app",
+        "enabled": "enabled",
+        "envFile": "/var/www/kwatch/.env",
+        "port": 8050,
+        "restart": "always",
+        "sub": "running",
+        "user": "root",
+        "workingDir": "/var/www/kwatch"
+      },
+      {
+        "name": "kwatch-proxy",
+        "state": "running",
+        "desc": "KWatch PostgREST proxy (strips /rest/v1)",
+        "enabled": "enabled",
+        "restart": "always",
+        "sub": "running",
+        "user": "root"
+      },
+      {
+        "name": "kwatch-webhook",
+        "state": "running",
+        "desc": "KWatch GitHub Webhook",
+        "enabled": "enabled",
+        "restart": "always",
+        "sub": "running",
+        "user": "root",
+        "workingDir": "/var/www/kwatch"
+      },
+      {
+        "name": "kwsite",
+        "state": "running",
+        "desc": "KW Site Visit Tool",
+        "enabled": "enabled",
+        "port": 8200,
+        "restart": "always",
+        "sub": "running",
+        "user": "root",
+        "workingDir": "/var/www/kwsite"
+      },
+      {
+        "name": "lead-api",
+        "state": "failed",
+        "desc": "Lead API",
+        "enabled": "enabled",
+        "port": 8000,
+        "restart": "always",
+        "sub": "failed",
+        "user": "root",
+        "workingDir": "/opt/lead-api"
+      },
+      {
+        "name": "lvm2-monitor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "media-server",
+        "state": "running",
+        "desc": "Media Static File Server",
+        "enabled": "enabled",
+        "port": 8899,
+        "restart": "always",
+        "sub": "running",
+        "user": "root"
+      },
+      {
+        "name": "ModemManager",
+        "state": "running",
+        "desc": "Modem Manager",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "mongod",
+        "state": "running",
+        "desc": "MongoDB Database Server",
+        "enabled": "enabled",
+        "port": 27017,
+        "sub": "running"
+      },
+      {
+        "name": "multipathd",
+        "state": "running",
+        "desc": "Device-Mapper Multipath Device Controller",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "networkd-dispatcher",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "nginx",
+        "state": "running",
+        "desc": "A high performance web server and a reverse proxy server",
+        "enabled": "enabled",
+        "port": 80,
+        "sub": "running"
+      },
+      {
+        "name": "open-iscsi",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "open-vm-tools",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "polkit",
+        "state": "running",
+        "desc": "Authorization Manager",
+        "sub": "running"
+      },
+      {
+        "name": "pollinate",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "postgresql",
+        "state": "inactive",
+        "enabled": "enabled",
+        "port": 5432
+      },
+      {
+        "name": "postgresql@16-main",
+        "state": "running",
+        "desc": "PostgreSQL Cluster 16-main",
+        "port": 5432,
+        "sub": "running"
+      },
+      {
+        "name": "postgrest",
+        "state": "running",
+        "desc": "PostgREST API",
+        "enabled": "enabled",
+        "port": 3001,
+        "restart": "always",
+        "sub": "running",
+        "user": "postgres"
+      },
+      {
+        "name": "qemu-guest-agent",
+        "state": "running",
+        "desc": "QEMU Guest Agent",
+        "sub": "running"
+      },
+      {
+        "name": "rsyslog",
+        "state": "running",
+        "desc": "System Logging Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "secureboot-db",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "serial-getty@ttyS0",
+        "state": "running",
+        "desc": "Serial Getty on ttyS0",
+        "sub": "running"
+      },
+      {
+        "name": "setvtrgb",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd.apparmor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd.autoimport",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd.core-fixup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd.recovery-chooser-trigger",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd.seeded",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "snapd.system-shutdown",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ssh",
+        "state": "running",
+        "desc": "OpenBSD Secure Shell server",
+        "sub": "running"
+      },
+      {
+        "name": "ssl-cert",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "syslog",
+        "state": "unknown",
+        "desc": "System Logging Service",
+        "restart": "on-failure"
+      },
+      {
+        "name": "sysstat",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-journald",
+        "state": "running",
+        "desc": "Journal Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-logind",
+        "state": "running",
+        "desc": "User Login Management",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-networkd",
+        "state": "running",
+        "desc": "Network Configuration",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-networkd-wait-online",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-pstore",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-resolved",
+        "state": "running",
+        "desc": "Network Name Resolution",
+        "enabled": "enabled",
+        "port": 53,
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timesyncd",
+        "state": "running",
+        "desc": "Network Time Synchronization",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-udevd",
+        "state": "running",
+        "desc": "Rule-based Manager for Device Events and Files",
+        "sub": "running"
+      },
+      {
+        "name": "thermald",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ua-reboot-cmds",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ubuntu-advantage",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "udisks2",
+        "state": "running",
+        "desc": "Disk Manager",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "ufw",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "unattended-upgrades",
+        "state": "running",
+        "desc": "Unattended Upgrades Shutdown",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "upower",
+        "state": "running",
+        "desc": "Daemon for power management",
+        "sub": "running"
+      },
+      {
+        "name": "user@0",
+        "state": "running",
+        "desc": "User Manager for UID 0",
+        "sub": "running"
+      },
+      {
+        "name": "vgauth",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "vmtoolsd",
+        "state": "unknown",
+        "desc": "Service for virtual machines hosted on VMware"
+      }
+    ],
+    "sourceFile": "raw/kw-collect-srv1340120-2026-08-24T1203.txt",
+    "ssh": {
+      "failedPasswords": 39,
+      "passwordAuthentication": true,
+      "permitRootLogin": true,
+      "port": 22,
+      "pubkeyAuthentication": true,
+      "topAttackers": [
+        {
+          "ip": "93.183.83.99",
+          "count": 80
+        },
+        {
+          "ip": "207.180.230.71",
+          "count": 69
+        },
+        {
+          "ip": "116.110.147.130",
+          "count": 60
+        },
+        {
+          "ip": "116.110.5.25",
+          "count": 54
+        },
+        {
+          "ip": "116.110.11.84",
+          "count": 53
+        },
+        {
+          "ip": "171.231.193.230",
+          "count": 49
+        },
+        {
+          "ip": "116.110.223.67",
+          "count": 46
+        },
+        {
+          "ip": "171.243.150.90",
+          "count": 44
+        },
+        {
+          "ip": "148.251.141.101",
+          "count": 42
+        },
+        {
+          "ip": "89.117.25.134",
+          "count": 39
+        }
+      ]
+    },
+    "staleFiles": [
+      "/var/www/Dashborad_Overview/main.py.bak.2026-08-17-1120",
+      "/opt/kw-manashi/.env.bak.20260423",
+      "/opt/kw-manashi/credentials/gdrive_service_account.BROKEN.bak",
+      "/etc/nginx/sites-enabled/hrportal.bak.20260505-044819"
+    ],
+    "storage": {
+      "bigFiles": [
+        {
+          "path": "/root/n8n-db-2026-08-17.sqlite",
+          "size": "4.1G",
+          "sizeBytes": 4402341478
+        },
+        {
+          "path": "/var/log/mongodb/mongod.log",
+          "size": "3.5G",
+          "sizeBytes": 3758096384
+        },
+        {
+          "path": "/root/kwbluepearldelhi.com.zip",
+          "size": "2.6G",
+          "sizeBytes": 2791728742
+        },
+        {
+          "path": "/var/lib/docker/volumes/n8n_data/_data/database.sqlite",
+          "size": "2.4G",
+          "sizeBytes": 2576980378
+        },
+        {
+          "path": "/var/www/kwsite/.git/objects/pack/pack-e41ab5e33e7834ce97130a376c14930dc76d7401.pack",
+          "size": "1.3G",
+          "sizeBytes": 1395864371
+        },
+        {
+          "path": "/root/n8n-backup-2026-08-24/n8n_data.tar.gz",
+          "size": "905M",
+          "sizeBytes": 948961280
+        },
+        {
+          "path": "/root/kwbluepearldelhi_db.sql",
+          "size": "345M",
+          "sizeBytes": 361758720
+        },
+        {
+          "path": "/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/7db6653f6804003b37929943998584f13d1788dea632aec0d6d3d5d3e65a3c75",
+          "size": "295M",
+          "sizeBytes": 309329920
+        },
+        {
+          "path": "/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/1784c472fcd8aa0d764d6ad8acb2b53cb5508bc9856d48c1f1e6cc19b47e85d8",
+          "size": "244M",
+          "sizeBytes": 255852544
+        },
+        {
+          "path": "/var/www/media/testimonial.mp4",
+          "size": "236M",
+          "sizeBytes": 247463936
+        }
+      ],
+      "topDirs": [
+        {
+          "path": "/",
+          "size": "39G",
+          "sizeBytes": 41875931136
+        },
+        {
+          "path": "/var",
+          "size": "22G",
+          "sizeBytes": 23622320128
+        },
+        {
+          "path": "/var/lib",
+          "size": "16G",
+          "sizeBytes": 17179869184
+        },
+        {
+          "path": "/root",
+          "size": "11G",
+          "sizeBytes": 11811160064
+        },
+        {
+          "path": "/usr",
+          "size": "5.3G",
+          "sizeBytes": 5690831667
+        },
+        {
+          "path": "/var/log",
+          "size": "3.8G",
+          "sizeBytes": 4080218931
+        },
+        {
+          "path": "/root/wp-backup",
+          "size": "3.0G",
+          "sizeBytes": 3221225472
+        },
+        {
+          "path": "/usr/lib",
+          "size": "2.9G",
+          "sizeBytes": 3113851290
+        },
+        {
+          "path": "/var/www",
+          "size": "2.1G",
+          "sizeBytes": 2254857830
+        },
+        {
+          "path": "/usr/bin",
+          "size": "1.2G",
+          "sizeBytes": 1288490189
+        },
+        {
+          "path": "/root/n8n-backup-2026-08-24",
+          "size": "905M",
+          "sizeBytes": 948961280
+        },
+        {
+          "path": "/opt",
+          "size": "803M",
+          "sizeBytes": 842006528
+        },
+        {
+          "path": "/usr/share",
+          "size": "616M",
+          "sizeBytes": 645922816
+        },
+        {
+          "path": "/opt/kw-gbt",
+          "size": "485M",
+          "sizeBytes": 508559360
+        },
+        {
+          "path": "/usr/src",
+          "size": "311M",
+          "sizeBytes": 326107136
+        },
+        {
+          "path": "/opt/kw-manashi",
+          "size": "239M",
+          "sizeBytes": 250609664
+        },
+        {
+          "path": "/usr/libexec",
+          "size": "221M",
+          "sizeBytes": 231735296
+        },
+        {
+          "path": "/boot",
+          "size": "212M",
+          "sizeBytes": 222298112
+        },
+        {
+          "path": "/var/cache",
+          "size": "178M",
+          "sizeBytes": 186646528
+        },
+        {
+          "path": "/home/claude-deploy",
+          "size": "172M",
+          "sizeBytes": 180355072
+        },
+        {
+          "path": "/home",
+          "size": "172M",
+          "sizeBytes": 180355072
+        },
+        {
+          "path": "/usr/include",
+          "size": "86M",
+          "sizeBytes": 90177536
+        },
+        {
+          "path": "/opt/lead-api",
+          "size": "75M",
+          "sizeBytes": 78643200
+        },
+        {
+          "path": "/root/.cache",
+          "size": "68M",
+          "sizeBytes": 71303168
+        },
+        {
+          "path": "/usr/sbin",
+          "size": "37M",
+          "sizeBytes": 38797312
+        }
+      ]
+    },
+    "vhosts": [
+      {
+        "source": "nginx",
+        "certExpiryDays": 84,
+        "certName": "gbt.leadq.co.in",
+        "domain": "gbt.leadq.co.in",
+        "proxyTo": "kw_gbt_api",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 34,
+        "certName": "leadq.co.in",
+        "domain": "hrportal.leadq.co.in",
+        "proxyTo": "127.0.0.1:8100",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 62,
+        "certName": "kw-site-visit.leadq.co.in",
+        "domain": "KW-Site-visit.leadq.co.in",
+        "proxyTo": "127.0.0.1:8200",
+        "ssl": true
+      },
+      {
+        "source": "cloudflared",
+        "domain": "kwatch.leadq.co.in",
+        "proxyTo": "127.0.0.1:8050",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 34,
+        "certName": "leadq.co.in",
+        "domain": "leadq.co.in",
+        "proxyTo": "127.0.0.1:8001",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 39,
+        "certName": "manashi.leadq.co.in",
+        "domain": "manashi.leadq.co.in",
+        "root": "/var/www/html",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 42,
+        "certName": "mcp-cratio.leadq.co.in",
+        "domain": "mcp-cratio.leadq.co.in",
+        "proxyTo": "127.0.0.1:8791/mcp",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 58,
+        "certName": "mcp-google-ads.leadq.co.in",
+        "domain": "mcp-google-ads.leadq.co.in",
+        "proxyTo": "127.0.0.1:8842",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 35,
+        "certName": "n8n.srv1340120.hstgr.cloud",
+        "domain": "n8n.srv1340120.hstgr.cloud",
+        "proxyTo": "127.0.0.1:5678",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "domain": "overview.leadq.co.in",
+        "proxyTo": "127.0.0.1:8002",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 80,
+        "certName": "skills.leadq.co.in",
+        "domain": "skills.leadq.co.in",
+        "proxyTo": "127.0.0.1:3000",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "domain": "srv1340120.hstgr.cloud"
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 34,
+        "certName": "leadq.co.in",
+        "domain": "www.leadq.co.in",
+        "proxyTo": "127.0.0.1:8001",
+        "ssl": true
+      }
+    ],
+    "web": {
+      "servers": [
+        "nginx",
+        "cloudflared"
+      ],
+      "sitesEnabled": [
+        {
+          "name": "cratio-mcp.conf",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/cratio-mcp.conf"
+        },
+        {
+          "name": "dashboard",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/dashboard"
+        },
+        {
+          "name": "google-ads-mcp.conf",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/google-ads-mcp.conf"
+        },
+        {
+          "name": "hrportal",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/hrportal"
+        },
+        {
+          "name": "hrportal.bak.20260505-044819",
+          "isSymlink": false
+        },
+        {
+          "name": "kw-gbt",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/kw-gbt"
+        },
+        {
+          "name": "kw-skills",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/kw-skills"
+        },
+        {
+          "name": "kwatch",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/kwatch"
+        },
+        {
+          "name": "kwsite",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/kwsite"
+        },
+        {
+          "name": "manashi",
+          "isSymlink": false
+        },
+        {
+          "name": "media",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/media"
+        },
+        {
+          "name": "n8n",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/n8n"
+        }
+      ]
+    }
   },
   "srv1870078": {
     "name": "srv1870078",
     "role": "Second n8n (idle)",
     "ip": "200.141.9.83",
     "provider": "Hostinger",
+    "state": {
+      "diskAvail": "89G",
+      "diskTotal": "96G",
+      "diskUsed": "7.0G",
+      "diskUsedPct": 8,
+      "firewall": "active",
+      "firewallDefault": "deny (incoming), allow (outgoing), deny (routed)",
+      "firewallRules": [
+        "22/tcp ALLOW IN Anywhere",
+        "80 ALLOW IN Anywhere",
+        "443 ALLOW IN Anywhere"
+      ],
+      "kernel": "6.8.0-134-generic",
+      "kernelInstalled": [
+        "6.8.0-134-generic",
+        "6.8.0-138-generic"
+      ],
+      "load": [
+        0,
+        0,
+        0
+      ],
+      "memAvailable": "6.6Gi",
+      "memTotal": "7.8Gi",
+      "memUsed": "1.2Gi",
+      "memUsedPct": 15,
+      "mounts": [
+        {
+          "avail": "89G",
+          "fs": "/dev/sda1",
+          "mount": "/",
+          "size": "96G",
+          "usePct": 8,
+          "used": "7.0G"
+        },
+        {
+          "avail": "704M",
+          "fs": "/dev/sda16",
+          "mount": "/boot",
+          "size": "881M",
+          "usePct": 15,
+          "used": "116M"
+        },
+        {
+          "avail": "99M",
+          "fs": "/dev/sda15",
+          "mount": "/boot/efi",
+          "size": "105M",
+          "usePct": 6,
+          "used": "6.2M"
+        }
+      ],
+      "os": "Ubuntu 24.04.4 LTS",
+      "rebootPending": true,
+      "swapTotal": "0B",
+      "swapUsed": "0B",
+      "uptime": "23 days",
+      "uptimeSeconds": 2010300
+    },
+    "specs": {
+      "arch": "x86-64",
+      "cpu": 2,
+      "cpuModel": "AMD EPYC 9355P 32-Core Processor",
+      "disk": "96G",
+      "diskBytes": 103079215104,
+      "ram": "7.8Gi",
+      "ramBytes": 8375186227,
+      "virt": "kvm"
+    },
+    "containers": [
+      {
+        "name": "n8n-vfa2-n8n-1",
+        "status": "Up 11 days",
+        "state": "running",
+        "ageDays": 23,
+        "createdAt": "2026-08-01 05:40:27 +0000 UTC",
+        "image": "docker.n8n.io/n8nio/n8n",
+        "ports": "0.0.0.0:32769->5678/tcp, [::]:32769->5678/tcp"
+      },
+      {
+        "name": "traefik-traefik-1",
+        "status": "Up 3 weeks",
+        "state": "running",
+        "ageDays": 23,
+        "createdAt": "2026-08-01 05:39:32 +0000 UTC",
+        "image": "traefik:latest"
+      }
+    ],
+    "cron": [
+      {
+        "source": "cron.d",
+        "cmd": "docker builder prune -f > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "58 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "sleep $(shuf -i 0-21600 -n 1) && docker image prune -af --filter \"until=24h\" > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "0 0 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron",
+        "hasSecret": false,
+        "schedule": "30 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r",
+        "hasSecret": false,
+        "schedule": "10 3 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 1 1",
+        "hasSecret": false,
+        "schedule": "5-55/10 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 60 2",
+        "hasSecret": false,
+        "schedule": "59 23 * * *",
+        "user": "root"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-collect.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:10:00 UTC",
+        "unit": "sysstat-collect.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 22:04:31 UTC",
+        "unit": "apt-daily.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "dpkg-db-backup.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "dpkg-db-backup.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "logrotate.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "logrotate.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-summary.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:07:00 UTC",
+        "unit": "sysstat-summary.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "man-db.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 02:35:42 UTC",
+        "unit": "man-db.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-download.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 05:54:14 UTC",
+        "unit": "update-notifier-download.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "systemd-tmpfiles-clean.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:04:44 UTC",
+        "unit": "systemd-tmpfiles-clean.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily-upgrade.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:09:24 UTC",
+        "unit": "apt-daily-upgrade.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "e2scrub_all.service",
+        "hasSecret": false,
+        "schedule": "next: Sun 2026-08-30 03:10:02 UTC",
+        "unit": "e2scrub_all.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "fstrim.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-31 01:18:54 UTC",
+        "unit": "fstrim.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-motd.service",
+        "hasSecret": false,
+        "schedule": "next: Sat 2026-09-05 10:37:46 UTC 1 week 4 days Mon 2026-08-24 00:06:54 UTC",
+        "unit": "update-notifier-motd.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "ua-timer.service",
+        "hasSecret": false,
+        "schedule": "inactive",
+        "unit": "ua-timer.timer"
+      }
+    ],
+    "databaseEngines": {
+      "mariadb": "absent",
+      "mongod": "absent",
+      "mysql": "absent",
+      "postgresql": "absent",
+      "redis-server": "absent"
+    },
+    "docker": {
+      "compose": [
+        {
+          "name": "n8n-vfa2",
+          "status": "running(1)",
+          "configFile": "/docker/n8n-vfa2/docker-compose.yml"
+        },
+        {
+          "name": "traefik",
+          "status": "running(1)",
+          "configFile": "/docker/traefik/docker-compose.yml"
+        }
+      ],
+      "containersRunning": 2,
+      "containersTotal": 2,
+      "diskUsage": {
+        "buildCache": "0B",
+        "containers": "2.314GB",
+        "images": "2.728GB",
+        "reclaimable": "0B",
+        "volumes": "649.2MB"
+      },
+      "images": 2,
+      "orphanVolumes": [
+        "traefik-letsencrypt"
+      ],
+      "version": "29.6.1",
+      "volumes": 3
+    },
+    "firstSeen": "2026-08-24",
+    "lastIngest": "2026-08-24T12:04:28Z",
+    "logs": {
+      "journalSize": "144.3M",
+      "largest": [
+        {
+          "path": "/var/log/syslog.1",
+          "size": "13M",
+          "sizeBytes": 13631488
+        },
+        {
+          "path": "/var/log/syslog",
+          "size": "13M",
+          "sizeBytes": 13631488
+        },
+        {
+          "path": "/var/log/btmp",
+          "size": "11M",
+          "sizeBytes": 11534336
+        },
+        {
+          "path": "/var/log/auth.log.1",
+          "size": "7.3M",
+          "sizeBytes": 7654605
+        },
+        {
+          "path": "/var/log/kern.log",
+          "size": "1.4M",
+          "sizeBytes": 1468006
+        },
+        {
+          "path": "/var/log/kern.log.1",
+          "size": "1.4M",
+          "sizeBytes": 1468006
+        },
+        {
+          "path": "/var/log/auth.log",
+          "size": "1.2M",
+          "sizeBytes": 1258291
+        },
+        {
+          "path": "/var/log/auth.log.3.gz",
+          "size": "244K",
+          "sizeBytes": 249856
+        },
+        {
+          "path": "/var/log/auth.log.2.gz",
+          "size": "162K",
+          "sizeBytes": 165888
+        },
+        {
+          "path": "/var/log/syslog.3.gz",
+          "size": "101K",
+          "sizeBytes": 103424
+        },
+        {
+          "path": "/var/log/syslog.2.gz",
+          "size": "94K",
+          "sizeBytes": 96256
+        }
+      ],
+      "recentErrors": 15,
+      "varLogTotal": "207M"
+    },
+    "n8n": {
+      "activeCount": 1,
+      "container": "n8n-vfa2-n8n-1",
+      "dbSizeBytes": 514314240,
+      "workflowCount": 3
+    },
     "notes": "A second n8n instance doing nothing. Candidate for decommissioning.",
-    "lastIngest": null,
-    "sourceFile": null
+    "packages": {
+      "aptCache": "109M",
+      "upgradable": 18
+    },
+    "ports": [
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 18968,
+        "port": 22,
+        "proc": "sshd",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 1306,
+        "port": 80,
+        "proc": "traefik",
+        "proto": "tcp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 1306,
+        "port": 443,
+        "proc": "traefik",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 64364,
+        "port": 32769,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      }
+    ],
+    "projects": [
+      {
+        "path": "/opt/containerd",
+        "size": "12K",
+        "sizeBytes": 12288
+      }
+    ],
+    "services": [
+      {
+        "name": "apparmor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "blk-availability",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-config",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-final",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init-local",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "console-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "containerd",
+        "state": "running",
+        "desc": "containerd container runtime",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "cron",
+        "state": "running",
+        "desc": "Regular background program processing daemon",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "dbus",
+        "state": "running",
+        "desc": "D-Bus System Message Bus",
+        "sub": "running"
+      },
+      {
+        "name": "dbus-org.freedesktop.resolve1",
+        "state": "unknown",
+        "desc": "Network Name Resolution",
+        "restart": "always",
+        "user": "systemd-resolve"
+      },
+      {
+        "name": "dbus-org.freedesktop.timesync1",
+        "state": "unknown",
+        "desc": "Network Time Synchronization",
+        "restart": "always",
+        "user": "systemd-timesync"
+      },
+      {
+        "name": "dmesg",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "docker",
+        "state": "running",
+        "desc": "Docker Application Container Engine",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "e2scrub_reap",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "finalrd",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@tty1",
+        "state": "running",
+        "desc": "Getty on tty1",
+        "sub": "running"
+      },
+      {
+        "name": "grub-common",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "grub-initrd-fallback",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "keyboard-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "lvm2-monitor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "networkd-dispatcher",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "polkit",
+        "state": "running",
+        "desc": "Authorization Manager",
+        "sub": "running"
+      },
+      {
+        "name": "qemu-guest-agent",
+        "state": "running",
+        "desc": "QEMU Guest Agent",
+        "sub": "running"
+      },
+      {
+        "name": "rsyslog",
+        "state": "running",
+        "desc": "System Logging Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "secureboot-db",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "serial-getty@ttyS0",
+        "state": "running",
+        "desc": "Serial Getty on ttyS0",
+        "sub": "running"
+      },
+      {
+        "name": "setvtrgb",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ssh",
+        "state": "running",
+        "desc": "OpenBSD Secure Shell server",
+        "sub": "running"
+      },
+      {
+        "name": "syslog",
+        "state": "unknown",
+        "desc": "System Logging Service",
+        "restart": "on-failure"
+      },
+      {
+        "name": "sysstat",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-hostnamed",
+        "state": "running",
+        "desc": "Hostname Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-journald",
+        "state": "running",
+        "desc": "Journal Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-logind",
+        "state": "running",
+        "desc": "User Login Management",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-networkd",
+        "state": "running",
+        "desc": "Network Configuration",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-pstore",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-resolved",
+        "state": "running",
+        "desc": "Network Name Resolution",
+        "enabled": "enabled",
+        "port": 53,
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timedated",
+        "state": "running",
+        "desc": "Time & Date Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timesyncd",
+        "state": "running",
+        "desc": "Network Time Synchronization",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-udevd",
+        "state": "running",
+        "desc": "Rule-based Manager for Device Events and Files",
+        "sub": "running"
+      },
+      {
+        "name": "ua-reboot-cmds",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ubuntu-advantage",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ufw",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "unattended-upgrades",
+        "state": "running",
+        "desc": "Unattended Upgrades Shutdown",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "user@0",
+        "state": "running",
+        "desc": "User Manager for UID 0",
+        "sub": "running"
+      }
+    ],
+    "sourceFile": "raw/kw-collect-srv1870078-2026-08-24T1204.txt",
+    "ssh": {
+      "failedPasswords": 1535,
+      "passwordAuthentication": true,
+      "permitRootLogin": true,
+      "port": 22,
+      "pubkeyAuthentication": true,
+      "topAttackers": [
+        {
+          "ip": "138.68.64.76",
+          "count": 14335
+        },
+        {
+          "ip": "93.144.8.254",
+          "count": 873
+        },
+        {
+          "ip": "218.173.89.132",
+          "count": 873
+        },
+        {
+          "ip": "213.230.121.186",
+          "count": 873
+        },
+        {
+          "ip": "2.56.109.156",
+          "count": 873
+        },
+        {
+          "ip": "197.149.95.118",
+          "count": 873
+        },
+        {
+          "ip": "196.156.189.228",
+          "count": 873
+        },
+        {
+          "ip": "196.136.165.200",
+          "count": 873
+        },
+        {
+          "ip": "190.6.31.143",
+          "count": 873
+        },
+        {
+          "ip": "182.74.32.74",
+          "count": 873
+        }
+      ]
+    },
+    "storage": {
+      "bigFiles": [
+        {
+          "path": "/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/23/fs/home/node/core",
+          "size": "3.2G",
+          "sizeBytes": 3435973837
+        },
+        {
+          "path": "/var/lib/docker/volumes/n8n-vfa2_n8n_data/_data/database.sqlite",
+          "size": "491M",
+          "sizeBytes": 514850816
+        },
+        {
+          "path": "/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/a35ce2150cc6c4855ef115cd5f268e09d3b3ec943cea9a9ee2886b0f6e6aa4ad",
+          "size": "302M",
+          "sizeBytes": 316669952
+        }
+      ],
+      "topDirs": [
+        {
+          "path": "/",
+          "size": "12G",
+          "sizeBytes": 12884901888
+        },
+        {
+          "path": "/var",
+          "size": "11G",
+          "sizeBytes": 11811160064
+        },
+        {
+          "path": "/var/lib",
+          "size": "9.9G",
+          "sizeBytes": 10630044058
+        },
+        {
+          "path": "/usr",
+          "size": "1.2G",
+          "sizeBytes": 1288490189
+        },
+        {
+          "path": "/usr/lib",
+          "size": "411M",
+          "sizeBytes": 430964736
+        },
+        {
+          "path": "/usr/bin",
+          "size": "347M",
+          "sizeBytes": 363855872
+        },
+        {
+          "path": "/usr/share",
+          "size": "242M",
+          "sizeBytes": 253755392
+        },
+        {
+          "path": "/var/log",
+          "size": "207M",
+          "sizeBytes": 217055232
+        },
+        {
+          "path": "/var/cache",
+          "size": "125M",
+          "sizeBytes": 131072000
+        },
+        {
+          "path": "/boot",
+          "size": "122M",
+          "sizeBytes": 127926272
+        },
+        {
+          "path": "/usr/libexec",
+          "size": "103M",
+          "sizeBytes": 108003328
+        },
+        {
+          "path": "/usr/sbin",
+          "size": "29M",
+          "sizeBytes": 30408704
+        },
+        {
+          "path": "/boot/grub",
+          "size": "11M",
+          "sizeBytes": 11534336
+        },
+        {
+          "path": "/boot/efi",
+          "size": "6.2M",
+          "sizeBytes": 6501171
+        },
+        {
+          "path": "/etc",
+          "size": "5.4M",
+          "sizeBytes": 5662310
+        },
+        {
+          "path": "/var/backups",
+          "size": "1.6M",
+          "sizeBytes": 1677722
+        },
+        {
+          "path": "/etc/apparmor.d",
+          "size": "1.1M",
+          "sizeBytes": 1153434
+        },
+        {
+          "path": "/run",
+          "size": "952K",
+          "sizeBytes": 974848
+        },
+        {
+          "path": "/etc/ssh",
+          "size": "668K",
+          "sizeBytes": 684032
+        },
+        {
+          "path": "/etc/ssl",
+          "size": "564K",
+          "sizeBytes": 577536
+        },
+        {
+          "path": "/run/udev",
+          "size": "480K",
+          "sizeBytes": 491520
+        },
+        {
+          "path": "/etc/cloud",
+          "size": "260K",
+          "sizeBytes": 266240
+        },
+        {
+          "path": "/etc/console-setup",
+          "size": "200K",
+          "sizeBytes": 204800
+        },
+        {
+          "path": "/run/systemd",
+          "size": "184K",
+          "sizeBytes": 188416
+        },
+        {
+          "path": "/etc/lvm",
+          "size": "156K",
+          "sizeBytes": 159744
+        }
+      ]
+    },
+    "web": {
+      "servers": []
+    }
   },
   "srv1900820": {
     "name": "srv1900820",
     "role": "Websites",
     "ip": "200.234.35.172",
     "provider": "Hostinger",
-    "lastIngest": null,
-    "sourceFile": null
+    "state": {
+      "diskAvail": "185G",
+      "diskTotal": "193G",
+      "diskUsed": "8.3G",
+      "diskUsedPct": 5,
+      "firewall": "active",
+      "firewallDefault": "deny (incoming), allow (outgoing), deny (routed)",
+      "firewallRules": [
+        "22/tcp (OpenSSH) ALLOW IN Anywhere",
+        "80 ALLOW IN Anywhere",
+        "443 ALLOW IN Anywhere",
+        "22/tcp ALLOW IN Anywhere",
+        "Anywhere DENY IN 27.79.41.230"
+      ],
+      "kernel": "6.8.0-137-generic",
+      "kernelInstalled": [
+        "6.8.0-137-generic",
+        "6.8.0-138-generic"
+      ],
+      "load": [
+        0.07,
+        0.19,
+        0.24
+      ],
+      "memAvailable": "12Gi",
+      "memTotal": "15Gi",
+      "memUsed": "3.1Gi",
+      "memUsedPct": 21,
+      "mounts": [
+        {
+          "avail": "185G",
+          "fs": "/dev/sda1",
+          "mount": "/",
+          "size": "193G",
+          "usePct": 5,
+          "used": "8.3G"
+        },
+        {
+          "avail": "704M",
+          "fs": "/dev/sda16",
+          "mount": "/boot",
+          "size": "881M",
+          "usePct": 15,
+          "used": "116M"
+        },
+        {
+          "avail": "99M",
+          "fs": "/dev/sda15",
+          "mount": "/boot/efi",
+          "size": "105M",
+          "usePct": 6,
+          "used": "6.2M"
+        }
+      ],
+      "os": "Ubuntu 24.04.4 LTS",
+      "rebootPending": true,
+      "swapTotal": "0B",
+      "swapUsed": "0B",
+      "uptime": "11 days",
+      "uptimeSeconds": 960660
+    },
+    "specs": {
+      "arch": "x86-64",
+      "cpu": 4,
+      "cpuModel": "AMD EPYC 9355P 32-Core Processor",
+      "disk": "193G",
+      "diskBytes": 207232172032,
+      "ram": "15Gi",
+      "ramBytes": 16106127360,
+      "virt": "kvm"
+    },
+    "containers": [
+      {
+        "name": "kwdelhi6-web-1",
+        "status": "Up 47 hours",
+        "state": "running",
+        "ageDays": 1,
+        "createdAt": "2026-08-22 12:56:06 +0000 UTC",
+        "image": "kwdelhi6-web",
+        "ports": "127.0.0.1:8082->8000/tcp"
+      },
+      {
+        "name": "kwgroup-app-1",
+        "status": "Up 6 days",
+        "state": "running",
+        "ageDays": 6,
+        "createdAt": "2026-08-18 05:13:12 +0000 UTC",
+        "image": "kwgroup-app",
+        "ports": "3000/tcp"
+      },
+      {
+        "name": "kw-blue-pearl-web-1",
+        "status": "Up 6 days",
+        "state": "running",
+        "ageDays": 6,
+        "createdAt": "2026-08-18 04:24:20 +0000 UTC",
+        "image": "kw-blue-pearl-web",
+        "ports": "127.0.0.1:8081->3000/tcp"
+      },
+      {
+        "name": "kw-blue-pearl-db-1",
+        "status": "Up 10 days (healthy)",
+        "state": "running",
+        "ageDays": 10,
+        "createdAt": "2026-08-14 06:29:26 +0000 UTC",
+        "image": "postgres:16-alpine",
+        "ports": "5432/tcp"
+      },
+      {
+        "name": "kwdelhi6-db-1",
+        "status": "Up 10 days (healthy)",
+        "state": "running",
+        "ageDays": 10,
+        "createdAt": "2026-08-13 12:48:26 +0000 UTC",
+        "image": "postgres:16-alpine",
+        "ports": "5432/tcp"
+      },
+      {
+        "name": "kwgroup-web-1",
+        "status": "Up 6 days",
+        "state": "running",
+        "ageDays": 11,
+        "createdAt": "2026-08-13 10:37:07 +0000 UTC",
+        "image": "nginx:1.27-alpine",
+        "ports": "127.0.0.1:8080->80/tcp"
+      },
+      {
+        "name": "kwgroup-db-1",
+        "status": "Up 11 days (healthy)",
+        "state": "running",
+        "ageDays": 11,
+        "createdAt": "2026-08-13 10:37:07 +0000 UTC",
+        "image": "postgres:16-alpine",
+        "ports": "5432/tcp"
+      }
+    ],
+    "cron": [
+      {
+        "source": "crontab",
+        "cmd": "/opt/kw-blue-pearl/deploy/autopull.sh >> /var/log/kw-blue-pearl-deploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "*/2 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "crontab",
+        "cmd": "/opt/kwdelhi6/deploy/autopull.sh >> /var/log/kwdelhi6-deploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "*/2 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -x /usr/bin/certbot -a \\! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew --no-random-sleep-on-renew",
+        "hasSecret": false,
+        "schedule": "0 */12 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "docker builder prune -f > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "20 0 * * 5",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "docker image prune -af --filter \"until=24h\" > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "34 1 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron",
+        "hasSecret": false,
+        "schedule": "30 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r",
+        "hasSecret": false,
+        "schedule": "10 3 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "apt-get update -qq && apt-get install -y -qq monarx-agent monarx-protect monarx-protect-autodetect > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "51 8 * * 1",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 1 1",
+        "hasSecret": false,
+        "schedule": "5-55/10 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 60 2",
+        "hasSecret": false,
+        "schedule": "59 23 * * *",
+        "user": "root"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-collect.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:20:00 UTC",
+        "unit": "sysstat-collect.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "certbot.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:33:48 UTC",
+        "unit": "certbot.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "dpkg-db-backup.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "dpkg-db-backup.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "logrotate.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "logrotate.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-summary.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:07:00 UTC",
+        "unit": "sysstat-summary.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 03:27:22 UTC",
+        "unit": "apt-daily.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "man-db.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 04:57:43 UTC",
+        "unit": "man-db.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily-upgrade.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:28:33 UTC",
+        "unit": "apt-daily-upgrade.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-download.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 09:31:23 UTC",
+        "unit": "update-notifier-download.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "systemd-tmpfiles-clean.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 09:40:47 UTC",
+        "unit": "systemd-tmpfiles-clean.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-motd.service",
+        "hasSecret": false,
+        "schedule": "next: Fri 2026-08-28 07:18:44 UTC 3 days Thu 2026-08-20 06:46:53 UTC",
+        "unit": "update-notifier-motd.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "e2scrub_all.service",
+        "hasSecret": false,
+        "schedule": "next: Sun 2026-08-30 03:10:35 UTC 5 days Sun 2026-08-23 03:11:01 UTC 1 day 9h ago e2scrub_all.timer",
+        "unit": "e2scrub_all.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "fstrim.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-31 00:39:43 UTC 6 days Mon 2026-08-24 00:03:57 UTC",
+        "unit": "fstrim.timer"
+      }
+    ],
+    "databaseEngines": {
+      "mariadb": "absent",
+      "mongod": "absent",
+      "mysql": "absent",
+      "postgresql": "absent",
+      "redis-server": "absent"
+    },
+    "docker": {
+      "compose": [
+        {
+          "name": "kw-blue-pearl",
+          "status": "running(2)",
+          "configFile": "/opt/kw-blue-pearl/docker-compose.yml"
+        },
+        {
+          "name": "kwdelhi6",
+          "status": "running(2)",
+          "configFile": "/opt/kwdelhi6/docker-compose.yml"
+        },
+        {
+          "name": "kwgroup",
+          "status": "running(3)",
+          "configFile": "/var/www/kwgroup/docker-compose.yml"
+        }
+      ],
+      "containersRunning": 7,
+      "containersTotal": 7,
+      "diskUsage": {
+        "buildCache": "755.4MB",
+        "containers": "294.5MB",
+        "images": "2.17GB",
+        "reclaimable": "0B",
+        "volumes": "146MB"
+      },
+      "images": 5,
+      "version": "29.7.2",
+      "volumes": 5
+    },
+    "firstSeen": "2026-08-24",
+    "lastIngest": "2026-08-24T12:14:41Z",
+    "logs": {
+      "journalSize": "181.2M",
+      "largest": [
+        {
+          "path": "/var/log/nginx/access.log.1",
+          "size": "137M",
+          "sizeBytes": 143654912
+        },
+        {
+          "path": "/var/log/syslog.1",
+          "size": "54M",
+          "sizeBytes": 56623104
+        },
+        {
+          "path": "/var/log/syslog",
+          "size": "13M",
+          "sizeBytes": 13631488
+        },
+        {
+          "path": "/var/log/kern.log.1",
+          "size": "6.0M",
+          "sizeBytes": 6291456
+        },
+        {
+          "path": "/var/log/auth.log.1",
+          "size": "3.3M",
+          "sizeBytes": 3460301
+        },
+        {
+          "path": "/var/log/kern.log",
+          "size": "1.5M",
+          "sizeBytes": 1572864
+        },
+        {
+          "path": "/var/log/btmp",
+          "size": "954K",
+          "sizeBytes": 976896
+        },
+        {
+          "path": "/var/log/syslog.2.gz",
+          "size": "949K",
+          "sizeBytes": 971776
+        },
+        {
+          "path": "/var/log/auth.log",
+          "size": "620K",
+          "sizeBytes": 634880
+        },
+        {
+          "path": "/var/log/kern.log.2.gz",
+          "size": "232K",
+          "sizeBytes": 237568
+        },
+        {
+          "path": "/var/log/kw-blue-pearl-deploy.log",
+          "size": "175K",
+          "sizeBytes": 179200
+        },
+        {
+          "path": "/var/log/auth.log.2.gz",
+          "size": "139K",
+          "sizeBytes": 142336
+        }
+      ],
+      "recentErrors": 15,
+      "varLogTotal": "516M"
+    },
+    "packages": {
+      "aptCache": "122M",
+      "upgradable": 11
+    },
+    "ports": [
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 9423,
+        "port": 22,
+        "proc": "sshd",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 1451014,
+        "port": 80,
+        "proc": "nginx",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 1451014,
+        "port": 443,
+        "proc": "nginx",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3548411,
+        "port": 1721,
+        "proc": "monarx-agent",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3360893,
+        "port": 8080,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3336174,
+        "port": 8081,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2248650,
+        "port": 8082,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3548411,
+        "port": 65529,
+        "proc": "monarx-agent",
+        "proto": "tcp"
+      }
+    ],
+    "projects": [
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/var/www/kwgroup",
+        "size": "363M",
+        "sizeBytes": 380633088
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/opt/kwdelhi6",
+        "remote": "git@github-meerut:it6-ash/meerut.git",
+        "size": "241M",
+        "sizeBytes": 252706816
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/opt/kw-blue-pearl",
+        "remote": "git@github.com:it6-ash/kwbp.git",
+        "size": "71M",
+        "sizeBytes": 74448896
+      },
+      {
+        "path": "/home/deploy",
+        "size": "444K",
+        "sizeBytes": 454656
+      },
+      {
+        "path": "/var/www/html",
+        "size": "12K",
+        "sizeBytes": 12288
+      },
+      {
+        "path": "/opt/containerd",
+        "size": "12K",
+        "sizeBytes": 12288
+      }
+    ],
+    "services": [
+      {
+        "name": "apparmor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "blk-availability",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-config",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-final",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init-local",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "console-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "containerd",
+        "state": "running",
+        "desc": "containerd container runtime",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "cron",
+        "state": "running",
+        "desc": "Regular background program processing daemon",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "dbus",
+        "state": "running",
+        "desc": "D-Bus System Message Bus",
+        "sub": "running"
+      },
+      {
+        "name": "dbus-org.freedesktop.resolve1",
+        "state": "unknown",
+        "desc": "Network Name Resolution",
+        "restart": "always",
+        "user": "systemd-resolve"
+      },
+      {
+        "name": "dbus-org.freedesktop.timesync1",
+        "state": "unknown",
+        "desc": "Network Time Synchronization",
+        "restart": "always",
+        "user": "systemd-timesync"
+      },
+      {
+        "name": "dmesg",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "docker",
+        "state": "running",
+        "desc": "Docker Application Container Engine",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "e2scrub_reap",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "fail2ban",
+        "state": "running",
+        "desc": "Fail2Ban Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "finalrd",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@tty1",
+        "state": "running",
+        "desc": "Getty on tty1",
+        "sub": "running"
+      },
+      {
+        "name": "grub-common",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "grub-initrd-fallback",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "keyboard-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "lvm2-monitor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "monarx-agent",
+        "state": "running",
+        "desc": "Monarx Agent - Security Scanner",
+        "enabled": "enabled",
+        "port": 1721,
+        "sub": "running"
+      },
+      {
+        "name": "networkd-dispatcher",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "nginx",
+        "state": "running",
+        "desc": "A high performance web server and a reverse proxy server",
+        "enabled": "enabled",
+        "port": 80,
+        "sub": "running"
+      },
+      {
+        "name": "polkit",
+        "state": "running",
+        "desc": "Authorization Manager",
+        "sub": "running"
+      },
+      {
+        "name": "qemu-guest-agent",
+        "state": "running",
+        "desc": "QEMU Guest Agent",
+        "sub": "running"
+      },
+      {
+        "name": "rsyslog",
+        "state": "running",
+        "desc": "System Logging Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "secureboot-db",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "serial-getty@ttyS0",
+        "state": "running",
+        "desc": "Serial Getty on ttyS0",
+        "sub": "running"
+      },
+      {
+        "name": "setvtrgb",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ssh",
+        "state": "running",
+        "desc": "OpenBSD Secure Shell server",
+        "sub": "running"
+      },
+      {
+        "name": "syslog",
+        "state": "unknown",
+        "desc": "System Logging Service",
+        "restart": "on-failure"
+      },
+      {
+        "name": "sysstat",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-hostnamed",
+        "state": "running",
+        "desc": "Hostname Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-journald",
+        "state": "running",
+        "desc": "Journal Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-logind",
+        "state": "running",
+        "desc": "User Login Management",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-networkd",
+        "state": "running",
+        "desc": "Network Configuration",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-pstore",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-resolved",
+        "state": "running",
+        "desc": "Network Name Resolution",
+        "enabled": "enabled",
+        "port": 53,
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timedated",
+        "state": "running",
+        "desc": "Time & Date Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timesyncd",
+        "state": "running",
+        "desc": "Network Time Synchronization",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-udevd",
+        "state": "running",
+        "desc": "Rule-based Manager for Device Events and Files",
+        "sub": "running"
+      },
+      {
+        "name": "ua-reboot-cmds",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ubuntu-advantage",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ufw",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "unattended-upgrades",
+        "state": "running",
+        "desc": "Unattended Upgrades Shutdown",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "user@0",
+        "state": "running",
+        "desc": "User Manager for UID 0",
+        "sub": "running"
+      }
+    ],
+    "sourceFile": "raw/kw-collect-srv1900820-2026-08-24T1214.txt",
+    "ssh": {
+      "failedPasswords": 0,
+      "passwordAuthentication": false,
+      "port": 22,
+      "pubkeyAuthentication": true,
+      "topAttackers": [
+        {
+          "ip": "190.153.22.201",
+          "count": 873
+        },
+        {
+          "ip": "182.78.92.90",
+          "count": 873
+        },
+        {
+          "ip": "136.113.90.212",
+          "count": 143
+        },
+        {
+          "ip": "103.140.250.254",
+          "count": 96
+        },
+        {
+          "ip": "116.110.147.130",
+          "count": 79
+        },
+        {
+          "ip": "116.110.5.25",
+          "count": 60
+        },
+        {
+          "ip": "171.231.193.230",
+          "count": 56
+        },
+        {
+          "ip": "27.79.41.230",
+          "count": 46
+        },
+        {
+          "ip": "217.154.241.42",
+          "count": 36
+        },
+        {
+          "ip": "171.231.190.43",
+          "count": 35
+        }
+      ]
+    },
+    "staleFiles": [
+      "/opt/kwdelhi6/.env.bak.2026-08-21-0854",
+      "/opt/kwdelhi6/meerut.html.bak"
+    ],
+    "storage": {
+      "bigFiles": [
+        {
+          "path": "/var/lib/docker/containers/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7-json.log",
+          "size": "2.8G",
+          "sizeBytes": 3006477107
+        }
+      ],
+      "topDirs": [
+        {
+          "path": "/",
+          "size": "11G",
+          "sizeBytes": 11811160064
+        },
+        {
+          "path": "/var",
+          "size": "8.8G",
+          "sizeBytes": 9448928051
+        },
+        {
+          "path": "/var/lib",
+          "size": "7.8G",
+          "sizeBytes": 8375186227
+        },
+        {
+          "path": "/usr",
+          "size": "1.2G",
+          "sizeBytes": 1288490189
+        },
+        {
+          "path": "/var/log",
+          "size": "516M",
+          "sizeBytes": 541065216
+        },
+        {
+          "path": "/usr/lib",
+          "size": "422M",
+          "sizeBytes": 442499072
+        },
+        {
+          "path": "/usr/bin",
+          "size": "366M",
+          "sizeBytes": 383778816
+        },
+        {
+          "path": "/var/www",
+          "size": "363M",
+          "sizeBytes": 380633088
+        },
+        {
+          "path": "/opt",
+          "size": "311M",
+          "sizeBytes": 326107136
+        },
+        {
+          "path": "/opt/kwdelhi6",
+          "size": "241M",
+          "sizeBytes": 252706816
+        },
+        {
+          "path": "/usr/share",
+          "size": "238M",
+          "sizeBytes": 249561088
+        },
+        {
+          "path": "/usr/libexec",
+          "size": "145M",
+          "sizeBytes": 152043520
+        },
+        {
+          "path": "/var/cache",
+          "size": "138M",
+          "sizeBytes": 144703488
+        },
+        {
+          "path": "/boot",
+          "size": "122M",
+          "sizeBytes": 127926272
+        },
+        {
+          "path": "/opt/kw-blue-pearl",
+          "size": "71M",
+          "sizeBytes": 74448896
+        },
+        {
+          "path": "/usr/sbin",
+          "size": "30M",
+          "sizeBytes": 31457280
+        },
+        {
+          "path": "/boot/grub",
+          "size": "11M",
+          "sizeBytes": 11534336
+        },
+        {
+          "path": "/etc",
+          "size": "6.6M",
+          "sizeBytes": 6920602
+        },
+        {
+          "path": "/boot/efi",
+          "size": "6.2M",
+          "sizeBytes": 6501171
+        },
+        {
+          "path": "/run",
+          "size": "1.4M",
+          "sizeBytes": 1468006
+        },
+        {
+          "path": "/var/backups",
+          "size": "1.2M",
+          "sizeBytes": 1258291
+        },
+        {
+          "path": "/etc/apparmor.d",
+          "size": "1.1M",
+          "sizeBytes": 1153434
+        },
+        {
+          "path": "/etc/fail2ban",
+          "size": "756K",
+          "sizeBytes": 774144
+        },
+        {
+          "path": "/etc/ssh",
+          "size": "664K",
+          "sizeBytes": 679936
+        },
+        {
+          "path": "/etc/ssl",
+          "size": "560K",
+          "sizeBytes": 573440
+        }
+      ]
+    },
+    "vhosts": [
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "ghaziabadcommercialshops.org",
+        "domain": "ghaziabadcommercialshops.org",
+        "proxyTo": "127.0.0.1:8082",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwbluepearl.com",
+        "domain": "kwbluepearl.com",
+        "proxyTo": "127.0.0.1:8081",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwgroup.in",
+        "domain": "kwgroup.in",
+        "proxyTo": "127.0.0.1:8080",
+        "root": "/var/www/html",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "ghaziabadcommercialshops.org",
+        "domain": "www.ghaziabadcommercialshops.org",
+        "proxyTo": "127.0.0.1:8082",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwbluepearl.com",
+        "domain": "www.kwbluepearl.com",
+        "proxyTo": "127.0.0.1:8081",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwgroup.in",
+        "domain": "www.kwgroup.in",
+        "proxyTo": "127.0.0.1:8080",
+        "root": "/var/www/html",
+        "ssl": true
+      }
+    ],
+    "web": {
+      "servers": [
+        "nginx"
+      ],
+      "sitesEnabled": [
+        {
+          "name": "default",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/default"
+        }
+      ]
+    }
   }
 }

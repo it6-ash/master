@@ -1,0 +1,35 @@
+{
+  "funnel": {
+    "title": "Yamini funnel: where the leads stop",
+    "project": "yamini",
+    "stages": [
+      {
+        "label": "Conversations stored",
+        "value": "$mongo.Yamini.customerChats.docs",
+        "note": "live count from the latest ingest"
+      },
+      {
+        "label": "Analysed",
+        "value": 504,
+        "note": "from the 18 Aug handover, not yet re-queried"
+      },
+      {
+        "label": "Reached Cratio",
+        "value": 0,
+        "broken": true,
+        "note": "the write-back workflow exists and is inactive"
+      }
+    ]
+  },
+
+  "costScenarios": {
+    "title": "Monthly running cost by volume",
+    "currency": "INR",
+    "note": "GPT-5 mini at list price. WhatsApp fees include 18% GST. Yamini's own replies are service messages inside the 24h window and cost nothing.",
+    "rows": [
+      { "scenario": "Light", "whatsapp": 1038, "openai": 118, "note": "1,000 broadcasts · 200 conversations" },
+      { "scenario": "Current-ish", "whatsapp": 5190, "openai": 944, "note": "5,000 broadcasts · 1,600 conversations" },
+      { "scenario": "Scaled", "whatsapp": 20760, "openai": 2950, "note": "20,000 broadcasts · 5,000 conversations" }
+    ]
+  }
+}

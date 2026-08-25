@@ -10,7 +10,7 @@
   "$defs": {
     "project": {
       "type": "object",
-      "required": ["id", "name", "status", "sourceFile"],
+      "required": ["id", "name", "status", "origin"],
       "additionalProperties": false,
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
@@ -48,7 +48,31 @@
           "minimum": 0,
           "description": "Count of flow blocks found in the doc. The parsed ASTs are held in memory at build time, not persisted."
         },
-        "sourceFile": { "type": "string" }
+        "sourceFile": { "type": "string", "description": "Present only when a Markdown doc backs this project." },
+
+        "origin": {
+          "type": "string",
+          "enum": ["derived", "documented"],
+          "description": "derived = discovered from server data alone. documented = a content/projects/<id>.md exists and its fields win."
+        },
+        "discovered": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Evidence from the server dump. Always present on a derived project, and preserved when a doc enriches it.",
+          "properties": {
+            "hostnames": { "type": "array", "items": { "type": "string" } },
+            "port": { "type": ["integer", "null"] },
+            "backend": { "type": ["string", "null"], "description": "systemd unit or container serving the upstream" },
+            "backendState": { "type": ["string", "null"] },
+            "directory": { "type": ["string", "null"] },
+            "size": { "type": ["string", "null"] },
+            "git": { "type": "boolean" },
+            "remote": { "type": ["string", "null"] },
+            "hasEnv": { "type": "boolean" },
+            "certExpiryDays": { "type": ["integer", "null"] },
+            "ssl": { "type": "boolean" }
+          }
+        }
       }
     }
   }

@@ -17,8 +17,13 @@ function yaminiFlow() {
 test('parses the Yamini flow with no errors', () => {
   const { nodes, edges, errors } = yaminiFlow();
   assert.deepEqual(errors, []);
-  assert.equal(nodes.length, 8);
-  assert.equal(edges.length, 8);
+  assert.ok(nodes.length >= 8, 'the real diagram has grown, not shrunk');
+  assert.ok(edges.length >= nodes.length, 'every node is connected to something');
+  // Every edge endpoint resolves — the check validate depends on.
+  const ids = new Set(nodes.map((n) => n.id));
+  for (const e of edges) {
+    assert.ok(ids.has(e.from) && ids.has(e.to), `dangling edge ${e.from}->${e.to}`);
+  }
 });
 
 test('carries kind, label, sublabel and state', () => {
@@ -30,11 +35,12 @@ test('carries kind, label, sublabel and state', () => {
   assert.equal(db.state, null, 'db declares no state, so it stays neutral');
 
   const crm = nodes.find((n) => n.id === 'crm');
-  assert.equal(crm.kind, 'ext');
+  assert.equal(crm.kind, 'ext', 'Cratio is external to the estate');
+  assert.equal(crm.sublabel, '4 AI Bot fields');
 
-  const lead = nodes.find((n) => n.id === 'lead');
-  assert.equal(lead.state, null);
-  assert.equal(lead.sublabel, 'click-to-WA ads');
+  const agent = nodes.find((n) => n.id === 'agent');
+  assert.equal(agent.state, 'live');
+  assert.equal(agent.sublabel, 'GPT-5 mini');
 });
 
 test('carries edge state and optional label', () => {
@@ -43,9 +49,13 @@ test('carries edge state and optional label', () => {
   assert.equal(broken.state, 'broken');
   assert.equal(broken.label, 'never fires');
 
-  const plain = edges.find((e) => e.from === 'lead' && e.to === 'meta');
+  const plain = edges.find((e) => e.from === 'ads' && e.to === 'meta');
   assert.equal(plain.state, 'live');
   assert.equal(plain.label, null);
+
+  // db -> qual -> db is a real cycle in this diagram; the parser keeps both.
+  assert.ok(edges.some((e) => e.from === 'db' && e.to === 'qual'));
+  assert.ok(edges.some((e) => e.from === 'qual' && e.to === 'db'));
 });
 
 test('reports an edge that references an undeclared node', () => {

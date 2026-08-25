@@ -43,7 +43,28 @@
           "description": "The observed fact that fired the rule. Redacted like everything else in data/."
         },
         "opened": { "type": "string", "format": "date" },
-        "resolved": { "type": ["string", "null"], "format": "date" }
+        "resolved": { "type": ["string", "null"], "format": "date" },
+
+        "claim": {
+          "type": "object",
+          "description": "A statement about live state that this hand-written issue rests on. Every build re-tests it against the newest ingest, so a doc claim that has since been fixed is shown as reconciled instead of being repeated as current fact. This is what stops the docs and the dashboard drifting apart.",
+          "required": ["kind", "server"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["port-exposed", "firewall", "unit-state", "container-state", "value"]
+            },
+            "server": { "type": "string" },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "unit": { "type": "string" },
+            "container": { "type": "string" },
+            "path": { "type": "string", "description": "Dotted path into the server record, for kind=value" },
+            "op": { "type": "string", "enum": ["eq", "gt", "lt", "ne"] },
+            "expect": { "type": ["string", "number", "boolean", "null"] },
+            "asOf": { "type": "string", "format": "date", "description": "When the claim was written" }
+          }
+        }
       }
     }
   }

@@ -10,6 +10,7 @@
   "scripts": {
     "ingest": "node src/ingest/index.js",
     "build": "node src/build.js",
+    "serve": "node src/serve.js",
     "watch": "node src/watch.js",
     "diff": "node src/diff.js",
     "validate": "node src/validate.js",

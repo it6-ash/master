@@ -1,0 +1,1103 @@
+{
+  "server": "srv1900820",
+  "capturedAt": "2026-08-24T12:14:41Z",
+  "parser": "vps-dump",
+  "parserVersion": "2.0.0",
+  "record": {
+    "name": "srv1900820",
+    "ip": "200.234.35.172",
+    "state": {
+      "diskAvail": "185G",
+      "diskTotal": "193G",
+      "diskUsed": "8.3G",
+      "diskUsedPct": 5,
+      "firewall": "active",
+      "firewallDefault": "deny (incoming), allow (outgoing), deny (routed)",
+      "firewallRules": [
+        "22/tcp (OpenSSH) ALLOW IN Anywhere",
+        "80 ALLOW IN Anywhere",
+        "443 ALLOW IN Anywhere",
+        "22/tcp ALLOW IN Anywhere",
+        "Anywhere DENY IN 27.79.41.230"
+      ],
+      "kernel": "6.8.0-137-generic",
+      "kernelInstalled": [
+        "6.8.0-137-generic",
+        "6.8.0-138-generic"
+      ],
+      "load": [
+        0.07,
+        0.19,
+        0.24
+      ],
+      "memAvailable": "12Gi",
+      "memTotal": "15Gi",
+      "memUsed": "3.1Gi",
+      "memUsedPct": 21,
+      "mounts": [
+        {
+          "avail": "185G",
+          "fs": "/dev/sda1",
+          "mount": "/",
+          "size": "193G",
+          "usePct": 5,
+          "used": "8.3G"
+        },
+        {
+          "avail": "704M",
+          "fs": "/dev/sda16",
+          "mount": "/boot",
+          "size": "881M",
+          "usePct": 15,
+          "used": "116M"
+        },
+        {
+          "avail": "99M",
+          "fs": "/dev/sda15",
+          "mount": "/boot/efi",
+          "size": "105M",
+          "usePct": 6,
+          "used": "6.2M"
+        }
+      ],
+      "os": "Ubuntu 24.04.4 LTS",
+      "rebootPending": true,
+      "swapTotal": "0B",
+      "swapUsed": "0B",
+      "uptime": "11 days",
+      "uptimeSeconds": 960660
+    },
+    "specs": {
+      "arch": "x86-64",
+      "cpu": 4,
+      "cpuModel": "AMD EPYC 9355P 32-Core Processor",
+      "disk": "193G",
+      "diskBytes": 207232172032,
+      "ram": "15Gi",
+      "ramBytes": 16106127360,
+      "virt": "kvm"
+    },
+    "containers": [
+      {
+        "name": "kwdelhi6-web-1",
+        "status": "Up 47 hours",
+        "state": "running",
+        "ageDays": 1,
+        "createdAt": "2026-08-22 12:56:06 +0000 UTC",
+        "image": "kwdelhi6-web",
+        "ports": "127.0.0.1:8082->8000/tcp"
+      },
+      {
+        "name": "kwgroup-app-1",
+        "status": "Up 6 days",
+        "state": "running",
+        "ageDays": 6,
+        "createdAt": "2026-08-18 05:13:12 +0000 UTC",
+        "image": "kwgroup-app",
+        "ports": "3000/tcp"
+      },
+      {
+        "name": "kw-blue-pearl-web-1",
+        "status": "Up 6 days",
+        "state": "running",
+        "ageDays": 6,
+        "createdAt": "2026-08-18 04:24:20 +0000 UTC",
+        "image": "kw-blue-pearl-web",
+        "ports": "127.0.0.1:8081->3000/tcp"
+      },
+      {
+        "name": "kw-blue-pearl-db-1",
+        "status": "Up 10 days (healthy)",
+        "state": "running",
+        "ageDays": 10,
+        "createdAt": "2026-08-14 06:29:26 +0000 UTC",
+        "image": "postgres:16-alpine",
+        "ports": "5432/tcp"
+      },
+      {
+        "name": "kwdelhi6-db-1",
+        "status": "Up 10 days (healthy)",
+        "state": "running",
+        "ageDays": 10,
+        "createdAt": "2026-08-13 12:48:26 +0000 UTC",
+        "image": "postgres:16-alpine",
+        "ports": "5432/tcp"
+      },
+      {
+        "name": "kwgroup-web-1",
+        "status": "Up 6 days",
+        "state": "running",
+        "ageDays": 11,
+        "createdAt": "2026-08-13 10:37:07 +0000 UTC",
+        "image": "nginx:1.27-alpine",
+        "ports": "127.0.0.1:8080->80/tcp"
+      },
+      {
+        "name": "kwgroup-db-1",
+        "status": "Up 11 days (healthy)",
+        "state": "running",
+        "ageDays": 11,
+        "createdAt": "2026-08-13 10:37:07 +0000 UTC",
+        "image": "postgres:16-alpine",
+        "ports": "5432/tcp"
+      }
+    ],
+    "cron": [
+      {
+        "source": "crontab",
+        "cmd": "/opt/kw-blue-pearl/deploy/autopull.sh >> /var/log/kw-blue-pearl-deploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "*/2 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "crontab",
+        "cmd": "/opt/kwdelhi6/deploy/autopull.sh >> /var/log/kwdelhi6-deploy.log 2>&1",
+        "hasSecret": false,
+        "schedule": "*/2 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -x /usr/bin/certbot -a \\! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew --no-random-sleep-on-renew",
+        "hasSecret": false,
+        "schedule": "0 */12 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "docker builder prune -f > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "20 0 * * 5",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "docker image prune -af --filter \"until=24h\" > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "34 1 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron",
+        "hasSecret": false,
+        "schedule": "30 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r",
+        "hasSecret": false,
+        "schedule": "10 3 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "apt-get update -qq && apt-get install -y -qq monarx-agent monarx-protect monarx-protect-autodetect > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "51 8 * * 1",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 1 1",
+        "hasSecret": false,
+        "schedule": "5-55/10 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 60 2",
+        "hasSecret": false,
+        "schedule": "59 23 * * *",
+        "user": "root"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-collect.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:20:00 UTC",
+        "unit": "sysstat-collect.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "certbot.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:33:48 UTC",
+        "unit": "certbot.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "dpkg-db-backup.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "dpkg-db-backup.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "logrotate.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "logrotate.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-summary.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:07:00 UTC",
+        "unit": "sysstat-summary.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 03:27:22 UTC",
+        "unit": "apt-daily.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "man-db.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 04:57:43 UTC",
+        "unit": "man-db.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily-upgrade.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:28:33 UTC",
+        "unit": "apt-daily-upgrade.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-download.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 09:31:23 UTC",
+        "unit": "update-notifier-download.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "systemd-tmpfiles-clean.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 09:40:47 UTC",
+        "unit": "systemd-tmpfiles-clean.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-motd.service",
+        "hasSecret": false,
+        "schedule": "next: Fri 2026-08-28 07:18:44 UTC 3 days Thu 2026-08-20 06:46:53 UTC",
+        "unit": "update-notifier-motd.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "e2scrub_all.service",
+        "hasSecret": false,
+        "schedule": "next: Sun 2026-08-30 03:10:35 UTC 5 days Sun 2026-08-23 03:11:01 UTC 1 day 9h ago e2scrub_all.timer",
+        "unit": "e2scrub_all.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "fstrim.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-31 00:39:43 UTC 6 days Mon 2026-08-24 00:03:57 UTC",
+        "unit": "fstrim.timer"
+      }
+    ],
+    "databaseEngines": {
+      "mariadb": "absent",
+      "mongod": "absent",
+      "mysql": "absent",
+      "postgresql": "absent",
+      "redis-server": "absent"
+    },
+    "docker": {
+      "compose": [
+        {
+          "name": "kw-blue-pearl",
+          "status": "running(2)",
+          "configFile": "/opt/kw-blue-pearl/docker-compose.yml"
+        },
+        {
+          "name": "kwdelhi6",
+          "status": "running(2)",
+          "configFile": "/opt/kwdelhi6/docker-compose.yml"
+        },
+        {
+          "name": "kwgroup",
+          "status": "running(3)",
+          "configFile": "/var/www/kwgroup/docker-compose.yml"
+        }
+      ],
+      "containersRunning": 7,
+      "containersTotal": 7,
+      "diskUsage": {
+        "buildCache": "755.4MB",
+        "containers": "294.5MB",
+        "images": "2.17GB",
+        "reclaimable": "0B",
+        "volumes": "146MB"
+      },
+      "images": 5,
+      "version": "29.7.2",
+      "volumes": 5
+    },
+    "lastIngest": "2026-08-24T12:14:41Z",
+    "logs": {
+      "journalSize": "181.2M",
+      "largest": [
+        {
+          "path": "/var/log/nginx/access.log.1",
+          "size": "137M",
+          "sizeBytes": 143654912
+        },
+        {
+          "path": "/var/log/syslog.1",
+          "size": "54M",
+          "sizeBytes": 56623104
+        },
+        {
+          "path": "/var/log/syslog",
+          "size": "13M",
+          "sizeBytes": 13631488
+        },
+        {
+          "path": "/var/log/kern.log.1",
+          "size": "6.0M",
+          "sizeBytes": 6291456
+        },
+        {
+          "path": "/var/log/auth.log.1",
+          "size": "3.3M",
+          "sizeBytes": 3460301
+        },
+        {
+          "path": "/var/log/kern.log",
+          "size": "1.5M",
+          "sizeBytes": 1572864
+        },
+        {
+          "path": "/var/log/btmp",
+          "size": "954K",
+          "sizeBytes": 976896
+        },
+        {
+          "path": "/var/log/syslog.2.gz",
+          "size": "949K",
+          "sizeBytes": 971776
+        },
+        {
+          "path": "/var/log/auth.log",
+          "size": "620K",
+          "sizeBytes": 634880
+        },
+        {
+          "path": "/var/log/kern.log.2.gz",
+          "size": "232K",
+          "sizeBytes": 237568
+        },
+        {
+          "path": "/var/log/kw-blue-pearl-deploy.log",
+          "size": "175K",
+          "sizeBytes": 179200
+        },
+        {
+          "path": "/var/log/auth.log.2.gz",
+          "size": "139K",
+          "sizeBytes": 142336
+        }
+      ],
+      "recentErrors": 15,
+      "varLogTotal": "516M"
+    },
+    "packages": {
+      "aptCache": "122M",
+      "upgradable": 11
+    },
+    "ports": [
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 9423,
+        "port": 22,
+        "proc": "sshd",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 5823,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 1451014,
+        "port": 80,
+        "proc": "nginx",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 1451014,
+        "port": 443,
+        "proc": "nginx",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3548411,
+        "port": 1721,
+        "proc": "monarx-agent",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3360893,
+        "port": 8080,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3336174,
+        "port": 8081,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 2248650,
+        "port": 8082,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.1",
+        "exposed": false,
+        "pid": 3548411,
+        "port": 65529,
+        "proc": "monarx-agent",
+        "proto": "tcp"
+      }
+    ],
+    "projects": [
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/var/www/kwgroup",
+        "size": "363M",
+        "sizeBytes": 380633088
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/opt/kwdelhi6",
+        "remote": "git@github-meerut:it6-ash/meerut.git",
+        "size": "241M",
+        "sizeBytes": 252706816
+      },
+      {
+        "git": true,
+        "hasEnv": true,
+        "path": "/opt/kw-blue-pearl",
+        "remote": "git@github.com:it6-ash/kwbp.git",
+        "size": "71M",
+        "sizeBytes": 74448896
+      },
+      {
+        "path": "/home/deploy",
+        "size": "444K",
+        "sizeBytes": 454656
+      },
+      {
+        "path": "/var/www/html",
+        "size": "12K",
+        "sizeBytes": 12288
+      },
+      {
+        "path": "/opt/containerd",
+        "size": "12K",
+        "sizeBytes": 12288
+      }
+    ],
+    "services": [
+      {
+        "name": "apparmor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "blk-availability",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-config",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-final",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init-local",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "console-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "containerd",
+        "state": "running",
+        "desc": "containerd container runtime",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "cron",
+        "state": "running",
+        "desc": "Regular background program processing daemon",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "dbus",
+        "state": "running",
+        "desc": "D-Bus System Message Bus",
+        "sub": "running"
+      },
+      {
+        "name": "dbus-org.freedesktop.resolve1",
+        "state": "unknown",
+        "desc": "Network Name Resolution",
+        "restart": "always",
+        "user": "systemd-resolve"
+      },
+      {
+        "name": "dbus-org.freedesktop.timesync1",
+        "state": "unknown",
+        "desc": "Network Time Synchronization",
+        "restart": "always",
+        "user": "systemd-timesync"
+      },
+      {
+        "name": "dmesg",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "docker",
+        "state": "running",
+        "desc": "Docker Application Container Engine",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "e2scrub_reap",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "fail2ban",
+        "state": "running",
+        "desc": "Fail2Ban Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "finalrd",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@tty1",
+        "state": "running",
+        "desc": "Getty on tty1",
+        "sub": "running"
+      },
+      {
+        "name": "grub-common",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "grub-initrd-fallback",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "keyboard-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "lvm2-monitor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "monarx-agent",
+        "state": "running",
+        "desc": "Monarx Agent - Security Scanner",
+        "enabled": "enabled",
+        "port": 1721,
+        "sub": "running"
+      },
+      {
+        "name": "networkd-dispatcher",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "nginx",
+        "state": "running",
+        "desc": "A high performance web server and a reverse proxy server",
+        "enabled": "enabled",
+        "port": 80,
+        "sub": "running"
+      },
+      {
+        "name": "polkit",
+        "state": "running",
+        "desc": "Authorization Manager",
+        "sub": "running"
+      },
+      {
+        "name": "qemu-guest-agent",
+        "state": "running",
+        "desc": "QEMU Guest Agent",
+        "sub": "running"
+      },
+      {
+        "name": "rsyslog",
+        "state": "running",
+        "desc": "System Logging Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "secureboot-db",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "serial-getty@ttyS0",
+        "state": "running",
+        "desc": "Serial Getty on ttyS0",
+        "sub": "running"
+      },
+      {
+        "name": "setvtrgb",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ssh",
+        "state": "running",
+        "desc": "OpenBSD Secure Shell server",
+        "sub": "running"
+      },
+      {
+        "name": "syslog",
+        "state": "unknown",
+        "desc": "System Logging Service",
+        "restart": "on-failure"
+      },
+      {
+        "name": "sysstat",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-hostnamed",
+        "state": "running",
+        "desc": "Hostname Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-journald",
+        "state": "running",
+        "desc": "Journal Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-logind",
+        "state": "running",
+        "desc": "User Login Management",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-networkd",
+        "state": "running",
+        "desc": "Network Configuration",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-pstore",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-resolved",
+        "state": "running",
+        "desc": "Network Name Resolution",
+        "enabled": "enabled",
+        "port": 53,
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timedated",
+        "state": "running",
+        "desc": "Time & Date Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timesyncd",
+        "state": "running",
+        "desc": "Network Time Synchronization",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-udevd",
+        "state": "running",
+        "desc": "Rule-based Manager for Device Events and Files",
+        "sub": "running"
+      },
+      {
+        "name": "ua-reboot-cmds",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ubuntu-advantage",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ufw",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "unattended-upgrades",
+        "state": "running",
+        "desc": "Unattended Upgrades Shutdown",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "user@0",
+        "state": "running",
+        "desc": "User Manager for UID 0",
+        "sub": "running"
+      }
+    ],
+    "sourceFile": "raw/kw-collect-srv1900820-2026-08-24T1214.txt",
+    "ssh": {
+      "failedPasswords": 0,
+      "passwordAuthentication": false,
+      "port": 22,
+      "pubkeyAuthentication": true,
+      "topAttackers": [
+        {
+          "ip": "190.153.22.201",
+          "count": 873
+        },
+        {
+          "ip": "182.78.92.90",
+          "count": 873
+        },
+        {
+          "ip": "136.113.90.212",
+          "count": 143
+        },
+        {
+          "ip": "103.140.250.254",
+          "count": 96
+        },
+        {
+          "ip": "116.110.147.130",
+          "count": 79
+        },
+        {
+          "ip": "116.110.5.25",
+          "count": 60
+        },
+        {
+          "ip": "171.231.193.230",
+          "count": 56
+        },
+        {
+          "ip": "27.79.41.230",
+          "count": 46
+        },
+        {
+          "ip": "217.154.241.42",
+          "count": 36
+        },
+        {
+          "ip": "171.231.190.43",
+          "count": 35
+        }
+      ]
+    },
+    "staleFiles": [
+      "/opt/kwdelhi6/.env.bak.2026-08-21-0854",
+      "/opt/kwdelhi6/meerut.html.bak"
+    ],
+    "storage": {
+      "bigFiles": [
+        {
+          "path": "/var/lib/docker/containers/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7/eb0293a0b0af8d17a2db84c1598bb55b6e87299ddcc9a233cf9976653631d6c7-json.log",
+          "size": "2.8G",
+          "sizeBytes": 3006477107
+        }
+      ],
+      "topDirs": [
+        {
+          "path": "/",
+          "size": "11G",
+          "sizeBytes": 11811160064
+        },
+        {
+          "path": "/var",
+          "size": "8.8G",
+          "sizeBytes": 9448928051
+        },
+        {
+          "path": "/var/lib",
+          "size": "7.8G",
+          "sizeBytes": 8375186227
+        },
+        {
+          "path": "/usr",
+          "size": "1.2G",
+          "sizeBytes": 1288490189
+        },
+        {
+          "path": "/var/log",
+          "size": "516M",
+          "sizeBytes": 541065216
+        },
+        {
+          "path": "/usr/lib",
+          "size": "422M",
+          "sizeBytes": 442499072
+        },
+        {
+          "path": "/usr/bin",
+          "size": "366M",
+          "sizeBytes": 383778816
+        },
+        {
+          "path": "/var/www",
+          "size": "363M",
+          "sizeBytes": 380633088
+        },
+        {
+          "path": "/opt",
+          "size": "311M",
+          "sizeBytes": 326107136
+        },
+        {
+          "path": "/opt/kwdelhi6",
+          "size": "241M",
+          "sizeBytes": 252706816
+        },
+        {
+          "path": "/usr/share",
+          "size": "238M",
+          "sizeBytes": 249561088
+        },
+        {
+          "path": "/usr/libexec",
+          "size": "145M",
+          "sizeBytes": 152043520
+        },
+        {
+          "path": "/var/cache",
+          "size": "138M",
+          "sizeBytes": 144703488
+        },
+        {
+          "path": "/boot",
+          "size": "122M",
+          "sizeBytes": 127926272
+        },
+        {
+          "path": "/opt/kw-blue-pearl",
+          "size": "71M",
+          "sizeBytes": 74448896
+        },
+        {
+          "path": "/usr/sbin",
+          "size": "30M",
+          "sizeBytes": 31457280
+        },
+        {
+          "path": "/boot/grub",
+          "size": "11M",
+          "sizeBytes": 11534336
+        },
+        {
+          "path": "/etc",
+          "size": "6.6M",
+          "sizeBytes": 6920602
+        },
+        {
+          "path": "/boot/efi",
+          "size": "6.2M",
+          "sizeBytes": 6501171
+        },
+        {
+          "path": "/run",
+          "size": "1.4M",
+          "sizeBytes": 1468006
+        },
+        {
+          "path": "/var/backups",
+          "size": "1.2M",
+          "sizeBytes": 1258291
+        },
+        {
+          "path": "/etc/apparmor.d",
+          "size": "1.1M",
+          "sizeBytes": 1153434
+        },
+        {
+          "path": "/etc/fail2ban",
+          "size": "756K",
+          "sizeBytes": 774144
+        },
+        {
+          "path": "/etc/ssh",
+          "size": "664K",
+          "sizeBytes": 679936
+        },
+        {
+          "path": "/etc/ssl",
+          "size": "560K",
+          "sizeBytes": 573440
+        }
+      ]
+    },
+    "vhosts": [
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "ghaziabadcommercialshops.org",
+        "domain": "ghaziabadcommercialshops.org",
+        "proxyTo": "127.0.0.1:8082",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwbluepearl.com",
+        "domain": "kwbluepearl.com",
+        "proxyTo": "127.0.0.1:8081",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwgroup.in",
+        "domain": "kwgroup.in",
+        "proxyTo": "127.0.0.1:8080",
+        "root": "/var/www/html",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "ghaziabadcommercialshops.org",
+        "domain": "www.ghaziabadcommercialshops.org",
+        "proxyTo": "127.0.0.1:8082",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwbluepearl.com",
+        "domain": "www.kwbluepearl.com",
+        "proxyTo": "127.0.0.1:8081",
+        "ssl": true
+      },
+      {
+        "source": "nginx",
+        "certExpiryDays": 78,
+        "certName": "kwgroup.in",
+        "domain": "www.kwgroup.in",
+        "proxyTo": "127.0.0.1:8080",
+        "root": "/var/www/html",
+        "ssl": true
+      }
+    ],
+    "web": {
+      "servers": [
+        "nginx"
+      ],
+      "sitesEnabled": [
+        {
+          "name": "default",
+          "isSymlink": true,
+          "target": "/etc/nginx/sites-available/default"
+        }
+      ]
+    }
+  },
+  "sourceFile": "raw/kw-collect-srv1900820-2026-08-24T1214.txt",
+  "sourceSha256": "14d1dd24646d25795ea25a1754b1165f2c3ddd3524bbb6ac29816c0d8b635a89",
+  "takenAt": "2026-08-24T12:52:32.921Z",
+  "warnings": []
+}

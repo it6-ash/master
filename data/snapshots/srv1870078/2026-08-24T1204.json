@@ -1,0 +1,884 @@
+{
+  "server": "srv1870078",
+  "capturedAt": "2026-08-24T12:04:28Z",
+  "parser": "vps-dump",
+  "parserVersion": "2.0.0",
+  "record": {
+    "name": "srv1870078",
+    "ip": "200.141.9.83",
+    "state": {
+      "diskAvail": "89G",
+      "diskTotal": "96G",
+      "diskUsed": "7.0G",
+      "diskUsedPct": 8,
+      "firewall": "active",
+      "firewallDefault": "deny (incoming), allow (outgoing), deny (routed)",
+      "firewallRules": [
+        "22/tcp ALLOW IN Anywhere",
+        "80 ALLOW IN Anywhere",
+        "443 ALLOW IN Anywhere"
+      ],
+      "kernel": "6.8.0-134-generic",
+      "kernelInstalled": [
+        "6.8.0-134-generic",
+        "6.8.0-138-generic"
+      ],
+      "load": [
+        0,
+        0,
+        0
+      ],
+      "memAvailable": "6.6Gi",
+      "memTotal": "7.8Gi",
+      "memUsed": "1.2Gi",
+      "memUsedPct": 15,
+      "mounts": [
+        {
+          "avail": "89G",
+          "fs": "/dev/sda1",
+          "mount": "/",
+          "size": "96G",
+          "usePct": 8,
+          "used": "7.0G"
+        },
+        {
+          "avail": "704M",
+          "fs": "/dev/sda16",
+          "mount": "/boot",
+          "size": "881M",
+          "usePct": 15,
+          "used": "116M"
+        },
+        {
+          "avail": "99M",
+          "fs": "/dev/sda15",
+          "mount": "/boot/efi",
+          "size": "105M",
+          "usePct": 6,
+          "used": "6.2M"
+        }
+      ],
+      "os": "Ubuntu 24.04.4 LTS",
+      "rebootPending": true,
+      "swapTotal": "0B",
+      "swapUsed": "0B",
+      "uptime": "23 days",
+      "uptimeSeconds": 2010300
+    },
+    "specs": {
+      "arch": "x86-64",
+      "cpu": 2,
+      "cpuModel": "AMD EPYC 9355P 32-Core Processor",
+      "disk": "96G",
+      "diskBytes": 103079215104,
+      "ram": "7.8Gi",
+      "ramBytes": 8375186227,
+      "virt": "kvm"
+    },
+    "containers": [
+      {
+        "name": "n8n-vfa2-n8n-1",
+        "status": "Up 11 days",
+        "state": "running",
+        "ageDays": 23,
+        "createdAt": "2026-08-01 05:40:27 +0000 UTC",
+        "image": "docker.n8n.io/n8nio/n8n",
+        "ports": "0.0.0.0:32769->5678/tcp, [::]:32769->5678/tcp"
+      },
+      {
+        "name": "traefik-traefik-1",
+        "status": "Up 3 weeks",
+        "state": "running",
+        "ageDays": 23,
+        "createdAt": "2026-08-01 05:39:32 +0000 UTC",
+        "image": "traefik:latest"
+      }
+    ],
+    "cron": [
+      {
+        "source": "cron.d",
+        "cmd": "docker builder prune -f > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "58 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "sleep $(shuf -i 0-21600 -n 1) && docker image prune -af --filter \"until=24h\" > /dev/null 2>&1",
+        "hasSecret": false,
+        "schedule": "0 0 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /usr/lib/x86_64-linux-gnu/e2fsprogs/e2scrub_all_cron",
+        "hasSecret": false,
+        "schedule": "30 3 * * 0",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r",
+        "hasSecret": false,
+        "schedule": "10 3 * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 1 1",
+        "hasSecret": false,
+        "schedule": "5-55/10 * * * *",
+        "user": "root"
+      },
+      {
+        "source": "cron.d",
+        "cmd": "command -v debian-sa1 > /dev/null && debian-sa1 60 2",
+        "hasSecret": false,
+        "schedule": "59 23 * * *",
+        "user": "root"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-collect.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 12:10:00 UTC",
+        "unit": "sysstat-collect.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-24 22:04:31 UTC",
+        "unit": "apt-daily.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "dpkg-db-backup.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "dpkg-db-backup.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "logrotate.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:00:00 UTC",
+        "unit": "logrotate.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "sysstat-summary.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 00:07:00 UTC",
+        "unit": "sysstat-summary.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "man-db.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 02:35:42 UTC",
+        "unit": "man-db.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-download.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 05:54:14 UTC",
+        "unit": "update-notifier-download.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "systemd-tmpfiles-clean.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:04:44 UTC",
+        "unit": "systemd-tmpfiles-clean.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "apt-daily-upgrade.service",
+        "hasSecret": false,
+        "schedule": "next: Tue 2026-08-25 06:09:24 UTC",
+        "unit": "apt-daily-upgrade.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "e2scrub_all.service",
+        "hasSecret": false,
+        "schedule": "next: Sun 2026-08-30 03:10:02 UTC",
+        "unit": "e2scrub_all.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "fstrim.service",
+        "hasSecret": false,
+        "schedule": "next: Mon 2026-08-31 01:18:54 UTC",
+        "unit": "fstrim.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "update-notifier-motd.service",
+        "hasSecret": false,
+        "schedule": "next: Sat 2026-09-05 10:37:46 UTC 1 week 4 days Mon 2026-08-24 00:06:54 UTC",
+        "unit": "update-notifier-motd.timer"
+      },
+      {
+        "source": "systemd-timer",
+        "cmd": "ua-timer.service",
+        "hasSecret": false,
+        "schedule": "inactive",
+        "unit": "ua-timer.timer"
+      }
+    ],
+    "databaseEngines": {
+      "mariadb": "absent",
+      "mongod": "absent",
+      "mysql": "absent",
+      "postgresql": "absent",
+      "redis-server": "absent"
+    },
+    "docker": {
+      "compose": [
+        {
+          "name": "n8n-vfa2",
+          "status": "running(1)",
+          "configFile": "/docker/n8n-vfa2/docker-compose.yml"
+        },
+        {
+          "name": "traefik",
+          "status": "running(1)",
+          "configFile": "/docker/traefik/docker-compose.yml"
+        }
+      ],
+      "containersRunning": 2,
+      "containersTotal": 2,
+      "diskUsage": {
+        "buildCache": "0B",
+        "containers": "2.314GB",
+        "images": "2.728GB",
+        "reclaimable": "0B",
+        "volumes": "649.2MB"
+      },
+      "images": 2,
+      "orphanVolumes": [
+        "traefik-letsencrypt"
+      ],
+      "version": "29.6.1",
+      "volumes": 3
+    },
+    "lastIngest": "2026-08-24T12:04:28Z",
+    "logs": {
+      "journalSize": "144.3M",
+      "largest": [
+        {
+          "path": "/var/log/syslog.1",
+          "size": "13M",
+          "sizeBytes": 13631488
+        },
+        {
+          "path": "/var/log/syslog",
+          "size": "13M",
+          "sizeBytes": 13631488
+        },
+        {
+          "path": "/var/log/btmp",
+          "size": "11M",
+          "sizeBytes": 11534336
+        },
+        {
+          "path": "/var/log/auth.log.1",
+          "size": "7.3M",
+          "sizeBytes": 7654605
+        },
+        {
+          "path": "/var/log/kern.log",
+          "size": "1.4M",
+          "sizeBytes": 1468006
+        },
+        {
+          "path": "/var/log/kern.log.1",
+          "size": "1.4M",
+          "sizeBytes": 1468006
+        },
+        {
+          "path": "/var/log/auth.log",
+          "size": "1.2M",
+          "sizeBytes": 1258291
+        },
+        {
+          "path": "/var/log/auth.log.3.gz",
+          "size": "244K",
+          "sizeBytes": 249856
+        },
+        {
+          "path": "/var/log/auth.log.2.gz",
+          "size": "162K",
+          "sizeBytes": 165888
+        },
+        {
+          "path": "/var/log/syslog.3.gz",
+          "size": "101K",
+          "sizeBytes": 103424
+        },
+        {
+          "path": "/var/log/syslog.2.gz",
+          "size": "94K",
+          "sizeBytes": 96256
+        }
+      ],
+      "recentErrors": 15,
+      "varLogTotal": "207M"
+    },
+    "n8n": {
+      "activeCount": 1,
+      "container": "n8n-vfa2-n8n-1",
+      "dbSizeBytes": 514314240,
+      "workflowCount": 3
+    },
+    "packages": {
+      "aptCache": "109M",
+      "upgradable": 18
+    },
+    "ports": [
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 18968,
+        "port": 22,
+        "proc": "sshd",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "tcp"
+      },
+      {
+        "bind": "127.0.0.54",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "127.0.0.53",
+        "exposed": false,
+        "pid": 52407,
+        "port": 53,
+        "proc": "systemd-resolve",
+        "proto": "udp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 1306,
+        "port": 80,
+        "proc": "traefik",
+        "proto": "tcp"
+      },
+      {
+        "bind": "*",
+        "exposed": true,
+        "pid": 1306,
+        "port": 443,
+        "proc": "traefik",
+        "proto": "tcp"
+      },
+      {
+        "bind": "0.0.0.0",
+        "exposed": true,
+        "pid": 64364,
+        "port": 32769,
+        "proc": "docker-proxy",
+        "proto": "tcp"
+      }
+    ],
+    "projects": [
+      {
+        "path": "/opt/containerd",
+        "size": "12K",
+        "sizeBytes": 12288
+      }
+    ],
+    "services": [
+      {
+        "name": "apparmor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "blk-availability",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-config",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-final",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "cloud-init-local",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "console-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "containerd",
+        "state": "running",
+        "desc": "containerd container runtime",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "cron",
+        "state": "running",
+        "desc": "Regular background program processing daemon",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "dbus",
+        "state": "running",
+        "desc": "D-Bus System Message Bus",
+        "sub": "running"
+      },
+      {
+        "name": "dbus-org.freedesktop.resolve1",
+        "state": "unknown",
+        "desc": "Network Name Resolution",
+        "restart": "always",
+        "user": "systemd-resolve"
+      },
+      {
+        "name": "dbus-org.freedesktop.timesync1",
+        "state": "unknown",
+        "desc": "Network Time Synchronization",
+        "restart": "always",
+        "user": "systemd-timesync"
+      },
+      {
+        "name": "dmesg",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "docker",
+        "state": "running",
+        "desc": "Docker Application Container Engine",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "e2scrub_reap",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "finalrd",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "getty@tty1",
+        "state": "running",
+        "desc": "Getty on tty1",
+        "sub": "running"
+      },
+      {
+        "name": "grub-common",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "grub-initrd-fallback",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "keyboard-setup",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "lvm2-monitor",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "networkd-dispatcher",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "polkit",
+        "state": "running",
+        "desc": "Authorization Manager",
+        "sub": "running"
+      },
+      {
+        "name": "qemu-guest-agent",
+        "state": "running",
+        "desc": "QEMU Guest Agent",
+        "sub": "running"
+      },
+      {
+        "name": "rsyslog",
+        "state": "running",
+        "desc": "System Logging Service",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "secureboot-db",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "serial-getty@ttyS0",
+        "state": "running",
+        "desc": "Serial Getty on ttyS0",
+        "sub": "running"
+      },
+      {
+        "name": "setvtrgb",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ssh",
+        "state": "running",
+        "desc": "OpenBSD Secure Shell server",
+        "sub": "running"
+      },
+      {
+        "name": "syslog",
+        "state": "unknown",
+        "desc": "System Logging Service",
+        "restart": "on-failure"
+      },
+      {
+        "name": "sysstat",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-hostnamed",
+        "state": "running",
+        "desc": "Hostname Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-journald",
+        "state": "running",
+        "desc": "Journal Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-logind",
+        "state": "running",
+        "desc": "User Login Management",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-networkd",
+        "state": "running",
+        "desc": "Network Configuration",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-pstore",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "systemd-resolved",
+        "state": "running",
+        "desc": "Network Name Resolution",
+        "enabled": "enabled",
+        "port": 53,
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timedated",
+        "state": "running",
+        "desc": "Time & Date Service",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-timesyncd",
+        "state": "running",
+        "desc": "Network Time Synchronization",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "systemd-udevd",
+        "state": "running",
+        "desc": "Rule-based Manager for Device Events and Files",
+        "sub": "running"
+      },
+      {
+        "name": "ua-reboot-cmds",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ubuntu-advantage",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "ufw",
+        "state": "inactive",
+        "enabled": "enabled"
+      },
+      {
+        "name": "unattended-upgrades",
+        "state": "running",
+        "desc": "Unattended Upgrades Shutdown",
+        "enabled": "enabled",
+        "sub": "running"
+      },
+      {
+        "name": "user@0",
+        "state": "running",
+        "desc": "User Manager for UID 0",
+        "sub": "running"
+      }
+    ],
+    "sourceFile": "raw/kw-collect-srv1870078-2026-08-24T1204.txt",
+    "ssh": {
+      "failedPasswords": 1535,
+      "passwordAuthentication": true,
+      "permitRootLogin": true,
+      "port": 22,
+      "pubkeyAuthentication": true,
+      "topAttackers": [
+        {
+          "ip": "138.68.64.76",
+          "count": 14335
+        },
+        {
+          "ip": "93.144.8.254",
+          "count": 873
+        },
+        {
+          "ip": "218.173.89.132",
+          "count": 873
+        },
+        {
+          "ip": "213.230.121.186",
+          "count": 873
+        },
+        {
+          "ip": "2.56.109.156",
+          "count": 873
+        },
+        {
+          "ip": "197.149.95.118",
+          "count": 873
+        },
+        {
+          "ip": "196.156.189.228",
+          "count": 873
+        },
+        {
+          "ip": "196.136.165.200",
+          "count": 873
+        },
+        {
+          "ip": "190.6.31.143",
+          "count": 873
+        },
+        {
+          "ip": "182.74.32.74",
+          "count": 873
+        }
+      ]
+    },
+    "storage": {
+      "bigFiles": [
+        {
+          "path": "/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/23/fs/home/node/core",
+          "size": "3.2G",
+          "sizeBytes": 3435973837
+        },
+        {
+          "path": "/var/lib/docker/volumes/n8n-vfa2_n8n_data/_data/database.sqlite",
+          "size": "491M",
+          "sizeBytes": 514850816
+        },
+        {
+          "path": "/var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/a35ce2150cc6c4855ef115cd5f268e09d3b3ec943cea9a9ee2886b0f6e6aa4ad",
+          "size": "302M",
+          "sizeBytes": 316669952
+        }
+      ],
+      "topDirs": [
+        {
+          "path": "/",
+          "size": "12G",
+          "sizeBytes": 12884901888
+        },
+        {
+          "path": "/var",
+          "size": "11G",
+          "sizeBytes": 11811160064
+        },
+        {
+          "path": "/var/lib",
+          "size": "9.9G",
+          "sizeBytes": 10630044058
+        },
+        {
+          "path": "/usr",
+          "size": "1.2G",
+          "sizeBytes": 1288490189
+        },
+        {
+          "path": "/usr/lib",
+          "size": "411M",
+          "sizeBytes": 430964736
+        },
+        {
+          "path": "/usr/bin",
+          "size": "347M",
+          "sizeBytes": 363855872
+        },
+        {
+          "path": "/usr/share",
+          "size": "242M",
+          "sizeBytes": 253755392
+        },
+        {
+          "path": "/var/log",
+          "size": "207M",
+          "sizeBytes": 217055232
+        },
+        {
+          "path": "/var/cache",
+          "size": "125M",
+          "sizeBytes": 131072000
+        },
+        {
+          "path": "/boot",
+          "size": "122M",
+          "sizeBytes": 127926272
+        },
+        {
+          "path": "/usr/libexec",
+          "size": "103M",
+          "sizeBytes": 108003328
+        },
+        {
+          "path": "/usr/sbin",
+          "size": "29M",
+          "sizeBytes": 30408704
+        },
+        {
+          "path": "/boot/grub",
+          "size": "11M",
+          "sizeBytes": 11534336
+        },
+        {
+          "path": "/boot/efi",
+          "size": "6.2M",
+          "sizeBytes": 6501171
+        },
+        {
+          "path": "/etc",
+          "size": "5.4M",
+          "sizeBytes": 5662310
+        },
+        {
+          "path": "/var/backups",
+          "size": "1.6M",
+          "sizeBytes": 1677722
+        },
+        {
+          "path": "/etc/apparmor.d",
+          "size": "1.1M",
+          "sizeBytes": 1153434
+        },
+        {
+          "path": "/run",
+          "size": "952K",
+          "sizeBytes": 974848
+        },
+        {
+          "path": "/etc/ssh",
+          "size": "668K",
+          "sizeBytes": 684032
+        },
+        {
+          "path": "/etc/ssl",
+          "size": "564K",
+          "sizeBytes": 577536
+        },
+        {
+          "path": "/run/udev",
+          "size": "480K",
+          "sizeBytes": 491520
+        },
+        {
+          "path": "/etc/cloud",
+          "size": "260K",
+          "sizeBytes": 266240
+        },
+        {
+          "path": "/etc/console-setup",
+          "size": "200K",
+          "sizeBytes": 204800
+        },
+        {
+          "path": "/run/systemd",
+          "size": "184K",
+          "sizeBytes": 188416
+        },
+        {
+          "path": "/etc/lvm",
+          "size": "156K",
+          "sizeBytes": 159744
+        }
+      ]
+    },
+    "web": {
+      "servers": []
+    }
+  },
+  "sourceFile": "raw/kw-collect-srv1870078-2026-08-24T1204.txt",
+  "sourceSha256": "b7f0eda43e7e0926d22d662cb97e01ff305ec4ef87dba4330a01964258cc638c",
+  "takenAt": "2026-08-24T12:52:32.916Z",
+  "warnings": []
+}

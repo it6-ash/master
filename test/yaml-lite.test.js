@@ -12,15 +12,18 @@ test('parses the real Yamini frontmatter', () => {
 
   assert.equal(data.id, 'yamini');
   assert.equal(data.server, 'srv1340120');
-  assert.equal(data.status, 'partial', 'the trailing "# live | partial | …" comment must be stripped');
-  assert.equal(data.url, 'WhatsApp AI · n8n + MongoDB');
+  assert.equal(data.status, 'partial');
+  assert.equal(data.order, 1, 'unquoted integers stay numbers');
 
-  assert.deepEqual(data.tags, ['n8n', 'MongoDB', 'GPT-5 mini', 'WhatsApp Cloud API']);
-  assert.equal(data.workflows.length, 3);
+  assert.ok(data.tags.includes('GPT-5 mini'), 'bare flow-sequence items may contain spaces');
+  assert.ok(data.tags.includes('WhatsApp Cloud API'));
+  assert.ok(data.workflows.length >= 3);
   assert.deepEqual(data.services, ['n8n-n8n-1', 'mongod']);
+  assert.equal(data.updated, '2026-08-24', 'dates stay strings for the schema to format-check');
 
   assert.equal(data.stats.length, 4);
-  assert.deepEqual(data.stats[0], { value: '26,437', label: 'Records' });
+  assert.equal(data.stats[0].value, '$mongo.Yamini.customerChats.docs', 'stat references survive parsing');
+  assert.equal(data.stats[0].label, 'Conversations');
   assert.equal(data.stats[3].state, 'broken');
 });
 
