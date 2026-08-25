@@ -64,6 +64,31 @@ Sync has been exercised end to end with `--dry-run`, which resolves all three
 hosts and prints the exact commands. The live SSH path has **not** been run
 against your servers from here.
 
+## Hosting it on the VPS
+
+`npm run deploy` builds, then copies the single `dist/index.html` to
+`/var/www/kw-estate` on srv1340120, the box that already runs nginx and holds
+the certificates. Install `deploy/kw-estate.nginx.conf` once by hand; the
+script only ever moves one file.
+
+```bash
+npm run deploy                # build and ship to the configured host
+npm run deploy -- srv1900820  # ... or a specific one
+npm run deploy -- --dry-run   # print the commands, run nothing
+```
+
+**This page must not be public.** It lists every server's IP and open ports,
+which units are failing, which hostnames have no certificate, where credentials
+sit in crontabs, and the text of every open security finding. It is a map of
+how to attack this estate. The vhost sets HTTP basic auth over TLS, which is the
+minimum; putting it behind the Cloudflare tunnel that already serves
+kwatch.leadq.co.in and using Cloudflare Access would be better.
+
+Two consequences of hosting it on srv1340120: the dashboard is down exactly when
+the box it monitors is down, and the deploy adds a hostname that the next
+collection will discover and list as a project. Both are fine, both are worth
+knowing.
+
 ## The collector
 
 `kw-collect.sh` is the read-only estate collector. It emits the

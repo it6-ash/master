@@ -34,7 +34,15 @@
   --touch: 44px;
 
   --mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
-  --sans: system-ui, -apple-system, "Hanken Grotesk", "Segoe UI", Roboto, sans-serif;
+  /* No webfont: a CDN link breaks offline and embedding one costs more bytes
+     than the whole stylesheet. The named faces are used when installed. */
+  --sans: "Hanken Grotesk", "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* z-index scale, so nothing has to guess */
+  --z-grain: 1;
+  --z-sticky: 30;
+  --z-scrim: 40;
+  --z-drawer: 50;
 
   --ease: cubic-bezier(0.3, 0.8, 0.4, 1);
 
@@ -169,6 +177,19 @@ body {
   transition: background-color 260ms var(--ease), color 260ms var(--ease);
 }
 
+/* A fixed grain layer over everything. Pure flat colour reads as unfinished,
+   and this is the cheapest texture there is: no image request, no bytes. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="light"] body::after { opacity: 0.022; }
+
 /* ambient lighting: two fixed radial glows behind everything */
 body::before {
   content: "";
@@ -229,7 +250,7 @@ pre.code code { background: none; border: 0; padding: 0; }
 header.top {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: var(--z-sticky);
   background: var(--glass);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -294,6 +315,7 @@ header.top {
 /* --------------------------------------------------------------- bits */
 
 h2.section {
+  text-wrap: balance;
   font-size: var(--fs-section);
   font-weight: 620;
   letter-spacing: 0.14em;
@@ -362,13 +384,14 @@ h2.section .count {
   .intro-how { grid-column: 2; grid-row: 2 / span 3; margin-top: 0 !important; align-self: start; }
 }
 .intro-title {
-  font-size: clamp(21px, 2vw + 14px, 30px);
+  font-size: clamp(23px, 2.4vw + 14px, 36px);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-  margin: 0 0 12px;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  margin: 0 0 14px;
+  text-wrap: balance;
 }
-.intro p { margin: 0 0 10px; color: var(--ink-2); }
+.intro p { margin: 0 0 10px; color: var(--ink-2); text-wrap: pretty; }
 .intro strong { color: var(--ink); font-weight: 620; }
 .intro-how {
   border-left: 2px solid var(--primary);
@@ -381,6 +404,7 @@ h2.section .count {
 
 .section-note {
   margin: 0;
+  text-wrap: pretty;
   color: var(--ink-2);
   font-size: var(--fs-meta);
   max-width: 88ch;
@@ -484,6 +508,21 @@ h2.section .count {
     border-color: var(--border-hover);
     box-shadow: var(--shadow);
   }
+  /* A single lit edge along the top, as though the light source above the
+     page caught it. Cheaper and calmer than a full glowing border. */
+  .tilt { position: relative; }
+  .tilt::after {
+    content: "";
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 1px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity: 0;
+    transition: opacity 220ms var(--ease);
+    pointer-events: none;
+  }
+  .tilt:hover::after { opacity: 0.55; }
 }
 /* Touch gets a press instead. */
 @media (hover: none), (pointer: coarse) {
@@ -1038,9 +1077,9 @@ body.detail-open .wrap { display: none; }
 }
 .detail-heading { min-width: 0; }
 .detail-title {
-  font-size: clamp(20px, 2.2vw + 12px, 30px);
+  font-size: clamp(21px, 2.4vw + 12px, 34px);
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.035em;
   margin: 0;
   line-height: 1.15;
   overflow-wrap: anywhere;
@@ -1278,6 +1317,27 @@ a.result:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px;
 @media (max-width: 640px) {
   .result { grid-template-columns: 66px 8px minmax(0, 1fr); }
   .result-sub { grid-column: 3; font-size: 10.5px; }
+}
+
+/* ----------------------------------------------------------- entrance */
+
+/* Cards cascade in rather than all appearing at once. Pure CSS, no observer,
+   and it costs nothing on a page that is already fully rendered in the HTML. */
+@media (prefers-reduced-motion: no-preference) {
+  .servers > *, .projects > *, .tiles > *, .chart-grid > *, .board > * {
+    animation: rise 420ms var(--ease) backwards;
+  }
+  .servers > :nth-child(2), .projects > :nth-child(2),
+  .tiles > :nth-child(2), .board > :nth-child(2) { animation-delay: 40ms; }
+  .servers > :nth-child(3), .projects > :nth-child(3),
+  .tiles > :nth-child(3), .board > :nth-child(3) { animation-delay: 80ms; }
+  .projects > :nth-child(4), .tiles > :nth-child(4), .board > :nth-child(4) { animation-delay: 120ms; }
+  .projects > :nth-child(5), .tiles > :nth-child(5), .board > :nth-child(5) { animation-delay: 160ms; }
+  .projects > :nth-child(n+6), .tiles > :nth-child(n+6), .board > :nth-child(n+6) { animation-delay: 200ms; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+  }
 }
 
 /* --------------------------------------------------------- filtering */

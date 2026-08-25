@@ -1330,6 +1330,8 @@ export function renderPage({
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
 <title>KW Estate</title>
+<meta name="description" content="Every server, project and workflow KW Group runs, read out of diagnostic dumps taken off the machines themselves.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1226'/%3E%3Cpath d='M9 8v16M9 16l8-8M9 16l8 8' stroke='%2335e0c8' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='16' r='2.6' fill='%2335e0c8'/%3E%3C/svg%3E">
 <script>
 /* Runs before first paint, so the chosen theme is never repainted in front of
    the reader. Stored choice wins; otherwise the OS preference decides, with
