@@ -1336,7 +1336,14 @@ function renewalsPanel(costs) {
     return { text: `in ${line.daysUntil}d`, tone: 'ok' };
   };
 
-  const rows = costs.lines.map((line) => {
+  // Only lines someone has actually recorded. The derivation still walks every
+  // server and domain — that is what the count below is — but a row of three
+  // "not recorded" cells is a placeholder, not a fact, and it crowds out four
+  // rows that are.
+  const known = costs.lines.filter((l) => Number.isFinite(l.amount) || l.nextDate);
+  if (known.length === 0) return '';
+
+  const rows = known.map((line) => {
     const d = due(line);
     const label = line.kind === 'vps' && line.server ? linkServer(line.server, line.label) : escapeHtml(line.label);
     const gross = money(line.gross);
@@ -1361,7 +1368,7 @@ function renewalsPanel(costs) {
     </tr>`;
   }).join('');
 
-  const missing = costs.total - costs.recorded;
+  const missing = costs.lines.length - known.length;
 
   return `<figure class="chart renewals" id="renewals">
     <figcaption>Recurring cost and renewals</figcaption>
@@ -1370,7 +1377,7 @@ function renewalsPanel(costs) {
     ? `<strong>${money(costs.monthlyTotal)}/month</strong>, ${money(costs.annualTotal)} a year including GST, across ${costs.recorded} priced line${costs.recorded === 1 ? '' : 's'}.`
     : 'Nothing is priced yet.'}
       ${missing > 0
-    ? `${missing} line${missing === 1 ? '' : 's'} still ${missing === 1 ? 'has' : 'have'} no price or date — add them to <code>data/costs.json</code>. The list itself is derived from the servers, so a new domain appears here on its own.`
+    ? `${missing} further derived line${missing === 1 ? '' : 's'} — registered elsewhere, not priced — ${missing === 1 ? 'is' : 'are'} hidden until recorded in <code>data/costs.json</code>.`
     : 'Every derived line is accounted for.'}
     </p>
     <div class="table-wrap">
