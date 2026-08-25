@@ -201,6 +201,30 @@ else
   warn "  htpasswd -c /etc/nginx/.kw-estate-htpasswd <user>"
 fi
 
+# ---------------------------------------------------------------- the tunnel
+
+if [ "$MODE" = "tunnel" ]; then
+  say "cloudflared"
+
+  # Ask systemd which config the RUNNING tunnel reads. cloudflared invoked by
+  # hand with no --config defaults to ~/.cloudflared/config.yml, so "validate"
+  # cheerfully reports OK on a file the service never opens.
+  CF_CONF="$(systemctl cat cloudflared 2>/dev/null | sed -n 's/.*--config[= ]\([^ ]*\).*/\1/p' | head -1)"
+  [ -n "$CF_CONF" ] || CF_CONF=/etc/cloudflared/config.yml
+
+  if [ ! -f "$CF_CONF" ]; then
+    warn "no cloudflared config at $CF_CONF — is this tunnel managed from the"
+    warn "Cloudflare dashboard? Then the ingress lives in Zero Trust -> Networks"
+    warn "-> Tunnels -> Public Hostnames, and editing a file here does nothing."
+  elif grep -q "$DOMAIN" "$CF_CONF"; then
+    ok "$DOMAIN is routed in $CF_CONF"
+  else
+    warn "$DOMAIN is NOT routed in $CF_CONF. Add ABOVE the catch-all:"
+    printf '        - hostname: %s\n          service: http://127.0.0.1:8060\n' "$DOMAIN"
+    warn "then: cloudflared --config $CF_CONF tunnel ingress validate && systemctl restart cloudflared"
+  fi
+fi
+
 # ------------------------------------------------------------------ first run
 
 say "First collection pass"
