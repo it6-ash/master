@@ -1049,6 +1049,57 @@ th {
   letter-spacing: 0.08em;
 }
 
+/* -------------------------------------------------- costs & renewals */
+
+/* A bill is a date and a number. The date is the part that hurts if you miss
+   it, so due-ness is encoded as colour on an ordinal scale and the table is
+   sorted by it — you should never have to read the whole thing to find the
+   one that renews on Tuesday. */
+
+.chart-note {
+  color: var(--ink-3);
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+  margin: 6px 0 0;
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+.chart-note strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.chart-note code {
+  background: var(--sunken);
+  border-radius: 4px;
+  font: 11.5px var(--mono);
+  padding: 1px 5px;
+}
+
+.renewals .table-wrap { margin-top: 12px; }
+.renewal-table th[scope="row"] { text-transform: none; font-size: var(--fs-meta); color: var(--ink); font-weight: 600; }
+.renewal-kind {
+  color: var(--ink-3);
+  font: 10px var(--mono);
+  letter-spacing: 0.06em;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+.renewal-detail { color: var(--ink-3); display: block; font-size: 11px; font-weight: 400; margin-top: 2px; }
+.renewal-cycle { color: var(--ink-3); font-size: 10.5px; }
+
+/* Not recorded is not zero. It reads as a gap, deliberately. */
+.unrecorded { color: var(--ink-3); font-style: italic; opacity: 0.75; }
+
+.renewal-due {
+  border-radius: 999px;
+  display: inline-block;
+  font: 11px var(--mono);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.tone-critical { background: color-mix(in srgb, var(--critical) 18%, transparent); color: var(--critical); }
+.tone-high     { background: color-mix(in srgb, var(--warning) 20%, transparent);  color: var(--warning); }
+.tone-medium   { background: color-mix(in srgb, var(--info) 16%, transparent);     color: var(--info); }
+.tone-ok       { background: var(--sunken); color: var(--ink-3); }
+.tone-unknown  { background: transparent; color: var(--ink-3); border: 1px dashed var(--border); }
+
 /* ------------------------------------------------------- detail page */
 
 /* Project and server detail are FULL PAGES, not an overlay. There is far too
@@ -1384,7 +1435,10 @@ body.searching .no-match { display: none !important; }
   .table-wrap table,
   .table-wrap tbody,
   .table-wrap tr,
+  .table-wrap th[scope="row"],
   .table-wrap td { display: block; width: 100%; }
+  /* A row header restacks as the card's title, not as another labelled cell. */
+  .table-wrap th[scope="row"] { border-bottom: 0; padding: 8px 12px 4px; }
   .table-wrap thead { display: none; }
   .table-wrap tr {
     border: 1px solid var(--border);

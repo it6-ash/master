@@ -1301,10 +1301,71 @@ function renderWorkflows(workflows, projects) {
   }).join('');
 }
 
+/* ----------------------------------------------------- costs & renewals */
+
+/**
+ * Every recurring bill, soonest renewal first.
+ *
+ * The list is derived — three VPS, every registrable domain nginx answers for —
+ * so it is complete whether or not anyone recorded a price. A blank renders as
+ * "not recorded" rather than as zero, because "we do not know what this costs"
+ * and "this is free" are very different sentences and only one of them is true.
+ */
+function renewalsPanel(costs) {
+  if (!costs?.lines?.length) return '';
+
+  const money = (n) => (Number.isFinite(n) ? `₹${Math.round(n).toLocaleString('en-IN')}` : null);
+  const KIND = { vps: 'VPS', domain: 'Domain' };
+
+  const due = (line) => {
+    if (line.daysUntil === null || line.daysUntil === undefined) return { text: 'no date', tone: 'unknown' };
+    if (line.daysUntil < 0) return { text: `${-line.daysUntil}d overdue`, tone: 'critical' };
+    if (line.daysUntil <= 14) return { text: `in ${line.daysUntil}d`, tone: 'high' };
+    if (line.daysUntil <= 45) return { text: `in ${line.daysUntil}d`, tone: 'medium' };
+    return { text: `in ${line.daysUntil}d`, tone: 'ok' };
+  };
+
+  const rows = costs.lines.map((line) => {
+    const d = due(line);
+    const label = line.kind === 'vps' && line.server ? linkServer(line.server, line.label) : escapeHtml(line.label);
+    const price = money(line.amount);
+    return `<tr>
+      <th scope="row" data-label="Line">${label}
+        <span class="renewal-kind">${escapeHtml(KIND[line.kind] ?? line.kind)}</span>
+        ${line.detail ? `<span class="renewal-detail">${escapeHtml(line.detail)}</span>` : ''}
+      </th>
+      <td data-label="Provider">${line.provider ? escapeHtml(line.provider) : '<span class="unrecorded">—</span>'}</td>
+      <td class="num" data-label="Cost">${price ? `${price}<span class="renewal-cycle">/${(line.cycle ?? 'monthly').startsWith('ye') ? 'yr' : 'mo'}</span>` : '<span class="unrecorded">not recorded</span>'}</td>
+      <td data-label="Renews">${line.renewsOn ? escapeHtml(line.renewsOn) : '<span class="unrecorded">not recorded</span>'}</td>
+      <td data-label="Due"><span class="renewal-due tone-${d.tone}">${escapeHtml(d.text)}</span></td>
+    </tr>`;
+  }).join('');
+
+  const missing = costs.total - costs.recorded;
+
+  return `<figure class="chart renewals" id="renewals">
+    <figcaption>Recurring cost and renewals</figcaption>
+    <p class="chart-note">
+      ${costs.monthlyTotal !== null
+    ? `<strong>${money(costs.monthlyTotal)}/month</strong> across ${costs.recorded} priced line${costs.recorded === 1 ? '' : 's'}.`
+    : 'Nothing is priced yet.'}
+      ${missing > 0
+    ? `${missing} line${missing === 1 ? '' : 's'} still ${missing === 1 ? 'has' : 'have'} no price or date — add them to <code>data/costs.json</code>. The list itself is derived from the servers, so a new domain appears here on its own.`
+    : 'Every derived line is accounted for.'}
+    </p>
+    <div class="table-wrap">
+      <table class="renewal-table">
+        <thead><tr><th scope="col">Line</th><th scope="col">Provider</th><th scope="col">Cost</th><th scope="col">Renews</th><th scope="col">Due</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </figure>`;
+}
+
 /* --------------------------------------------------------------- page */
 
 export function renderPage({
-  servers, projects, workflows, issues, events, history, staleness, analysis, glossary, css, builtAt,
+  servers, projects, workflows, issues, events, history, staleness, analysis, costs, glossary, css, builtAt,
 }) {
   const openIssues = issues.filter((i) => !i.resolved);
   const globalIssues = openIssues.filter((i) => !i.project).sort(bySeverity);
@@ -1393,7 +1454,8 @@ ${css}
   <div class="chart-grid">
     ${analysis.funnel ? funnelChart(analysis.funnel.stages, { title: analysis.funnel.title, id: 'funnel' }) : ''}
     ${workflowChart(wfGroups, { title: 'Workflows by group, template imports excluded', id: 'wf-chart' })}
-    ${analysis.costScenarios ? costChart(analysis.costScenarios.rows, { title: analysis.costScenarios.title, id: 'cost' }) : ''}
+    ${analysis.costScenarios ? costChart(analysis.costScenarios.rows, { title: analysis.costScenarios.title, id: 'cost', note: costs?.note ?? null }) : ''}
+    ${renewalsPanel(costs)}
   </div>
 
   ${section('Estate tree', 'The shape of the estate, generated from live data rather than drawn. Workflows belonging to no project are called out rather than quietly dropped.', 'server → project → workflow')}

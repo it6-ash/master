@@ -21,6 +21,7 @@ import { extractFlowBlocks } from './parse/flow-dsl.js';
 import { diffSnapshots, diffWorkflows, stalenessEvents } from './diff.js';
 import { deriveProjects, mergeProjects, attachWorkflows } from './derive-projects.js';
 import { reconcileIssues } from './claims.js';
+import { buildCosts } from './costs.js';
 import { renderPage } from './render/html.js';
 
 /* ---------------------------------------------------- stat references */
@@ -244,6 +245,17 @@ function main() {
   const glossaryFile = readJson(abs('data', 'glossary.json'));
   const glossary = glossaryFile.ok ? glossaryFile.value : {};
 
+  /* what it costs to keep the lights on, and when each line renews */
+  const costs = buildCosts(serverData, { today });
+  if (costs.monthlyTotal !== null && analysis.costScenarios) {
+    // The same fixed floor under every scenario. That is the point being made:
+    // hosting does not move with volume, WhatsApp does.
+    analysis.costScenarios.rows = analysis.costScenarios.rows.map((r) => ({ ...r, infra: costs.monthlyTotal }));
+  }
+  if (costs.recorded < costs.total) {
+    warnings.push(`costs: ${costs.total - costs.recorded} of ${costs.total} lines have no price recorded in data/costs.json`);
+  }
+
   /* render */
   const html = renderPage({
     servers: serverData,
@@ -254,6 +266,7 @@ function main() {
     history,
     staleness,
     analysis,
+    costs,
     glossary,
     css: readText(abs('src', 'render', 'styles.css')),
     builtAt: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC',

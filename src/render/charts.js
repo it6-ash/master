@@ -146,50 +146,66 @@ export function workflowChart(groups, { title = 'Workflows by group', id = 'wf-c
 /* ---------------------------------------------------------- cost model */
 
 /**
- * Part-to-whole across three volume scenarios. Two categorical series, stacked
- * horizontally, so the reader sees at a glance that WhatsApp broadcast fees are
- * the bill and the model tokens are rounding error.
+ * Part-to-whole across three volume scenarios, stacked horizontally.
  *
- * @param {Array<{scenario: string, whatsapp: number, openai: number, note?: string}>} rows
+ * Infrastructure goes first, at the origin, because it is the fixed floor: the
+ * same bar in every row. Everything to the right of it is what actually moves
+ * with volume, and that contrast is the whole reason the panel exists. A series
+ * absent from the data is absent from the chart and the legend — hosting only
+ * appears once someone has recorded what it costs.
+ *
+ * @param {Array<{scenario: string, infra?: number, whatsapp: number, openai: number, note?: string}>} rows
  */
-export function costChart(rows, { title = 'Monthly cost', id = 'cost-chart' } = {}) {
-  const WHATSAPP = 'var(--s3)';
-  const OPENAI = 'var(--s1)';
+const COST_SERIES = [
+  { key: 'infra', label: 'Hosting & domains', color: 'var(--s2)' },
+  { key: 'whatsapp', label: 'WhatsApp fees', color: 'var(--s3)' },
+  { key: 'openai', label: 'OpenAI tokens', color: 'var(--s1)' },
+];
 
-  const max = Math.max(...rows.map((r) => r.whatsapp + r.openai), 1);
+export function costChart(rows, { title = 'Monthly cost', id = 'cost-chart', note = null } = {}) {
+  const series = COST_SERIES.filter((s) => rows.some((r) => Number.isFinite(r[s.key]) && r[s.key] > 0));
+  const sum = (r) => series.reduce((t, s) => t + (r[s.key] ?? 0), 0);
+
+  const max = Math.max(...rows.map(sum), 1);
   const rowH = 52;
   const barH = 16;
   const labelW = 116;
   const width = 560;
-  const trackW = width - labelW - 96;
+  const trackW = width - labelW - 108;
   const height = rows.length * rowH + 6;
 
   const bars = rows.map((r, i) => {
     const y = i * rowH + 12;
-    const total = r.whatsapp + r.openai;
-    const wsW = (r.whatsapp / max) * trackW;
-    const aiW = (r.openai / max) * trackW;
-    const share = Math.round((r.whatsapp / total) * 100);
+    const total = sum(r);
+    let x = labelW;
+
+    const segments = series.map((s) => {
+      const value = r[s.key] ?? 0;
+      if (value <= 0) return '';
+      const w = (value / max) * trackW;
+      const rect = `<rect class="bar" x="${x.toFixed(1)}" y="${y}" width="${Math.max(0, w - (x > labelW ? 2 : 0)).toFixed(1)}" height="${barH}" rx="4" fill="${s.color}">
+        <title>${escapeHtml(r.scenario)} — ${escapeHtml(s.label)}: ₹${fmt(Math.round(value))} (${Math.round((value / total) * 100)}%)</title></rect>`;
+      x += w + 2;
+      return rect;
+    }).join('\n      ');
 
     return `<g>
       <text class="axis-label" x="${labelW - 12}" y="${y + barH - 3}" text-anchor="end">${escapeHtml(r.scenario)}</text>
-      <rect class="bar" x="${labelW}" y="${y}" width="${wsW.toFixed(1)}" height="${barH}" rx="4" fill="${WHATSAPP}">
-        <title>${escapeHtml(r.scenario)} — WhatsApp: ₹${fmt(r.whatsapp)} (${share}%)</title></rect>
-      <rect class="bar" x="${(labelW + wsW + 2).toFixed(1)}" y="${y}" width="${Math.max(0, aiW - 2).toFixed(1)}" height="${barH}" rx="4" fill="${OPENAI}">
-        <title>${escapeHtml(r.scenario)} — OpenAI: ₹${fmt(r.openai)} (${100 - share}%)</title></rect>
-      <text class="value-label" x="${(labelW + wsW + aiW + 10).toFixed(1)}" y="${y + barH - 3}">₹${fmt(total)}</text>
+      ${segments}
+      <text class="value-label" x="${(x + 8).toFixed(1)}" y="${y + barH - 3}">₹${fmt(Math.round(total))}</text>
       ${r.note ? `<text class="axis-note" x="${labelW}" y="${y + barH + 16}">${escapeHtml(r.note)}</text>` : ''}
     </g>`;
   }).join('\n');
 
   return `<figure class="chart" id="${id}">
     <figcaption>${escapeHtml(title)}</figcaption>
-    ${legend([{ label: 'WhatsApp fees', color: WHATSAPP }, { label: 'OpenAI tokens', color: OPENAI }])}
+    ${legend(series.map((s) => ({ label: s.label, color: s.color })))}
     <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}" preserveAspectRatio="xMinYMin meet">
       ${bars}
     </svg>
-    ${tableView(['Scenario', 'WhatsApp ₹', 'OpenAI ₹', 'Total ₹'],
-    rows.map((r) => [r.scenario, fmt(r.whatsapp), fmt(r.openai), fmt(r.whatsapp + r.openai)]))}
+    ${note ? `<p class="chart-note">${escapeHtml(note)}</p>` : ''}
+    ${tableView(['Scenario', ...series.map((s) => `${s.label} ₹`), 'Total ₹'],
+    rows.map((r) => [r.scenario, ...series.map((s) => fmt(Math.round(r[s.key] ?? 0))), fmt(Math.round(sum(r)))]))}
   </figure>`;
 }
 

@@ -26,6 +26,11 @@ BRANCH="${BRANCH:-main}"
 DOMAIN="${DOMAIN:-estate.leadq.co.in}"
 KEY="${KEY:-/root/.ssh/id_ed25519}"
 
+# tunnel — loopback only, behind the cloudflared this box already runs, gated by
+#          Cloudflare Access. No public port, no certificate to renew.
+# public — 443 with certbot and HTTP basic auth.
+MODE="${MODE:-tunnel}"
+
 # Paths git may own on this box are code only. data/ and dist/ are live state
 # here and must never be merged over.
 CODE_PATHS=(src schema content deploy test kw-collect.sh package.json playwright.config.js README.md)
@@ -146,28 +151,34 @@ fi
 
 # ----------------------------------------------------------------- the vhost
 
-say "nginx"
+say "nginx ($MODE)"
+
+enable_vhost() {
+  install -m 644 "$DIR/deploy/$1" /etc/nginx/sites-available/kw-estate
+  ln -sfn /etc/nginx/sites-available/kw-estate /etc/nginx/sites-enabled/kw-estate
+  if nginx -t 2>/dev/null; then
+    systemctl reload nginx
+    ok "vhost enabled and nginx reloaded"
+  else
+    rm -f /etc/nginx/sites-enabled/kw-estate
+    nginx -t || true
+    die "nginx -t failed; the vhost was removed again and nginx was NOT reloaded."
+  fi
+}
 
 if [ -e /etc/nginx/sites-enabled/kw-estate ]; then
   ok "vhost already enabled"
+elif [ "$MODE" = "tunnel" ]; then
+  enable_vhost kw-estate.tunnel.nginx.conf
+  ok "listening on 127.0.0.1:8060 only — no public port claimed"
+  warn "the tunnel half is yours: add the ingress rule, route the DNS, then put"
+  warn "$DOMAIN behind Cloudflare Access. Until Access exists, it is PUBLIC."
+elif [ -f /etc/nginx/.kw-estate-htpasswd ]; then
+  enable_vhost kw-estate.nginx.conf
 else
-  [ -f /etc/nginx/.kw-estate-htpasswd ] || {
-    warn "no /etc/nginx/.kw-estate-htpasswd yet. This page must not be public."
-    warn "create one, then re-run:  htpasswd -c /etc/nginx/.kw-estate-htpasswd <user>"
-  }
-
-  if [ -f /etc/nginx/.kw-estate-htpasswd ]; then
-    install -m 644 "$DIR/deploy/kw-estate.nginx.conf" /etc/nginx/sites-available/kw-estate
-    ln -sfn /etc/nginx/sites-available/kw-estate /etc/nginx/sites-enabled/kw-estate
-    if nginx -t 2>/dev/null; then
-      systemctl reload nginx
-      ok "vhost enabled and nginx reloaded"
-    else
-      rm -f /etc/nginx/sites-enabled/kw-estate
-      nginx -t || true
-      die "nginx -t failed; the vhost was removed again and nginx was NOT reloaded."
-    fi
-  fi
+  warn "no /etc/nginx/.kw-estate-htpasswd yet, and MODE=public needs one."
+  warn "This page must not be public. Create it, then re-run:"
+  warn "  htpasswd -c /etc/nginx/.kw-estate-htpasswd <user>"
 fi
 
 # ------------------------------------------------------------------ first run
@@ -188,11 +199,30 @@ Done.
   systemctl start kw-estate                 run a pass now
   journalctl -u kw-estate -n 50             what the last pass did
   bash $DIR/deploy/install.sh               update the code, keep the data
+  curl -sI http://127.0.0.1:8060/ -H 'Host: $DOMAIN'   is nginx serving it
 
+EOF
+
+if [ "$MODE" = "tunnel" ]; then
+cat <<EOF
+Still yours to do, on this box and in Cloudflare:
+  1. add to the cloudflared ingress, above the catch-all:
+       - hostname: $DOMAIN
+         service: http://127.0.0.1:8060
+  2. cloudflared tunnel route dns <tunnel-name> $DOMAIN
+  3. systemctl restart cloudflared
+  4. Zero Trust -> Access -> Applications -> add $DOMAIN, allow your emails
+
+Step 4 is the authentication. Skip it and this page is public, and it names
+every open port, every failed unit and every unrotated credential in the estate.
+EOF
+else
+cat <<EOF
 Still yours to do:
-  certbot --nginx -d $DOMAIN                if this domain has no certificate yet
-  point $DOMAIN at this box in DNS
+  point $DOMAIN at $(hostname -I 2>/dev/null | awk '{print $1}') in DNS, unproxied
+  certbot --nginx -d $DOMAIN
 
 The basic auth is not decoration. This page names every open port, every failed
 unit and every unrotated credential in the estate.
 EOF
+fi

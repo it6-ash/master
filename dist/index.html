@@ -1074,6 +1074,57 @@ th {
   letter-spacing: 0.08em;
 }
 
+/* -------------------------------------------------- costs & renewals */
+
+/* A bill is a date and a number. The date is the part that hurts if you miss
+   it, so due-ness is encoded as colour on an ordinal scale and the table is
+   sorted by it — you should never have to read the whole thing to find the
+   one that renews on Tuesday. */
+
+.chart-note {
+  color: var(--ink-3);
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+  margin: 6px 0 0;
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+.chart-note strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.chart-note code {
+  background: var(--sunken);
+  border-radius: 4px;
+  font: 11.5px var(--mono);
+  padding: 1px 5px;
+}
+
+.renewals .table-wrap { margin-top: 12px; }
+.renewal-table th[scope="row"] { text-transform: none; font-size: var(--fs-meta); color: var(--ink); font-weight: 600; }
+.renewal-kind {
+  color: var(--ink-3);
+  font: 10px var(--mono);
+  letter-spacing: 0.06em;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+.renewal-detail { color: var(--ink-3); display: block; font-size: 11px; font-weight: 400; margin-top: 2px; }
+.renewal-cycle { color: var(--ink-3); font-size: 10.5px; }
+
+/* Not recorded is not zero. It reads as a gap, deliberately. */
+.unrecorded { color: var(--ink-3); font-style: italic; opacity: 0.75; }
+
+.renewal-due {
+  border-radius: 999px;
+  display: inline-block;
+  font: 11px var(--mono);
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.tone-critical { background: color-mix(in srgb, var(--critical) 18%, transparent); color: var(--critical); }
+.tone-high     { background: color-mix(in srgb, var(--warning) 20%, transparent);  color: var(--warning); }
+.tone-medium   { background: color-mix(in srgb, var(--info) 16%, transparent);     color: var(--info); }
+.tone-ok       { background: var(--sunken); color: var(--ink-3); }
+.tone-unknown  { background: transparent; color: var(--ink-3); border: 1px dashed var(--border); }
+
 /* ------------------------------------------------------- detail page */
 
 /* Project and server detail are FULL PAGES, not an overlay. There is far too
@@ -1409,7 +1460,10 @@ body.searching .no-match { display: none !important; }
   .table-wrap table,
   .table-wrap tbody,
   .table-wrap tr,
+  .table-wrap th[scope="row"],
   .table-wrap td { display: block; width: 100%; }
+  /* A row header restacks as the card's title, not as another labelled cell. */
+  .table-wrap th[scope="row"] { border-bottom: 0; padding: 8px 12px 4px; }
   .table-wrap thead { display: none; }
   .table-wrap tr {
     border: 1px solid var(--border);
@@ -1491,7 +1545,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-25 08:45 UTC</div>
+      <div class="built">built 2026-08-25 08:52 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
@@ -1948,39 +2002,116 @@ body.searching .no-match { display: none !important; }
     <svg viewBox="0 0 560 162" role="img" aria-label="Monthly running cost by volume" preserveAspectRatio="xMinYMin meet">
       <g>
       <text class="axis-label" x="104" y="25" text-anchor="end">Light</text>
-      <rect class="bar" x="116" y="12" width="15.2" height="16" rx="4" fill="var(--s3)">
-        <title>Light — WhatsApp: ₹1,038 (90%)</title></rect>
-      <rect class="bar" x="133.2" y="12" width="0.0" height="16" rx="4" fill="var(--s1)">
-        <title>Light — OpenAI: ₹118 (10%)</title></rect>
-      <text class="value-label" x="143.0" y="25">₹1,156</text>
+      <rect class="bar" x="116.0" y="12" width="14.7" height="16" rx="4" fill="var(--s3)">
+        <title>Light — WhatsApp fees: ₹1,038 (90%)</title></rect>
+      <rect class="bar" x="132.7" y="12" width="0.0" height="16" rx="4" fill="var(--s1)">
+        <title>Light — OpenAI tokens: ₹118 (10%)</title></rect>
+      <text class="value-label" x="144.4" y="25">₹1,156</text>
       <text class="axis-note" x="116" y="44">1,000 broadcasts · 200 conversations</text>
     </g>
 <g>
       <text class="axis-label" x="104" y="77" text-anchor="end">Current-ish</text>
-      <rect class="bar" x="116" y="64" width="76.2" height="16" rx="4" fill="var(--s3)">
-        <title>Current-ish — WhatsApp: ₹5,190 (85%)</title></rect>
-      <rect class="bar" x="194.2" y="64" width="11.9" height="16" rx="4" fill="var(--s1)">
-        <title>Current-ish — OpenAI: ₹944 (15%)</title></rect>
-      <text class="value-label" x="216.0" y="77">₹6,134</text>
+      <rect class="bar" x="116.0" y="64" width="73.5" height="16" rx="4" fill="var(--s3)">
+        <title>Current-ish — WhatsApp fees: ₹5,190 (85%)</title></rect>
+      <rect class="bar" x="191.5" y="64" width="11.4" height="16" rx="4" fill="var(--s1)">
+        <title>Current-ish — OpenAI tokens: ₹944 (15%)</title></rect>
+      <text class="value-label" x="214.9" y="77">₹6,134</text>
       <text class="axis-note" x="116" y="96">5,000 broadcasts · 1,600 conversations</text>
     </g>
 <g>
       <text class="axis-label" x="104" y="129" text-anchor="end">Scaled</text>
-      <rect class="bar" x="116" y="116" width="304.7" height="16" rx="4" fill="var(--s3)">
-        <title>Scaled — WhatsApp: ₹20,760 (88%)</title></rect>
-      <rect class="bar" x="422.7" y="116" width="41.3" height="16" rx="4" fill="var(--s1)">
-        <title>Scaled — OpenAI: ₹2,950 (12%)</title></rect>
-      <text class="value-label" x="474.0" y="129">₹23,710</text>
+      <rect class="bar" x="116.0" y="116" width="294.2" height="16" rx="4" fill="var(--s3)">
+        <title>Scaled — WhatsApp fees: ₹20,760 (88%)</title></rect>
+      <rect class="bar" x="412.2" y="116" width="39.8" height="16" rx="4" fill="var(--s1)">
+        <title>Scaled — OpenAI tokens: ₹2,950 (12%)</title></rect>
+      <text class="value-label" x="464.0" y="129">₹23,710</text>
       <text class="axis-note" x="116" y="148">20,000 broadcasts · 5,000 conversations</text>
     </g>
     </svg>
+    <p class="chart-note">Hosting is the fixed floor: it does not move with WhatsApp volume, which is what the bars below it do.</p>
     <details class="table-view">
     <summary>Table view</summary>
     <div class="table-wrap"><table>
-      <thead><tr><th>Scenario</th><th>WhatsApp ₹</th><th>OpenAI ₹</th><th>Total ₹</th></tr></thead>
-      <tbody><tr><td data-label="Scenario">Light</td><td data-label="WhatsApp ₹" class="num">1,038</td><td data-label="OpenAI ₹" class="num">118</td><td data-label="Total ₹" class="num">1,156</td></tr><tr><td data-label="Scenario">Current-ish</td><td data-label="WhatsApp ₹" class="num">5,190</td><td data-label="OpenAI ₹" class="num">944</td><td data-label="Total ₹" class="num">6,134</td></tr><tr><td data-label="Scenario">Scaled</td><td data-label="WhatsApp ₹" class="num">20,760</td><td data-label="OpenAI ₹" class="num">2,950</td><td data-label="Total ₹" class="num">23,710</td></tr></tbody>
+      <thead><tr><th>Scenario</th><th>WhatsApp fees ₹</th><th>OpenAI tokens ₹</th><th>Total ₹</th></tr></thead>
+      <tbody><tr><td data-label="Scenario">Light</td><td data-label="WhatsApp fees ₹" class="num">1,038</td><td data-label="OpenAI tokens ₹" class="num">118</td><td data-label="Total ₹" class="num">1,156</td></tr><tr><td data-label="Scenario">Current-ish</td><td data-label="WhatsApp fees ₹" class="num">5,190</td><td data-label="OpenAI tokens ₹" class="num">944</td><td data-label="Total ₹" class="num">6,134</td></tr><tr><td data-label="Scenario">Scaled</td><td data-label="WhatsApp fees ₹" class="num">20,760</td><td data-label="OpenAI tokens ₹" class="num">2,950</td><td data-label="Total ₹" class="num">23,710</td></tr></tbody>
     </table></div>
   </details>
+  </figure>
+    <figure class="chart renewals" id="renewals">
+    <figcaption>Recurring cost and renewals</figcaption>
+    <p class="chart-note">
+      Nothing is priced yet.
+      7 lines still have no price or date — add them to <code>data/costs.json</code>. The list itself is derived from the servers, so a new domain appears here on its own.
+    </p>
+    <div class="table-wrap">
+      <table class="renewal-table">
+        <thead><tr><th scope="col">Line</th><th scope="col">Provider</th><th scope="col">Cost</th><th scope="col">Renews</th><th scope="col">Due</th></tr></thead>
+        <tbody><tr>
+      <th scope="row" data-label="Line">ghaziabadcommercialshops.org
+        <span class="renewal-kind">Domain</span>
+        <span class="renewal-detail">served by srv1900820</span>
+      </th>
+      <td data-label="Provider"><span class="unrecorded">—</span></td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr><tr>
+      <th scope="row" data-label="Line">kwbluepearl.com
+        <span class="renewal-kind">Domain</span>
+        <span class="renewal-detail">served by srv1900820</span>
+      </th>
+      <td data-label="Provider"><span class="unrecorded">—</span></td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr><tr>
+      <th scope="row" data-label="Line">kwgroup.in
+        <span class="renewal-kind">Domain</span>
+        <span class="renewal-detail">served by srv1900820</span>
+      </th>
+      <td data-label="Provider"><span class="unrecorded">—</span></td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr><tr>
+      <th scope="row" data-label="Line">leadq.co.in
+        <span class="renewal-kind">Domain</span>
+        <span class="renewal-detail">served by srv1340120</span>
+      </th>
+      <td data-label="Provider"><span class="unrecorded">—</span></td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr><tr>
+      <th scope="row" data-label="Line"><a href="#server=srv1340120" data-open="server:srv1340120">srv1340120</a>
+        <span class="renewal-kind">VPS</span>
+        <span class="renewal-detail">KVM 4 · 4 vCPU · 15Gi RAM · 193G disk</span>
+      </th>
+      <td data-label="Provider">Hostinger</td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr><tr>
+      <th scope="row" data-label="Line"><a href="#server=srv1870078" data-open="server:srv1870078">srv1870078</a>
+        <span class="renewal-kind">VPS</span>
+        <span class="renewal-detail">KVM 2 · 2 vCPU · 7.8Gi RAM · 96G disk</span>
+      </th>
+      <td data-label="Provider">Hostinger</td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr><tr>
+      <th scope="row" data-label="Line"><a href="#server=srv1900820" data-open="server:srv1900820">srv1900820</a>
+        <span class="renewal-kind">VPS</span>
+        <span class="renewal-detail">KVM 4 · 4 vCPU · 15Gi RAM · 193G disk</span>
+      </th>
+      <td data-label="Provider">Hostinger</td>
+      <td class="num" data-label="Cost"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Renews"><span class="unrecorded">not recorded</span></td>
+      <td data-label="Due"><span class="renewal-due tone-unknown">no date</span></td>
+    </tr></tbody>
+      </table>
+    </div>
   </figure>
   </div>
 

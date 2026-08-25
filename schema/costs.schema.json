@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "costs.schema.json",
+  "title": "data/costs.json",
+  "description": "Prices and renewal dates. Hand-maintained: no dump reports what an invoice says. The LIST of servers and domains is derived from data/servers.json, so this file only ever supplies the two facts a collector cannot see. Keys are vps:<server-id>, domain:<registrable-domain>, or any other id with a label.",
+  "type": "object",
+  "required": ["items"],
+  "properties": {
+    "_comment": { "type": "string" },
+    "currency": { "type": "string", "minLength": 3, "maxLength": 3, "description": "ISO 4217. One currency for the whole file; mixed currencies would need conversion this build step has no business doing." },
+    "note": { "type": ["string", "null"], "description": "Shown under the cost chart." },
+    "items": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z]+:[A-Za-z0-9._-]+$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string", "description": "Only needed for ids that are neither a known server nor a discovered domain." },
+          "provider": { "type": ["string", "null"], "description": "Who bills you. Hostinger, GoDaddy, Cloudflare." },
+          "amount": { "type": ["number", "null"], "minimum": 0, "description": "Per cycle, in the file's currency. null means not recorded, which renders as such rather than as zero." },
+          "cycle": { "enum": ["monthly", "quarterly", "yearly"], "description": "Normalised to a monthly figure for the total." },
+          "renewsOn": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Next renewal date. The panel sorts by this and counts down to it." },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

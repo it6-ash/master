@@ -90,6 +90,7 @@ const servers = loadDataFile('servers.json', 'servers.schema.json', { fallback: 
 const workflows = loadDataFile('workflows.json', 'workflows.schema.json', { fallback: {} }) ?? {};
 const issues = loadDataFile('issues.json', 'issues.schema.json', { fallback: [] }) ?? [];
 const projectsJson = loadDataFile('projects.json', 'projects.schema.json', { required: false, fallback: null });
+loadDataFile('costs.json', 'costs.schema.json', { required: false, fallback: null });
 
 const serverIds = new Set(Object.keys(servers));
 const workflowIds = new Set(Object.keys(workflows));

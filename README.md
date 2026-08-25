@@ -210,6 +210,34 @@ explaining where the value comes from.
   `sourceSha256` is what makes re-ingest idempotent.
 - `project-frontmatter.schema.json` — the contract at the top of each project doc.
 - `events.schema.json` — change events for the "What changed" panel.
+- `costs.schema.json` — **hand-maintained.** Prices and renewal dates only; no
+  dump reports what an invoice says.
+
+## What it costs
+
+The Analysis section carries a **Recurring cost and renewals** panel, and
+hosting stacks into the cost chart as the fixed floor beneath the volume-driven
+bars — which is the point being made: WhatsApp scales, the VPS bill does not.
+
+The *list* is derived. Three VPS with their KVM tier read off the vCPU count,
+plus every registrable domain nginx answers for, `*.hstgr.cloud` excluded
+because those are issued rather than bought. Deploy a new domain and it appears
+in the panel by itself on the next collection, marked "not recorded" — which is
+the useful answer, because it names a bill nobody is tracking.
+
+The *prices and dates* cannot be derived and live in `data/costs.json`, keyed
+`vps:<server-id>` and `domain:<domain>`. Anything else you pay for takes any key
+plus a `label`. A blank stays blank: "we don't know what this costs" and "this
+is free" are different sentences, and only one of them is true.
+
+```json
+"vps:srv1340120": { "provider": "Hostinger", "amount": 1099, "cycle": "monthly", "renewsOn": "2026-11-14" },
+"domain:leadq.co.in": { "provider": "GoDaddy", "amount": 899, "cycle": "yearly", "renewsOn": "2027-03-02" }
+```
+
+Yearly and quarterly cycles are normalised to a monthly figure for the total.
+`npm run validate` schema-checks the file; `npm run build` warns for every line
+still unpriced.
 
 ## Project docs
 
