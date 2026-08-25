@@ -124,6 +124,10 @@ fi
 
 printf '\n    This key must be in root@authorized_keys on the OTHER TWO boxes:\n\n'
 printf '\033[2m%s\033[0m\n\n' "$(cat "$KEY.pub")"
+printf '    If ssh to one of them answers "Permission denied (publickey)", that box
+    has password auth off and you cannot push the key over ssh at all. Use
+    hPanel -> VPS -> Browser terminal, or hPanel -> VPS -> SSH keys, which
+    writes it to root for you. Then re-run this script.\n\n'
 
 REACHABLE=0
 UNREACHABLE=()
