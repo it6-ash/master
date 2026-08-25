@@ -466,6 +466,24 @@ h2.section .count {
 }
 .tile-note { font: var(--fs-meta) var(--mono); color: var(--ink-3); margin-top: 5px; }
 .tile-spark { margin-top: 8px; }
+
+/* An unstyled <path> fills black. .spark-area is a closed shape, so with no
+   rules at all it renders as a solid slab — near-invisible on a dark card and
+   glaring on a light one. Stroke the line, tint the area, and stop the
+   non-uniform viewBox scaling from stretching the stroke with it. */
+.spark { display: block; width: 100%; height: 28px; }
+.spark-area { fill: color-mix(in srgb, var(--primary) 13%, transparent); stroke: none; }
+.spark-line,
+.spark-baseline {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.spark-line { stroke: var(--primary); }
+.spark-baseline { stroke: var(--border); stroke-width: 1; }
+.spark-dot { fill: var(--primary); stroke: none; }
 @container (max-width: 150px) {
   .tile-note { display: none; }
 }

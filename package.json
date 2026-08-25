@@ -15,7 +15,7 @@
     "diff": "node src/diff.js",
     "validate": "node src/validate.js",
     "new-project": "node src/new-project.js",
-    "test": "node --test \"test/**/*.test.js\"",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
     "test:e2e": "playwright test",
     "test:all": "npm test && npm run test:e2e",
     "sync": "node src/sync.js",

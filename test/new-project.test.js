@@ -10,7 +10,6 @@ test('scaffolds a project pre-filled from the last ingest', () => {
   const file = abs('content/projects/tmp-scaffold-check.md');
   try {
     // kwatch-leadq is a discovered project, so its facts should come through.
-    fs.copyFileSync(abs('data/projects.json'), abs('data/projects.json'));
     const out = run('kwatch-leadq');
     assert.match(out, /kwatch-leadq\.md/);
 
