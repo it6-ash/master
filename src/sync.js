@@ -104,11 +104,20 @@ const sshArgs = (host) => [
 ];
 
 /**
+ * Loopback is this machine. Running the dashboard ON the estate makes one of
+ * the three hosts local, and going out through sshd to reach yourself means
+ * the box has to trust its own key and sshd has to accept a root login from
+ * itself — two ways to fail at a thing that needs no network at all.
+ */
+export const isLocal = (host) => ['127.0.0.1', '::1', 'localhost'].includes(String(host.host ?? ''));
+
+/**
  * Push the collector, run it, and bring the dump back. The collector is
  * read-only and redacts at source, so nothing sensitive crosses the wire in
  * the clear beyond what SSH already protects.
  */
 async function collect(host) {
+  const local = isLocal(host);
   const target = `${host.user ?? 'root'}@${host.host}`;
   const remoteScript = '/root/kw-collect.sh';
   const localScript = abs('kw-collect.sh');
@@ -117,14 +126,18 @@ async function collect(host) {
     return { ok: false, reason: 'kw-collect.sh is missing from the repo root' };
   }
 
-  process.stdout.write(`${dim(`  → ${target}`)}\n`);
+  process.stdout.write(`${dim(`  → ${local ? 'this machine, no ssh' : target}`)}\n`);
 
-  const push = await run('scp', [...sshArgs(host), localScript, `${target}:${remoteScript}`]);
-  if (push.code !== 0) return { ok: false, reason: `could not copy the collector (scp exit ${push.code})` };
+  if (!local) {
+    const push = await run('scp', [...sshArgs(host), localScript, `${target}:${remoteScript}`]);
+    if (push.code !== 0) return { ok: false, reason: `could not copy the collector (scp exit ${push.code})` };
+  }
 
-  const exec = await run('ssh', [...sshArgs(host), target, `bash ${remoteScript}`], { capture: true });
+  const exec = local
+    ? await run('bash', [localScript], { capture: true })
+    : await run('ssh', [...sshArgs(host), target, `bash ${remoteScript}`], { capture: true });
   if (exec.code !== 0) {
-    return { ok: false, reason: `collector failed (ssh exit ${exec.code}) ${exec.stderr.slice(0, 200)}` };
+    return { ok: false, reason: `collector failed (exit ${exec.code}) ${exec.stderr.slice(0, 200)}` };
   }
 
   // The collector prints "Collected: /root/kw-collect-<host>-<stamp>.txt"
@@ -141,14 +154,21 @@ async function collect(host) {
 
   ensureDir(abs('raw'));
   const localName = remoteDump ? path.basename(remoteDump) : `kw-collect-${host.id}.txt`;
-  const pull = await run('scp', [...sshArgs(host), `${target}:${remoteDump ?? ''}`, abs('raw', localName)]);
-  if (pull.code !== 0) return { ok: false, reason: `could not fetch the dump (scp exit ${pull.code})` };
+  const destination = abs('raw', localName);
+
+  if (local) {
+    if (!dryRun) fs.copyFileSync(remoteDump, destination);
+  } else {
+    const pull = await run('scp', [...sshArgs(host), `${target}:${remoteDump ?? ''}`, destination]);
+    if (pull.code !== 0) return { ok: false, reason: `could not fetch the dump (scp exit ${pull.code})` };
+  }
 
   // Don't leave a pile of estate inventories in /root. On a timer that is four
   // new ones per box per day, each naming every open port and cron credential.
-  if (remoteDump) await run('ssh', [...sshArgs(host), target, `rm -f ${remoteDump}`]);
+  if (remoteDump && local && !dryRun) fs.rmSync(remoteDump, { force: true });
+  else if (remoteDump && !local) await run('ssh', [...sshArgs(host), target, `rm -f ${remoteDump}`]);
 
-  return { ok: true, file: rel(abs('raw', localName)) };
+  return { ok: true, file: rel(destination) };
 }
 
 /**

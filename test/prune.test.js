@@ -4,7 +4,19 @@ import fs from 'node:fs';
 
 import { abs } from '../src/lib/fsx.js';
 import { pruneSnapshots } from '../src/ingest/index.js';
-import { pruneRaw } from '../src/sync.js';
+import { pruneRaw, isLocal } from '../src/sync.js';
+
+test('loopback is collected without ssh, anything else is not', () => {
+  // The box hosting the dashboard is one of the three it collects. Going out
+  // through sshd to reach itself needs the box to trust its own key and sshd
+  // to accept a root login from itself — both of which failed on srv1340120.
+  for (const host of ['127.0.0.1', '::1', 'localhost']) {
+    assert.equal(isLocal({ host }), true, host);
+  }
+  for (const host of ['72.62.228.194', '200.141.9.83', '127.0.0.53', undefined]) {
+    assert.equal(isLocal({ host }), false, String(host));
+  }
+});
 
 /**
  * Both pruners rely on the filenames sorting chronologically. They do — the

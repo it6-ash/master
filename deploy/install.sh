@@ -96,14 +96,10 @@ if [ ! -f "$KEY" ]; then
   ok "generated $KEY"
 fi
 
-# This box collects from itself too. Over loopback, not its public IP: no
-# hairpin, no firewall rule, and it keeps one code path for all three.
-grep -qF "$(cat "$KEY.pub")" /root/.ssh/authorized_keys 2>/dev/null || {
-  mkdir -p /root/.ssh && chmod 700 /root/.ssh
-  cat "$KEY.pub" >> /root/.ssh/authorized_keys
-  chmod 600 /root/.ssh/authorized_keys
-  ok "authorised this box to reach itself over loopback"
-}
+# This box collects from itself by running the collector directly. No key in
+# its own authorized_keys, no root login from itself for sshd to allow or
+# refuse — one less credential on the box and one less thing to misconfigure.
+ok "this box collects itself locally; no ssh to 127.0.0.1 needed"
 
 if [ ! -f "$DIR/config/hosts.json" ]; then
   mkdir -p "$DIR/config"
@@ -129,9 +125,9 @@ printf '    If ssh to one of them answers "Permission denied (publickey)", that 
     hPanel -> VPS -> Browser terminal, or hPanel -> VPS -> SSH keys, which
     writes it to root for you. Then re-run this script.\n\n'
 
-REACHABLE=0
+REACHABLE=1          # this box, collected locally
 UNREACHABLE=()
-for h in 127.0.0.1 200.141.9.83 200.234.35.172; do
+for h in 200.141.9.83 200.234.35.172; do
   if ssh -i "$KEY" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
        "root@$h" true 2>/dev/null; then
     ok "root@$h"
