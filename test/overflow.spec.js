@@ -281,3 +281,35 @@ test('template imports get no page, so nothing links to one', async ({ page }) =
   expect(dangling, 'links pointing at a page that was not rendered').toEqual([]);
   expect(links).toBeGreaterThan(0);
 });
+
+/* ------------------------------------------------------- font-independence */
+
+/**
+ * The same sweep with a deliberately wider font stack.
+ *
+ * Every glyph metric on a GitHub runner differs from the one on the machine
+ * this was written on: Ubuntu resolves system-ui to DejaVu Sans, Windows to
+ * Segoe UI, and DejaVu is meaningfully wider. Layouts that fit here overflowed
+ * there twice, and both times the only place it showed was a red CI run —
+ * which is a slow, confusing way to learn that a hostname does not wrap.
+ *
+ * Verdana is a reasonable stand-in: present on Windows and macOS, wider than
+ * both defaults, and it makes the failure reproducible locally. Narrow widths
+ * only, because that is where the margin runs out.
+ */
+for (const width of [280, 320, 360]) {
+  test(`no horizontal scroll at ${width}px with a wider font`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+
+    for (const theme of THEMES) {
+      await load(page, '', theme);
+      await page.addStyleTag({
+        content: ':root { --sans: Verdana, "DejaVu Sans", system-ui, sans-serif; }',
+      });
+      const worst = await worstOffender(page);
+      const measured = await overflow(page);
+      expect(worst, `${width}px · ${theme} · wide font — widest offender`).toBeNull();
+      expect(measured.doc, `${width}px · ${theme} · wide font — document`).toBe(0);
+    }
+  });
+}

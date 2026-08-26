@@ -624,7 +624,10 @@ h2.section .count {
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
-.server-name { font-weight: 700; letter-spacing: -0.015em; font-size: 16px; }
+/* "srv1340120" is one unbreakable word. In a narrow flex column with a wider
+   system font it cannot fit and paints outside the card, which the browser
+   counts as document overflow. Let it break rather than push the page sideways. */
+.server-name { font-weight: 700; letter-spacing: -0.015em; font-size: 16px; overflow-wrap: anywhere; }
 .server-role { color: var(--ink-2); font-size: var(--fs-meta); margin-top: 1px; }
 .server-meta { text-align: right; flex: none; }
 .server-ip { font: var(--fs-meta) var(--mono); color: var(--ink-2); }
@@ -674,8 +677,18 @@ h2.section .count {
   font-variant-numeric: tabular-nums;
   color: var(--ink-3);
   flex: none;
-  min-width: 118px;
+  /* 52px label + 40px bar + 118px value + 20px of gaps is 230px, which does not
+     fit a 280px screen once padding is taken. Fixed minimums that sum past the
+     viewport are the classic way a "responsive" layout still overflows: each
+     one looks reasonable alone. The percentage yields on small screens and the
+     pixel value caps it on large ones. */
+  min-width: min(118px, 42%);
   text-align: right;
+  /* flex: none also means flex-shrink: 0, so the item never goes below its
+     content width however narrow the card gets. Allow the shrink and let the
+     text wrap; a wrapped reading beats a page that scrolls sideways. */
+  flex: 0 1 auto;
+  overflow-wrap: anywhere;
 }
 .meter-value strong { color: var(--ink); font-weight: 650; }
 
@@ -689,7 +702,9 @@ h2.section .count {
 }
 .count-cell { display: grid; gap: 1px; text-align: center; }
 .count-cell strong { font: 600 17px/1.1 var(--mono); color: var(--ink); }
-.count-cell span { font-size: 10.5px; color: var(--ink-3); }
+/* "containers" in an auto-fit track that can be 53px wide on a 280px screen.
+   Hyphenate rather than overflow: the label is worth more than the tidiness. */
+.count-cell span { font-size: 10.5px; color: var(--ink-3); overflow-wrap: anywhere; }
 
 .runs-here { padding: 12px 0 4px; display: grid; gap: 6px; }
 .runs-title {
@@ -828,7 +843,7 @@ h2.section .count {
   color: var(--ink-2);
 }
 .tree-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tree-meta { font: 10.5px var(--mono); color: var(--ink-3); }
+.tree-meta { font: 10.5px var(--mono); color: var(--ink-3); overflow-wrap: anywhere; }
 .tree-count { margin-left: auto; font: 10.5px var(--mono); color: var(--ink-3); flex: none; }
 
 .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
@@ -893,7 +908,10 @@ h2.section .count {
 .issue--medium { border-left-color: var(--info); }
 .issue--low { border-left-color: var(--idle); }
 .issue-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-.issue-title { font-weight: 700; }
+/* Issue titles now carry machine-generated identifiers — a failing hostname is
+   68 characters of landing-page path with no word boundary in it. Without this
+   the title sets the panel's min-content width and the whole page scrolls. */
+.issue-title { font-weight: 700; overflow-wrap: anywhere; }
 .issue-body { color: var(--ink-2); font-size: var(--fs-meta); }
 .issue-evidence {
   font: var(--fs-meta) var(--mono);
@@ -1137,7 +1155,16 @@ th {
 .renewal-table { table-layout: auto; }
 .renewal-table td, .renewal-table th { vertical-align: top; }
 .renewal-table td:not(.num) { white-space: normal; }
-.renewal-table th[scope="row"] { text-transform: none; font-size: var(--fs-meta); color: var(--ink); font-weight: 600; }
+/* A row header here is a machine-generated identifier — a hostname, or a
+   68-character landing-page path. Nothing in it is a word boundary, so without
+   this it sets the table's min-content width and pushes the whole page sideways. */
+.renewal-table th[scope="row"] {
+  text-transform: none;
+  font-size: var(--fs-meta);
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
 .renewal-kind {
   color: var(--ink-3);
   font: 10px var(--mono);
@@ -1608,7 +1635,7 @@ body.searching .no-match { display: none !important; }
     <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
-      <div class="built">built 2026-08-26 06:45 UTC</div>
+      <div class="built">built 2026-08-26 07:18 UTC</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-13.5a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.5a1 1 0 0 1 1-1zm0 15a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1zM3.5 12a1 1 0 0 1 1-1H6a1 1 0 1 1 0 2H4.5a1 1 0 0 1-1-1zm14.5 0a1 1 0 0 1 1-1H21a1 1 0 1 1 0 2h-1.5a1 1 0 0 1-1-1zM5.6 5.6a1 1 0 0 1 1.4 0l1 1a1 1 0 1 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm10.4 10.4a1 1 0 0 1 1.4 0l1 1a1 1 0 0 1-1.4 1.4l-1-1a1 1 0 0 1 0-1.4zm2.4-10.4a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 16 6.6l1-1a1 1 0 0 1 1.4 0zM8 16a1 1 0 0 1 0 1.4l-1 1A1 1 0 0 1 5.6 17l1-1a1 1 0 0 1 1.4 0z"/></svg>
