@@ -5,7 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "kw-estate-report",
-        "responseMode": "onReceived",
+        "responseMode": "responseNode",
         "options": {}
       },
       "id": "a1b2c3d4-0001-4000-8000-000000000001",
@@ -47,6 +47,22 @@
         260,
         0
       ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ sent: true, to: $json.to }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Confirm sent",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        500,
+        0
+      ],
+      "notes": "Only reached if the mail actually went. A failure upstream returns 500 to the caller, which is what makes \"report not sent\" honest."
     }
   ],
   "connections": {
@@ -66,6 +82,17 @@
         [
           {
             "node": "Send report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send report": {
+      "main": [
+        [
+          {
+            "node": "Confirm sent",
             "type": "main",
             "index": 0
           }
