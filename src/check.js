@@ -24,6 +24,10 @@ import { isoDate } from './lib/units.js';
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const noForms = args.includes('--no-forms');
+// The probes run four times a day; the forms should not. Each submission is a
+// real lead in a real CRM, and four a day per landing page is somebody else's
+// afternoon spent deleting them.
+const forceForms = args.includes('--force-forms');
 
 const color = process.stdout.isTTY && !process.env.NO_COLOR;
 const paint = (c, s) => (color ? `[${c}m${s}[0m` : s);
@@ -121,10 +125,20 @@ async function probe(target) {
  */
 export function testLead(form, { today }) {
   const marker = form.marker ?? 'KW Estate monitor';
+  const [y, m, d] = today.split('-');
+
+  // Ten digits so length validation passes, but four leading zeros mean no
+  // Indian mobile can ever be this — nobody real gets called, and the date is
+  // readable straight off the number: 0000 MMDD YY.
+  const phone = `0000${m}${d}${y.slice(2)}`;
+
   const defaults = {
-    name: marker,
+    // The date in the name too: in a CRM list view you see the name column
+    // first, and "which day was this" is the question you have while looking
+    // at it.
+    name: `${marker} ${today}`,
     email: `estate-monitor+${today}@kwgroup.in`,
-    phone: '+91 00000 00000',
+    phone,
     message: `Automated availability check from the KW Estate dashboard, ${today}. Not a real enquiry — safe to delete.`,
   };
   const out = {};
@@ -408,6 +422,12 @@ export async function runChecks() {
   const today = isoDate(new Date());
   const at = new Date().toISOString();
 
+  // Carried forward from the last report: which forms have already been
+  // submitted today. Kept in data/checks.json rather than a lock file so it
+  // survives with the rest of the state and is visible when it misbehaves.
+  const previous = readJson(abs('data', 'checks.json'));
+  const lastSubmitted = { ...(previous.ok ? previous.value.lastSubmitted ?? {} : {}) };
+
   const targets = targetsFrom(serversFile.value, { skip: config.skip ?? [], extra: config.extra ?? [] });
   const forms = noForms ? [] : (config.forms ?? []);
 
@@ -428,7 +448,23 @@ export async function runChecks() {
 
   const formResults = [];
   for (const form of forms) {
+    if (!forceForms && lastSubmitted[form.id] === today) {
+      // Carry today's real result forward rather than reporting nothing. A
+      // broken form found at 06:07 must still be broken on the dashboard at
+      // 12:07 — otherwise the finding disappears three runs out of four and
+      // whoever looks after lunch sees a clean page.
+      const earlier = (previous.ok ? previous.value.forms ?? [] : []).find((f) => f.id === form.id && !f.skipped);
+      formResults.push(earlier
+        ? { ...earlier, carried: true }
+        : { id: form.id, url: form.url, skipped: true, reason: 'already submitted today' });
+      process.stdout.write(`${dim(`  · ${form.id} submitted earlier today${earlier ? ` — ${earlier.ok ? 'was ok' : 'still failing'}` : ''}`)}\n`);
+      continue;
+    }
+
     const result = await submitForm(form, { today });
+    // Record the attempt, not the success: a form that 500s must not be
+    // retried on every pass for the rest of the day.
+    if (!result.skipped) lastSubmitted[form.id] = today;
     formResults.push(result);
     if (result.skipped) process.stdout.write(`${dim(`  · ${form.id} not submitted (${result.reason})`)}\n`);
     else if (result.ok) process.stdout.write(`${green('  ✓')} ${form.id} ${dim(`${result.status} · ${result.ms}ms`)}\n`);
@@ -451,6 +487,7 @@ export async function runChecks() {
     // site's HTML into data/, and data/ is scanned for credentials for a reason.
     sites: sites.map(({ body: _b, ...rest }) => rest),
     forms: formResults,
+    lastSubmitted,
   };
 
   if (!dryRun) writeJsonIfChanged(abs('data', 'checks.json'), report);

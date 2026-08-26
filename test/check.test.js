@@ -62,9 +62,14 @@ test('a test lead is obviously a test lead', () => {
   };
   const lead = testLead(form, { today: '2026-08-26' });
 
-  assert.equal(lead.full_name, 'KW Estate monitor');
-  assert.equal(lead.mobile, '+91 00000 00000', 'a number nobody can dial');
-  assert.match(lead.email, /\+2026-08-26@/, 'plus-addressed with the date, so it filters in one rule');
+  // The date is on all three identifiers, because which one you can see
+  // depends on which CRM column you are looking at.
+  assert.equal(lead.full_name, 'KW Estate monitor 2026-08-26');
+  assert.match(lead.email, /\+2026-08-26@/, 'plus-addressed, so it filters in one rule');
+  assert.equal(lead.mobile, '0000082626', 'phone reads 0000 MMDD YY');
+  assert.equal(lead.mobile.length, 10, 'ten digits, so length validation passes');
+  assert.ok(/^0000/.test(lead.mobile), 'four leading zeros: no Indian mobile can be this, so nobody real is called');
+  assert.notEqual(testLead(form, { today: '2026-08-27' }).mobile, lead.mobile, 'unique per day');
   assert.match(lead.msg, /Not a real enquiry/);
   // Anything that is not a placeholder name is sent through literally.
   assert.equal(lead.source, 'kw-estate-uptime-check');
