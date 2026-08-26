@@ -166,10 +166,13 @@ silently dropping the lead is the failure worth catching, and status alone
 misses it.
 
 The report goes to the n8n on srv1340120 as a JSON POST — subject, summary and
-the failures, already shaped for an email node. Note what that means: n8n is
-both the thing delivering the alerts and one of the things being watched, so it
-cannot tell you it is down. `config/checks.json` is git-ignored; copy
-`config/checks.example.json`.
+the failures, already shaped for an email node. `notify` takes one address or a
+list; the payload carries `to` comma-separated and `toList` as an array, since
+email nodes disagree about which they want. `cc` works the same way.
+
+Note what hosting the alerts inside the estate means: n8n is both the thing
+delivering them and one of the things being watched, so it cannot tell you it is
+down. `config/checks.json` is git-ignored; copy `config/checks.example.json`.
 
 ## The collector
 

@@ -235,6 +235,10 @@ async function postReport(report, config) {
     ? `KW Estate: ${failures.length} check${failures.length === 1 ? '' : 's'} failing`
     : `KW Estate: all ${report.sites.length} sites healthy`;
 
+  // `notify` takes one address or a list. Sent both ways because email nodes
+  // differ: most want one comma-separated string, some want an array.
+  const recipients = [config.notify ?? []].flat().filter(Boolean);
+
   try {
     const res = await fetch(url, {
       method: 'POST',
@@ -242,7 +246,9 @@ async function postReport(report, config) {
       headers: { 'content-type': 'application/json', ...(config.webhookHeaders ?? {}) },
       body: JSON.stringify({
         subject,
-        to: config.notify ?? null,
+        to: recipients.join(', '),
+        toList: recipients,
+        cc: [config.cc ?? []].flat().filter(Boolean).join(', ') || undefined,
         at: report.at,
         healthy: failures.length === 0,
         summary: report.summary,
