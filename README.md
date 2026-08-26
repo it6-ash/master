@@ -170,6 +170,17 @@ plus-addressed email — polling a few times because a CRM ingests asynchronousl
 `{email}`, `{phone}` and `{date}` are substituted into the URL, headers and
 body, so it is Cratio today and any other CRM later without a code change.
 
+**No CRM credential lives in this repo or on disk.** `verify` calls n8n over
+loopback (`127.0.0.1:5678`), and n8n already holds the Cratio credential in its
+own store. The request never leaves the box, and `config/checks.json` contains
+nothing worth stealing. `deploy/n8n-kw-lead-verify.json` is the workflow;
+point its HTTP node at Cratio and activate it.
+
+It answers `LEAD_FOUND` or `LEAD_MISSING` rather than echoing the address,
+deliberately: a not-found reply containing the email would match the search
+string and report every miss as a hit — silent failure in the one check whose
+entire job is to catch silent failure.
+
 That produces three distinct findings, because they need three different
 reactions:
 

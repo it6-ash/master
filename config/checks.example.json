@@ -62,12 +62,13 @@
         "lp_url": "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html"
       },
       "expect": "thank",
-      "_verify_todo": "Fill in the Cratio search endpoint and key, then this stops being 'the form said yes' and starts being 'the lead is in the CRM'. {email}, {phone} and {date} are substituted into url, headers and body.",
+      "_verify_comment": "No API key on disk. It asks n8n — which already holds the Cratio credential — over LOOPBACK, so the request never leaves the box and there is nothing here worth stealing. Import deploy/n8n-kw-lead-verify.json, point its HTTP node at Cratio, activate it. `match` is LEAD_FOUND rather than the email itself: a not-found reply that echoed the address back would read as a hit, which is the one failure mode that must never be silent. Delete this whole `verify` block to go back to 'the page accepted it'.",
       "verify": {
-        "url": "https://api.cratio.com/v1/leads?search={email}",
-        "method": "GET",
-        "headers": { "Authorization": "Bearer ***SET_ME***" },
-        "match": "{email}",
+        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
+        "method": "POST",
+        "headers": { "content-type": "application/json" },
+        "body": { "email": "{email}" },
+        "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000
       }
@@ -91,10 +92,11 @@
       },
       "expect": "thank",
       "verify": {
-        "url": "https://api.cratio.com/v1/leads?search={email}",
-        "method": "GET",
-        "headers": { "Authorization": "Bearer ***SET_ME***" },
-        "match": "{email}",
+        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
+        "method": "POST",
+        "headers": { "content-type": "application/json" },
+        "body": { "email": "{email}" },
+        "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000
       }

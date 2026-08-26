@@ -1,0 +1,113 @@
+{
+  "name": "KW Estate lead verify",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kw-lead-verify",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        0
+      ],
+      "webhookId": "b1b2c3d4-0001-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://YOUR-CRATIO-HOST/api/leads?search={{ $json.body.email }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Look up in Cratio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -20,
+        0
+      ],
+      "notes": "Swap for whatever node already talks to Cratio. The credential lives in n8n, never in a file on disk."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cratio's shape varies by endpoint; count anything that looks like a hit.\nconst email = ($('Webhook').first().json.body?.email ?? '').toLowerCase();\nconst payload = JSON.stringify($json ?? {}).toLowerCase();\n\n// Answer with a token, NOT with the email. If this echoed the address back,\n// a \"not found\" response would still contain it and the check would read\n// every miss as a hit — the one failure mode that must never be silent.\nconst found = email.length > 3 && payload.includes(email);\n\nreturn [{ json: { result: found ? 'LEAD_FOUND' : 'LEAD_MISSING', checked: email } }];"
+      },
+      "id": "b1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Found or not",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "b1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Answer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Look up in Cratio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Look up in Cratio": {
+      "main": [
+        [
+          {
+            "node": "Found or not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found or not": {
+      "main": [
+        [
+          {
+            "node": "Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
