@@ -50,7 +50,7 @@ const SLOW_MS = 5000;
  * Provider-issued names are dropped: *.hstgr.cloud answers, but nobody visits
  * it and a cert warning there is noise. A bare catch-all `_` is not a hostname.
  */
-export function targetsFrom(servers, { skip = [], extra = [] } = {}) {
+export function targetsFrom(servers, { skip = [], extra = [], okStatus = {} } = {}) {
   const seen = new Map();
   for (const [id, server] of Object.entries(servers)) {
     for (const vhost of server.vhosts ?? []) {
@@ -81,6 +81,15 @@ export function targetsFrom(servers, { skip = [], extra = [] } = {}) {
     seen.set(label, { host: label, server: null, url, source: 'configured' });
   }
 
+  // Not everything behind a hostname is a website. An MCP server has no route
+  // at "/", so a bare GET is a correct 404 — the endpoint is healthy and the
+  // question was wrong. Listing the statuses that count as alive keeps the
+  // check honest: 502 and a refused connection still fail, because those mean
+  // the thing behind nginx is actually gone.
+  for (const t of seen.values()) {
+    if (okStatus[t.host]) t.okStatus = [okStatus[t.host]].flat().map(Number);
+  }
+
   return [...seen.values()].sort((a, b) => a.host.localeCompare(b.host));
 }
 
@@ -95,15 +104,17 @@ async function probe(target) {
       headers: { 'user-agent': 'kw-estate-check/1.0 (+internal uptime check)' },
     });
     const body = await res.text();
+    const ok = target.okStatus ? target.okStatus.includes(res.status) : res.status < 400;
     return {
       ...target,
-      ok: res.status < 400,
+      ok,
       status: res.status,
       ms: Date.now() - started,
       finalUrl: res.url !== target.url ? res.url : undefined,
       bytes: body.length,
-      // A 200 that serves nothing is still a broken site.
-      empty: res.status < 400 && body.trim().length < 200 ? true : undefined,
+      // A 200 that serves nothing is still a broken site. Only for real 2xx
+      // though: an API answering 404 at / is supposed to have no body.
+      empty: res.status >= 200 && res.status < 300 && body.trim().length < 200 ? true : undefined,
       body,
     };
   } catch (e) {
@@ -493,7 +504,11 @@ export async function runChecks() {
   const previous = readJson(abs('data', 'checks.json'));
   const lastSubmitted = { ...(previous.ok ? previous.value.lastSubmitted ?? {} : {}) };
 
-  const targets = targetsFrom(serversFile.value, { skip: config.skip ?? [], extra: config.extra ?? [] });
+  const targets = targetsFrom(serversFile.value, {
+    skip: config.skip ?? [],
+    extra: config.extra ?? [],
+    okStatus: config.okStatus ?? {},
+  });
   const forms = noForms ? [] : (config.forms ?? []);
 
   process.stdout.write(`\n${dim(at.replace('T', ' ').slice(0, 19))} checking ${targets.length} hostname${targets.length === 1 ? '' : 's'}`

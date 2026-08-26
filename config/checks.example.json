@@ -22,6 +22,12 @@
     "srv1340120.hstgr.cloud"
   ],
 
+  "_okStatus_comment": "Not everything behind a hostname is a website. An MCP server has no route at \"/\", so a bare GET is a correct 404 — the endpoint is healthy and the question was wrong. List the statuses that mean alive for those. 502 and a refused connection still fail, because those mean the thing behind nginx is genuinely gone.",
+  "okStatus": {
+    "mcp-google-ads.leadq.co.in": [200, 400, 404, 405, 406],
+    "mcp-cratio.leadq.co.in": [200, 400, 404, 405, 406]
+  },
+
   "_extra_comment": "Pages the estate does not serve, so nothing can discover them. The ad landing pages live on domains none of the three boxes has heard of — and they are where the leads come from, which makes them the pages that most need watching. Labelled by host + path so a failure names the page, not just the domain.",
   "extra": [
     "https://kwgroup.in/",
