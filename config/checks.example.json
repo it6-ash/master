@@ -62,12 +62,12 @@
         "lp_url": "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html"
       },
       "expect": "thank",
-      "_verify_comment": "No API key on disk. It asks n8n — which already holds the Cratio credential — over LOOPBACK, so the request never leaves the box and there is nothing here worth stealing. Import deploy/n8n-kw-lead-verify.json, point its HTTP node at Cratio, activate it. `match` is LEAD_FOUND rather than the email itself: a not-found reply that echoed the address back would read as a hit, which is the one failure mode that must never be silent. Delete this whole `verify` block to go back to 'the page accepted it'.",
+      "_verify_comment": "No API key on disk. It asks n8n — which holds the Cratio API key as a Query Auth credential — over LOOPBACK, so the request never leaves the box and there is nothing here worth stealing. Import deploy/n8n-kw-lead-verify.json, attach a Query Auth credential named apikey, activate it. It searches Cratio by MOBILE rather than email: getRecordsBySearch uses @ as its field separator and the test email contains one, so an email search would never match. `match` is LEAD_FOUND rather than the email itself: a not-found reply that echoed the address back would read as a hit, which is the one failure mode that must never be silent. Delete this whole `verify` block to go back to 'the page accepted it'.",
       "verify": {
         "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
         "method": "POST",
         "headers": { "content-type": "application/json" },
-        "body": { "email": "{email}" },
+        "body": { "phone": "{phone}", "email": "{email}" },
         "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000
@@ -95,7 +95,7 @@
         "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
         "method": "POST",
         "headers": { "content-type": "application/json" },
-        "body": { "email": "{email}" },
+        "body": { "phone": "{phone}", "email": "{email}" },
         "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000

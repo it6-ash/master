@@ -172,13 +172,17 @@ async function verifyLead(form, payload, { today }) {
 
   const email = Object.values(payload).find((x) => String(x).includes('@')) ?? '';
   const phone = Object.values(payload).find((x) => /^\+?[\d ]{8,}$/.test(String(x))) ?? '';
-  const fill = (s) => String(s)
-    .replaceAll('{email}', encodeURIComponent(email))
-    .replaceAll('{phone}', encodeURIComponent(phone))
+
+  // Percent-encoding belongs in a URL and nowhere else. Encoding into a JSON
+  // body would send estate-monitor%2B2026-08-26%40kwgroup.in and the CRM would
+  // never match it.
+  const fill = (s, encode) => String(s)
+    .replaceAll('{email}', encode ? encodeURIComponent(email) : email)
+    .replaceAll('{phone}', encode ? encodeURIComponent(phone) : phone)
     .replaceAll('{date}', today);
 
-  const url = fill(v.url);
-  const needle = String(fill(v.match ?? '{email}')).toLowerCase();
+  const url = fill(v.url, true);
+  const needle = String(fill(v.match ?? '{email}', false)).toLowerCase();
   const attempts = v.attempts ?? 3;
   const waitMs = v.waitMs ?? 10000;
 
@@ -189,7 +193,7 @@ async function verifyLead(form, payload, { today }) {
         method: v.method ?? 'GET',
         signal: AbortSignal.timeout(TIMEOUT_MS),
         headers: { accept: 'application/json', ...(v.headers ?? {}) },
-        ...(v.body ? { body: fill(JSON.stringify(v.body)) } : {}),
+        ...(v.body ? { body: fill(JSON.stringify(v.body), false) } : {}),
       });
       const text = await res.text();
       // decodeURIComponent because a CRM may echo the address unencoded.

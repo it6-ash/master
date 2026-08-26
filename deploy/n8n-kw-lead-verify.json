@@ -13,17 +13,20 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -260,
+        -280,
         0
       ],
       "webhookId": "b1b2c3d4-0001-4000-8000-000000000001"
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "=https://YOUR-CRATIO-HOST/api/leads?search={{ $json.body.email }}",
+        "method": "POST",
+        "url": "https://apps.cratiocrm.com/api/apirequest.php?operation=getRecordsBySearch",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ formname: \"Leads\", operation: \"getRecordsBySearch\", searchcondition: \"Mobile@is@\" + $json.body.phone + \"@AND$\", displayfields: [\"Contact Name\", \"Mobile\", \"Email\", \"Lead Date\"], pageno: 1, numofrecords: 5 }) }}",
         "options": {
           "response": {
             "response": {
@@ -33,18 +36,18 @@
         }
       },
       "id": "b1b2c3d4-0002-4000-8000-000000000002",
-      "name": "Look up in Cratio",
+      "name": "Search Cratio by mobile",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -20,
+        -40,
         0
       ],
-      "notes": "Swap for whatever node already talks to Cratio. The credential lives in n8n, never in a file on disk."
+      "notes": "Credential: Query Auth, name \"apikey\", value = your Cratio API key. Cratio takes the key as a query parameter, so a Query Auth credential keeps it in n8n and out of this file. Searched by MOBILE, not email: searchcondition uses @ as its field separator and the test email contains one."
     },
     {
       "parameters": {
-        "jsCode": "// Cratio's shape varies by endpoint; count anything that looks like a hit.\nconst email = ($('Webhook').first().json.body?.email ?? '').toLowerCase();\nconst payload = JSON.stringify($json ?? {}).toLowerCase();\n\n// Answer with a token, NOT with the email. If this echoed the address back,\n// a \"not found\" response would still contain it and the check would read\n// every miss as a hit — the one failure mode that must never be silent.\nconst found = email.length > 3 && payload.includes(email);\n\nreturn [{ json: { result: found ? 'LEAD_FOUND' : 'LEAD_MISSING', checked: email } }];"
+        "jsCode": "const req = $('Webhook').first().json.body ?? {};\nconst phone = String(req.phone ?? '').trim();\nconst res = $json ?? {};\n\n// Cratio answers {\"error\":\"NO RECORDS FOUND\"} on a miss and\n// {\"success\":[{\"totalrows\":N,\"data\":[...]}]} on a hit.\nconst rows = Number(res?.success?.[0]?.totalrows ?? 0);\nconst found = !res.error && (rows > 0 || JSON.stringify(res).includes(phone));\n\n// A token, not the phone number. If this echoed the value back, a not-found\n// reply would still contain it and the check would read every lost lead as\n// delivered — silent failure in the check whose whole job is catching it.\nreturn [{ json: { result: found ? 'LEAD_FOUND' : 'LEAD_MISSING', checked: phone, rows } }];"
       },
       "id": "b1b2c3d4-0003-4000-8000-000000000003",
       "name": "Found or not",
@@ -76,14 +79,14 @@
       "main": [
         [
           {
-            "node": "Look up in Cratio",
+            "node": "Search Cratio by mobile",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Look up in Cratio": {
+    "Search Cratio by mobile": {
       "main": [
         [
           {
