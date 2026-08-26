@@ -105,7 +105,10 @@ export function targetsFrom(servers, { skip = [], extra = [], okStatus = {} } = 
 
 /* ---------------------------------------------------------------- probes */
 
-async function probe(target) {
+/**
+ * One request, one verdict. See probe() for why that is not enough.
+ */
+async function probeOnce(target) {
   const started = Date.now();
   try {
     const res = await fetch(target.url, {
@@ -136,6 +139,32 @@ async function probe(target) {
       error: `${e.name === 'TimeoutError' ? 'timed out' : (e.cause?.code ?? e.message)}`,
     };
   }
+}
+
+/**
+ * Retry before declaring anything down.
+ *
+ * A single dropped TCP connect is not an outage. overview.leadq.co.in answered
+ * 200 in 1032 ms on one run and UND_ERR_CONNECT_TIMEOUT on the next, and the
+ * second one mailed three people to say a working site was broken. A check that
+ * cries wolf is worse than no check: the next twenty mails get ignored, and one
+ * of those is real.
+ *
+ * Only transient shapes are retried — a timeout, a refused connection, a 5xx.
+ * A server that answers 404 will answer 404 again, so retrying it just delays
+ * the report.
+ */
+async function probe(target, { attempts = 3, gapMs = 4000 } = {}) {
+  let last;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    last = await probeOnce(target);
+    if (last.ok) return attempt === 1 ? last : { ...last, attempts: attempt };
+
+    const transient = Boolean(last.error) || (last.status ?? 0) >= 500;
+    if (!transient || attempt === attempts) break;
+    await new Promise((r) => { setTimeout(r, gapMs); });
+  }
+  return { ...last, attempts };
 }
 
 /* ----------------------------------------------------------------- forms */
@@ -541,8 +570,8 @@ export async function runChecks() {
   for (const s of sites) {
     if (s.skipped) process.stdout.write(`${dim(`  · ${s.host} (dry run)`)}\n`);
     else if (s.ok && s.empty) process.stdout.write(`${yellow('  !')} ${s.host} — ${s.status} but the body is nearly empty\n`);
-    else if (s.ok) process.stdout.write(`${green('  ✓')} ${s.host} ${dim(`${s.status} · ${s.ms}ms`)}\n`);
-    else process.stdout.write(`${red('  ✗')} ${s.host} — ${s.error ?? `HTTP ${s.status}`}\n`);
+    else if (s.ok) process.stdout.write(`${green('  ✓')} ${s.host} ${dim(`${s.status} · ${s.ms}ms${s.attempts ? ` · recovered on try ${s.attempts}` : ''}`)}\n`);
+    else process.stdout.write(`${red('  ✗')} ${s.host} — ${s.error ?? `HTTP ${s.status}`}${s.attempts > 1 ? dim(` (${s.attempts} tries)`) : ''}\n`);
   }
 
   const formResults = [];

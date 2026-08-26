@@ -6,10 +6,14 @@
     "_comment": "Optional. If the n8n webhook uses header auth, put it here. This file is git-ignored, so a token is safe — but it never reaches data/ or the dashboard."
   },
 
-  "_notify_todo": "Proving it end to end first, so only one inbox gets the noise. Add mdo60@kwgroup.in and mm3@kwgroup.in to `notify` once a real report has arrived.",
   "notify": [
-    "it6@kwgroup.in"
+    "it6@kwgroup.in",
+    "mdo60@kwgroup.in",
+    "mm3@kwgroup.in"
   ],
+
+  "_retries_comment": "A single dropped TCP connect is not an outage. overview.leadq.co.in answered 200 in 1032 ms on one run and timed out on the next, and that mailed three people to say a working site was broken. Transient shapes only — a timeout, a refused connection, a 5xx. A server that answers 404 will answer 404 again.",
+  "retries": 3,
 
   "_schedule_comment": "One digest a day at reportAt, in `timezone` — NOT the server's clock. srv1340120 runs Etc/UTC, so a bare 09:30 would mail at 15:00 in Delhi. The probes run five times daily; nobody wants five identical 'all healthy' mails, which is how a report becomes a filter rule. The exception is alertOnNewFailures: something that breaks at 11:00 should not wait until tomorrow morning. Set it false if the morning mail is genuinely enough. npm run check -- --force-report mails now regardless.",
   "reportAt": "09:30",

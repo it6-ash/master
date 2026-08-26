@@ -102,6 +102,11 @@
           "error": {
             "type": "string",
             "description": "DNS, TLS or connection failure, named rather than 'fetch failed'."
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Set when the probe needed more than one request. Present on a success means the site recovered on retry — flaky, not down. A single dropped connect must never mail anybody."
           }
         }
       }
