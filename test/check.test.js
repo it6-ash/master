@@ -102,6 +102,7 @@ test('extra targets cover pages the estate does not serve', () => {
 
 test('a test lead is obviously a test lead', () => {
   const form = {
+    id: 'kwdelhi6ghaziabad',
     fields: {
       full_name: 'name', email: 'email', mobile: 'phone', msg: 'message',
       source: 'kw-estate-uptime-check',
@@ -109,10 +110,16 @@ test('a test lead is obviously a test lead', () => {
   };
   const lead = testLead(form, { today: '2026-08-26' });
 
-  // The date is on all three identifiers, because which one you can see
-  // depends on which CRM column you are looking at.
-  assert.equal(lead.full_name, 'KW Estate monitor 2026-08-26');
-  assert.match(lead.email, /\+2026-08-26@/, 'plus-addressed, so it filters in one rule');
+  // Both questions you have while looking at the CRM row — which site, and
+  // when — on every identifier, because which column you can see depends on
+  // the view. Two landing domains produced identical-looking leads before this.
+  assert.equal(lead.full_name, 'KW Estate monitor · kwdelhi6ghaziabad · 2026-08-26');
+  assert.match(lead.email, /\+kwdelhi6ghaziabad-2026-08-26@/, 'site and date, plus-addressed');
+  assert.notEqual(
+    testLead({ ...form, id: 'kwbluepearldelhi' }, { today: '2026-08-26' }).full_name,
+    lead.full_name,
+    'the two landing domains must be tellable apart at a glance',
+  );
   assert.equal(lead.mobile, '0000082626', 'phone reads 0000 MMDD YY');
   assert.equal(lead.mobile.length, 10, 'ten digits, so length validation passes');
   assert.ok(/^0000/.test(lead.mobile), 'four leading zeros: no Indian mobile can be this, so nobody real is called');

@@ -47,7 +47,7 @@
     "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
   ],
 
-  "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real lead into a real CRM, so each entry is a deliberate decision. All sixteen landing pages post to the same submit.php per domain, so two entries cover them — probing all sixteen pages above is what catches an individual page being down. `fields` maps the page's real field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain, because a submit.php that returns 200 and drops the lead is exactly the failure worth catching.",
+  "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real lead into a real CRM, so each entry is a deliberate decision. All sixteen landing pages post to the same submit.php per domain, so two entries cover them — probing all sixteen pages above is what catches an individual page being down. `fields` maps the page's real field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain, because a submit.php that returns 200 and drops the lead is exactly the failure worth catching. Keep utm_source identical across forms — it is the single rule that filters every test lead out of the pipeline — and make utm_campaign per-site, because Campaign Name is a column in the Cratio list and two identical values there mean you cannot tell which landing domain the lead came from.",
   "forms": [
     {
       "id": "kwbluepearldelhi",
@@ -63,7 +63,8 @@
         "duration": "Automated check",
         "utm_source": "kw-estate-check",
         "utm_medium": "uptime-monitor",
-        "utm_campaign": "kw-estate-check",
+        "utm_campaign": "kw-estate-kwbluepearldelhi",
+        "utm_term": "kwbluepearldelhi.com",
         "lp_url": "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html"
       },
       "expect": "thank",
@@ -92,7 +93,8 @@
         "duration": "Automated check",
         "utm_source": "kw-estate-check",
         "utm_medium": "uptime-monitor",
-        "utm_campaign": "kw-estate-check",
+        "utm_campaign": "kw-estate-kwdelhi6ghaziabad",
+        "utm_term": "kwdelhi6ghaziabad.com",
         "lp_url": "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
       },
       "expect": "thank",

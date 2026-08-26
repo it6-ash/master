@@ -134,11 +134,15 @@ export function testLead(form, { today }) {
   const phone = `0000${m}${d}${y.slice(2)}`;
 
   const defaults = {
-    // The date in the name too: in a CRM list view you see the name column
-    // first, and "which day was this" is the question you have while looking
-    // at it.
-    name: `${marker} ${today}`,
-    email: `estate-monitor+${today}@kwgroup.in`,
+    // Contact Name is the column you actually read in a CRM list, so it
+    // carries both questions you have while looking at the row: which site
+    // sent this, and when. Without the id, two landing domains produce
+    // identical-looking leads and the whole point — knowing WHICH form
+    // works — is lost.
+    name: [marker, form.id, today].filter(Boolean).join(' · '),
+    // The site is in the address too, so it survives into any column that
+    // shows the email rather than the name.
+    email: `estate-monitor+${[form.id, today].filter(Boolean).join('-')}@kwgroup.in`,
     phone,
     message: `Automated availability check from the KW Estate dashboard, ${today}. Not a real enquiry — safe to delete.`,
   };
