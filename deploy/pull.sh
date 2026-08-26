@@ -6,6 +6,10 @@
 # The single owner of "which paths git may overwrite on this box".
 #
 #   src/ schema/ content/ deploy/ test/ and the top-level files are code.
+#   config/ carries the *.example.json templates. Safe: hosts.json and
+#     checks.json are git-ignored, so they are untracked and `git checkout
+#     <ref> -- config` cannot touch them. Leaving it out meant a new example
+#     file never reached the box and there was nothing to copy from.
 #   data/costs.json, glossary.json and analysis.json are written by hand, so
 #     they belong to the repo too.
 #   Everything else under data/ — servers, workflows, issues, projects,
@@ -24,7 +28,7 @@ DIR="${DIR:-/opt/kw-estate}"
 BRANCH="${BRANCH:-main}"
 
 CODE_PATHS=(src schema content deploy test kw-collect.sh package.json playwright.config.js README.md
-            data/costs.json data/glossary.json data/analysis.json)
+            config data/costs.json data/glossary.json data/analysis.json)
 
 [ -d "$DIR/.git" ] || { echo "no checkout at $DIR; nothing to update"; exit 0; }
 
