@@ -227,6 +227,11 @@ async function once() {
   // After ingest, never before: a dump that has not been read yet is not spare.
   if (!dryRun) for (const host of hosts) pruneRaw(host.id);
 
+  // Probe from outside before building, so the page carries this run's result
+  // rather than the previous one's. A failing check is a finding, not a broken
+  // pass — check.js exits 0 either way and the build must still happen.
+  await run(process.execPath, [abs('src', 'check.js'), ...(dryRun ? ['--dry-run'] : [])]);
+
   const build = await run(process.execPath, [abs('src', 'build.js')]);
   return build.code;
 }

@@ -1,0 +1,190 @@
+{
+  "summary": {
+    "failed": 1,
+    "forms": 0,
+    "formsOk": 0,
+    "sites": 17,
+    "sitesOk": 16,
+    "slowestMs": 4053
+  },
+  "at": "2026-08-26T05:35:55.599Z",
+  "forms": [],
+  "sites": [
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 14184,
+      "host": "gbt.leadq.co.in",
+      "ms": 634,
+      "ok": true,
+      "url": "https://gbt.leadq.co.in/"
+    },
+    {
+      "server": "srv1900820",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 136919,
+      "host": "ghaziabadcommercialshops.org",
+      "ms": 700,
+      "ok": true,
+      "url": "https://ghaziabadcommercialshops.org/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 2984,
+      "finalUrl": "https://hrportal.leadq.co.in/login",
+      "host": "hrportal.leadq.co.in",
+      "ms": 3132,
+      "ok": true,
+      "url": "https://hrportal.leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 347514,
+      "host": "kw-site-visit.leadq.co.in",
+      "ms": 4053,
+      "ok": true,
+      "url": "https://kw-site-visit.leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "cloudflared",
+      "bytes": 3656,
+      "finalUrl": "https://kwatch.leadq.co.in/login",
+      "host": "kwatch.leadq.co.in",
+      "ms": 3064,
+      "ok": true,
+      "url": "https://kwatch.leadq.co.in/"
+    },
+    {
+      "server": "srv1900820",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 25446,
+      "host": "kwbluepearl.com",
+      "ms": 572,
+      "ok": true,
+      "url": "https://kwbluepearl.com/"
+    },
+    {
+      "server": "srv1900820",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 692188,
+      "host": "kwgroup.in",
+      "ms": 3009,
+      "ok": true,
+      "url": "https://kwgroup.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 42995,
+      "host": "leadq.co.in",
+      "ms": 692,
+      "ok": true,
+      "url": "https://leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 2984,
+      "finalUrl": "https://hrportal.leadq.co.in/login",
+      "host": "manashi.leadq.co.in",
+      "ms": 3371,
+      "ok": true,
+      "url": "https://manashi.leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 615,
+      "host": "mcp-cratio.leadq.co.in",
+      "ms": 551,
+      "ok": true,
+      "url": "https://mcp-cratio.leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 404,
+      "source": "nginx",
+      "bytes": 9,
+      "host": "mcp-google-ads.leadq.co.in",
+      "ms": 2057,
+      "ok": false,
+      "url": "https://mcp-google-ads.leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 8678,
+      "host": "overview.leadq.co.in",
+      "ms": 565,
+      "ok": true,
+      "url": "https://overview.leadq.co.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 20952,
+      "finalUrl": "https://skills.leadq.co.in/login?redirect=%2F",
+      "host": "skills.leadq.co.in",
+      "ms": 3357,
+      "ok": true,
+      "url": "https://skills.leadq.co.in/"
+    },
+    {
+      "server": "srv1900820",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 136919,
+      "finalUrl": "https://ghaziabadcommercialshops.org/",
+      "host": "www.ghaziabadcommercialshops.org",
+      "ms": 2329,
+      "ok": true,
+      "url": "https://www.ghaziabadcommercialshops.org/"
+    },
+    {
+      "server": "srv1900820",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 25446,
+      "host": "www.kwbluepearl.com",
+      "ms": 562,
+      "ok": true,
+      "url": "https://www.kwbluepearl.com/"
+    },
+    {
+      "server": "srv1900820",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 692188,
+      "host": "www.kwgroup.in",
+      "ms": 1117,
+      "ok": true,
+      "url": "https://www.kwgroup.in/"
+    },
+    {
+      "server": "srv1340120",
+      "status": 200,
+      "source": "nginx",
+      "bytes": 42995,
+      "host": "www.leadq.co.in",
+      "ms": 3353,
+      "ok": true,
+      "url": "https://www.leadq.co.in/"
+    }
+  ],
+  "today": "2026-08-26"
+}

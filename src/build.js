@@ -22,6 +22,7 @@ import { diffSnapshots, diffWorkflows, stalenessEvents } from './diff.js';
 import { deriveProjects, mergeProjects, attachWorkflows } from './derive-projects.js';
 import { reconcileIssues } from './claims.js';
 import { buildCosts } from './costs.js';
+import { checkIssues } from './check.js';
 import { renderPage } from './render/html.js';
 
 /* ---------------------------------------------------- stat references */
@@ -245,6 +246,17 @@ function main() {
   const glossaryFile = readJson(abs('data', 'glossary.json'));
   const glossary = glossaryFile.ok ? glossaryFile.value : {};
 
+  /* the outside-in check: what the public internet sees, and whether the lead
+     forms accept a submission. Nothing on a server reports either. */
+  const checksFile = readJson(abs('data', 'checks.json'));
+  const checks = checksFile.ok ? checksFile.value : null;
+  if (checks) {
+    for (const issue of checkIssues(checks)) {
+      if (!reconciled.some((i) => i.id === issue.id)) reconciled.push(issue);
+      warnings.push(`check: ${issue.title}`);
+    }
+  }
+
   /* what it costs to keep the lights on, and when each line renews */
   const costs = buildCosts(serverData, { today });
 
@@ -275,6 +287,7 @@ function main() {
     staleness,
     analysis,
     costs,
+    checks,
     glossary,
     css: readText(abs('src', 'render', 'styles.css')),
     builtAt: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC',

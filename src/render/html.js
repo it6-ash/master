@@ -1308,6 +1308,60 @@ function renderWorkflows(workflows, projects) {
   }).join('');
 }
 
+/* ------------------------------------------------------ outside-in check */
+
+/**
+ * What the public internet sees, which is not what the servers report.
+ *
+ * Everything else on this page is the estate describing itself: ports it has
+ * open, units it thinks are running. This panel is the only thing that fails
+ * when DNS is wrong, a certificate has lapsed, or a lead form quietly stops
+ * accepting submissions — all of which a healthy-looking box will never mention.
+ */
+function checksPanel(checks) {
+  if (!checks?.sites?.length) return '';
+
+  const rows = [...checks.sites]
+    // Failures first; a green list is for scanning, a red one is for reading.
+    .sort((a, b) => Number(a.ok) - Number(b.ok) || a.host.localeCompare(b.host))
+    .map((s) => {
+      const state = !s.ok ? 'critical' : s.empty ? 'medium' : 'ok';
+      const verdict = !s.ok ? (s.error ?? `HTTP ${s.status}`) : s.empty ? 'empty body' : `${s.status}`;
+      return `<tr${s.ok ? '' : ' class="renewal-row--cancelled"'}>
+        <th scope="row" data-label="Hostname">${escapeHtml(s.host)}
+          ${s.finalUrl ? `<span class="renewal-detail">redirects to ${escapeHtml(s.finalUrl)}</span>` : ''}
+        </th>
+        <td data-label="Served by"><span class="cell">${s.server ? linkServer(s.server) : '<span class="unrecorded">—</span>'}</span></td>
+        <td class="num" data-label="Response"><span class="cell">${Number.isFinite(s.ms) ? `${s.ms} ms` : '<span class="unrecorded">—</span>'}</span></td>
+        <td data-label="Result"><span class="cell"><span class="renewal-due tone-${state}">${escapeHtml(verdict)}</span></span></td>
+      </tr>`;
+    }).join('');
+
+  const forms = (checks.forms ?? []).filter((f) => !f.skipped);
+  const { sitesOk = 0, sites = 0, failed = 0 } = checks.summary ?? {};
+
+  return `<figure class="chart renewals" id="checks">
+    <figcaption>Outside-in checks</figcaption>
+    <p class="chart-note">
+      <strong>${sitesOk}/${sites}</strong> hostnames answered${forms.length
+    ? `, ${checks.summary.formsOk}/${forms.length} lead form${forms.length === 1 ? '' : 's'} accepted a test submission` : ''}.
+      Requested over the public internet at ${escapeHtml(String(checks.at ?? '').replace('T', ' ').slice(0, 16))} UTC, so this
+      is the one panel that fails for DNS, certificate and form problems the servers themselves report as healthy.
+      ${failed === 0 ? '' : `<strong>${failed} failing.</strong>`}
+    </p>
+    ${forms.length ? `<p class="chart-note">${forms.map((f) => `${escapeHtml(f.id)}: ${f.ok
+    ? 'accepted the test lead'
+    : `<strong>rejected it — ${escapeHtml(f.error ?? `HTTP ${f.status}`)}</strong>`}`).join(' · ')}. Submissions are marked
+      <code>${escapeHtml(String(forms[0]?.payload?.name ?? 'KW Estate monitor'))}</code> so they filter out of the CRM in one rule.</p>` : ''}
+    <div class="table-wrap">
+      <table class="renewal-table">
+        <thead><tr><th scope="col">Hostname</th><th scope="col">Served by</th><th scope="col">Response</th><th scope="col">Result</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </figure>`;
+}
+
 /* ----------------------------------------------------- costs & renewals */
 
 /**
@@ -1396,7 +1450,7 @@ function renewalsPanel(costs) {
 /* --------------------------------------------------------------- page */
 
 export function renderPage({
-  servers, projects, workflows, issues, events, history, staleness, analysis, costs, glossary, css, builtAt,
+  servers, projects, workflows, issues, events, history, staleness, analysis, costs, checks, glossary, css, builtAt,
 }) {
   const openIssues = issues.filter((i) => !i.resolved);
   const globalIssues = openIssues.filter((i) => !i.project).sort(bySeverity);
@@ -1487,6 +1541,7 @@ ${css}
     ${workflowChart(wfGroups, { title: 'Workflows by group, template imports excluded', id: 'wf-chart' })}
     ${analysis.costScenarios ? costChart(analysis.costScenarios.rows, { title: analysis.costScenarios.title, id: 'cost', note: costs?.note ?? null }) : ''}
     ${renewalsPanel(costs)}
+    ${checksPanel(checks)}
   </div>
 
   ${section('Estate tree', 'The shape of the estate, generated from live data rather than drawn. Workflows belonging to no project are called out rather than quietly dropped.', 'server → project → workflow')}

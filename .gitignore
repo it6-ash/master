@@ -19,3 +19,6 @@ playwright-report/
 
 # SSH targets for `npm run sync`. Never committed.
 config/hosts.json
+
+# Webhook URL and the forms it is allowed to submit to. Never committed.
+config/checks.json

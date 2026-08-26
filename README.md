@@ -136,6 +136,41 @@ Sync and deploy have been exercised end to end with `--dry-run`, which resolves
 all three hosts and prints the exact commands. The live SSH path has **not** been
 run against your servers from here, and neither has `install.sh`.
 
+## Checking it from outside
+
+```bash
+npm run check                 probe every hostname, submit the forms, report
+npm run check -- --no-forms   probe only; write nothing to any CRM
+npm run check -- --dry-run    print what it would do, touch nothing
+```
+
+Everything else on the dashboard is the estate describing itself — ports it has
+open, units it believes are running. This is the one part that fails when DNS
+is wrong, a certificate has lapsed, or a lead form quietly stops accepting
+submissions. A perfectly healthy box reports none of those.
+
+The hostname list is **derived** from `data/servers.json`, so a site deployed
+today is checked today. `*.hstgr.cloud` is dropped (provider-issued, nobody
+visits it) and so is a bare `_` catch-all. Results land in `data/checks.json`
+and become issues: unreachable is high, over 5s is medium, a broken lead form
+is critical — every enquiry through it is being lost, and nothing on the server
+says so.
+
+Forms are the opposite of derived. **A form is submitted only if it is listed in
+`config/checks.json`**, because each run posts a real lead into a real CRM and
+guessing at an endpoint is how you fill someone's pipeline with junk.
+Submissions are marked — name `KW Estate monitor`, an undiallable number, and a
+plus-addressed email carrying the date — so they filter out in one rule. Set
+`expect` to a string the response must contain: a form that returns 200 while
+silently dropping the lead is the failure worth catching, and status alone
+misses it.
+
+The report goes to the n8n on srv1340120 as a JSON POST — subject, summary and
+the failures, already shaped for an email node. Note what that means: n8n is
+both the thing delivering the alerts and one of the things being watched, so it
+cannot tell you it is down. `config/checks.json` is git-ignored; copy
+`config/checks.example.json`.
+
 ## The collector
 
 `kw-collect.sh` is the read-only estate collector. It emits the
