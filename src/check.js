@@ -229,7 +229,16 @@ async function verifyLead(form, payload, { today }) {
       // system entirely.
       const errorMatch = v.errorMatch ?? 'LEAD_ERROR';
       if (errorMatch && text.includes(errorMatch)) {
-        return { attempted: true, found: false, attempt, error: `the lookup failed: ${text.slice(0, 160)}` };
+        // The sentence, not the envelope. Whoever reads the issue wants "you
+        // are not allowed from this IP", not 200 characters of JSON — and the
+        // caller adds its own "the lookup failed:" framing, so returning that
+        // here said it twice.
+        let why = text.slice(0, 160);
+        try {
+          const parsed = JSON.parse(text);
+          why = parsed.detail ?? parsed.error ?? parsed.message ?? why;
+        } catch { /* not JSON; the raw slice is the best available */ }
+        return { attempted: true, found: false, attempt, error: String(why).slice(0, 160) };
       }
 
       // decodeURIComponent because a CRM may echo the address unencoded.

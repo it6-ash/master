@@ -887,7 +887,11 @@ h2.section .count {
    68 characters of landing-page path with no word boundary in it. Without this
    the title sets the panel's min-content width and the whole page scrolls. */
 .issue-title { font-weight: 700; overflow-wrap: anywhere; }
-.issue-body { color: var(--ink-2); font-size: var(--fs-meta); }
+/* Issue bodies quote whatever the failing system said, and machines answer in
+   URLs, JSON and hostnames — none of which contain a break opportunity. The
+   title already wraps; the body has to as well or one API error sets the min
+   width of the whole page. */
+.issue-body { color: var(--ink-2); font-size: var(--fs-meta); overflow-wrap: anywhere; }
 .issue-evidence {
   font: var(--fs-meta) var(--mono);
   color: var(--ink-3);

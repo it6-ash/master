@@ -33,7 +33,7 @@
       "verified": {
         "attempt": 1,
         "attempted": true,
-        "error": "the lookup failed: {\"result\":\"LEAD_ERROR\",\"checked\":\"0000082626\",\"detail\":\"You are not allowed to access from this IP address.\"}",
+        "error": "You are not allowed to access from this IP address.",
         "found": false
       }
     },
@@ -61,7 +61,7 @@
       "verified": {
         "attempt": 1,
         "attempted": true,
-        "error": "the lookup failed: {\"result\":\"LEAD_ERROR\",\"checked\":\"0000082626\",\"detail\":\"You are not allowed to access from this IP address.\"}",
+        "error": "You are not allowed to access from this IP address.",
         "found": false
       }
     }
