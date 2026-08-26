@@ -1,0 +1,80 @@
+{
+  "name": "KW Estate report",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kw-estate-report",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        0
+      ],
+      "webhookId": "a1b2c3d4-0001-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The webhook payload lands under .body; tolerate both shapes.\nconst r = $json.body ?? $json;\nconst s = r.summary ?? {};\nconst f = r.failures ?? [];\n\nconst esc = (v) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));\nconst th = 'padding:7px 10px;border-bottom:2px solid #333;text-align:left';\nconst td = 'padding:7px 10px;border-bottom:1px solid #eee';\n\nconst rows = f.map((x) =>\n  `<tr><td style=\"${td}\"><b>${esc(x.what)}</b><br><span style=\"color:#888;font-size:12px\">${esc(x.url)}</span></td>` +\n  `<td style=\"${td};color:#c0392b\">${esc(x.error)}</td>` +\n  `<td style=\"${td};color:#888\">${esc(x.server)}</td></tr>`).join('');\n\nconst formLine = s.forms\n  ? `, ${s.formsOk}/${s.forms} lead form${s.forms === 1 ? '' : 's'} accepted a test submission`\n  : '';\n\nconst body = r.healthy\n  ? `<p>All <b>${s.sites}</b> hostnames answered${formLine}.</p>`\n  : `<p><b style=\"color:#c0392b\">${f.length} failing</b> of ${s.sites} hostnames${formLine}.</p>\n     <table style=\"border-collapse:collapse;width:100%;font-size:13px\">\n       <thead><tr><th style=\"${th}\">What</th><th style=\"${th}\">Problem</th><th style=\"${th}\">Server</th></tr></thead>\n       <tbody>${rows}</tbody>\n     </table>`;\n\nconst html = `<div style=\"font:14px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;color:#222;max-width:680px\">\n  <h2 style=\"margin:0 0 4px\">KW Estate — outside-in check</h2>\n  <p style=\"margin:0 0 18px;color:#888;font-size:13px\">${esc(r.at)} · slowest response ${s.slowestMs ?? 0} ms</p>\n  ${body}\n  <p style=\"margin-top:22px;font-size:12px;color:#aaa\">\n    Sent by the KW Estate dashboard on srv1340120. Full detail at\n    <a href=\"https://estate.leadq.co.in\" style=\"color:#0d9c8a\">estate.leadq.co.in</a>.\n  </p>\n</div>`;\n\nreturn [{ json: { to: r.to, cc: r.cc ?? '', subject: r.subject, html, healthy: r.healthy === true } }];"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Format report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Send report",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format report": {
+      "main": [
+        [
+          {
+            "node": "Send report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

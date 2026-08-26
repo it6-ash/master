@@ -7,10 +7,9 @@
     "x-kw-token": "***SET_ME***"
   },
   "_notify_comment": "One address or a list. The webhook payload carries both `to` (comma-separated, what most email nodes want) and `toList` (an array, for the ones that want that). `cc` works the same way and is optional.",
+  "_notify_todo": "Proving it end to end first, so only one inbox gets the noise. Add mdo60@kwgroup.in and mm3@kwgroup.in to `notify` once a real report has arrived.",
   "notify": [
-    "it6@kwgroup.in",
-    "mdo60@kwgroup.in",
-    "mm3@kwgroup.in"
+    "it6@kwgroup.in"
   ],
   "cc": [],
 
