@@ -38,6 +38,16 @@ const yellow = (s) => paint('33', s);
 const dim = (s) => paint('2', s);
 
 const TIMEOUT_MS = 20000;
+
+/**
+ * Config objects carry `_comment` keys throughout this project. Anywhere one
+ * is spread into HTTP headers that comment becomes a header — and the prose in
+ * it contains an em dash, which fetch cannot encode, so the whole request dies
+ * with a ByteString error naming a character offset and nothing else.
+ */
+const headersFrom = (obj) => Object.fromEntries(
+  Object.entries(obj ?? {}).filter(([k]) => !k.startsWith('_')),
+);
 // Not a round number pulled from nowhere: past ~5s a marketing page has lost
 // most of the visitor. Raise it before you find yourself ignoring the issue.
 const SLOW_MS = 5000;
@@ -208,7 +218,7 @@ async function verifyLead(form, payload, { today }) {
       const res = await fetch(url, {
         method: v.method ?? 'GET',
         signal: AbortSignal.timeout(TIMEOUT_MS),
-        headers: { accept: 'application/json', ...(v.headers ?? {}) },
+        headers: { accept: 'application/json', ...headersFrom(v.headers) },
         ...(v.body ? { body: fill(JSON.stringify(v.body), false) } : {}),
       });
       const text = await res.text();
@@ -455,7 +465,7 @@ async function postReport(report, config) {
     const res = await fetch(url, {
       method: 'POST',
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { 'content-type': 'application/json', ...(config.webhookHeaders ?? {}) },
+      headers: { 'content-type': 'application/json', ...headersFrom(config.webhookHeaders) },
       body: JSON.stringify({
         subject,
         to: recipients.join(', '),
