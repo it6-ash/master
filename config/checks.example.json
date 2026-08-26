@@ -9,7 +9,7 @@
   "notify": [
     "it6@kwgroup.in",
     "mdo60@kwgroup.in",
-    "mm3@kwgroup.in"
+    "sm3@kwgroup.in"
   ],
 
   "_retries_comment": "A single dropped TCP connect is not an outage. overview.leadq.co.in answered 200 in 1032 ms on one run and timed out on the next, and that mailed three people to say a working site was broken. Transient shapes only — a timeout, a refused connection, a 5xx. A server that answers 404 will answer 404 again.",
