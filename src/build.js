@@ -123,15 +123,20 @@ function snapshotHistory() {
 function collectEvents(servers, workflows, today) {
   const events = [];
 
+  // The two most recent collections of each server, which is what the panel
+  // says it shows. Diffing every consecutive pair instead meant one bad
+  // collection was replayed for as long as its snapshot survived: a broken
+  // `nginx -T` on 25 Aug dropped every vhost, and "hostname gone × 13" then sat
+  // at the top of the panel for days while genuinely new changes went unnoticed
+  // below it. A panel that never clears stops being read.
   for (const server of listDirs(abs('data', 'snapshots'))) {
-    const files = listFiles(abs('data', 'snapshots', server), isJson).sort();
-    for (let i = 1; i < files.length; i += 1) {
-      const prev = readJson(files[i - 1]);
-      const next = readJson(files[i]);
-      if (!prev.ok || !next.ok) continue;
-      const at = isoDate(next.value.capturedAt ?? next.value.takenAt) ?? today;
-      events.push(...diffSnapshots(prev.value.record, next.value.record, { server, at }));
-    }
+    const [prevFile, nextFile] = listFiles(abs('data', 'snapshots', server), isJson).sort().slice(-2);
+    if (!prevFile || !nextFile) continue;
+    const prev = readJson(prevFile);
+    const next = readJson(nextFile);
+    if (!prev.ok || !next.ok) continue;
+    const at = isoDate(next.value.capturedAt ?? next.value.takenAt) ?? today;
+    events.push(...diffSnapshots(prev.value.record, next.value.record, { server, at }));
   }
 
   events.push(...diffWorkflows(workflows).filter((e) => e.type !== 'workflow.appeared'));

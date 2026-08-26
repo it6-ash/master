@@ -183,8 +183,8 @@ function renderTiles({ servers, projects, workflows, issues, history }) {
 function renderChanges(events) {
   if (events.length === 0) {
     return `<div class="changes"><div class="empty">
-      <strong>No changes yet.</strong> Every server has exactly one snapshot, so there is nothing to compare against.
-      Run <code>kw-collect.sh</code> again in a few days and this panel fills itself in.
+      <strong>Nothing changed since the previous collection.</strong> Every server came back matching the one before it —
+      same units, same ports, same hostnames, same certificates. That is the answer, not a missing one.
     </div></div>`;
   }
   const shown = events.slice(0, 20);
