@@ -1,40 +1,103 @@
 {
-  "_comment": "Copy to config/checks.json, which is git-ignored. The list of hostnames to probe is NOT here — it is derived from data/servers.json, so a site deployed today is checked today. This file holds only what cannot be derived: where to send the report, and which forms may be submitted.",
+  "_comment": "Copy to config/checks.json, which is git-ignored. The list of estate hostnames to probe is NOT here — it is derived from data/servers.json, so a site deployed today is checked today. This file holds only what cannot be derived: where to send the report, pages the estate does not host, and which forms may be submitted.",
 
   "webhook": "https://n8n.srv1340120.hstgr.cloud/webhook/kw-estate-report",
   "webhookHeaders": {
-    "_comment": "Optional. If the n8n webhook uses header auth, put it here. This file is git-ignored, so a token is safe — but it never reaches data/ or the dashboard.",
-    "x-kw-token": "***SET_ME***"
+    "_comment": "Optional. If the n8n webhook uses header auth, put it here. This file is git-ignored, so a token is safe — but it never reaches data/ or the dashboard."
   },
-  "_notify_comment": "One address or a list. The webhook payload carries both `to` (comma-separated, what most email nodes want) and `toList` (an array, for the ones that want that). `cc` works the same way and is optional.",
+
   "_notify_todo": "Proving it end to end first, so only one inbox gets the noise. Add mdo60@kwgroup.in and mm3@kwgroup.in to `notify` once a real report has arrived.",
   "notify": [
     "it6@kwgroup.in"
   ],
   "cc": [],
 
-
   "skip": [
     "_",
     "srv1340120.hstgr.cloud"
   ],
 
-  "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real submission to a real CRM, so each entry is a deliberate decision. `fields` maps YOUR field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain — without it, any 2xx counts as success, and a form that 200s while silently dropping the lead is exactly the failure worth catching.",
+  "_extra_comment": "Pages the estate does not serve, so nothing can discover them. The ad landing pages live on domains none of the three boxes has heard of — and they are where the leads come from, which makes them the pages that most need watching. Labelled by host + path so a failure names the page, not just the domain.",
+  "extra": [
+    "https://kwgroup.in/",
+    "https://kwbluepearl.com/",
+    "https://www.kwdelhi6.com/",
+
+    "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html",
+    "https://kwbluepearldelhi.com/buy-commercial-real-estate-delhi.html",
+    "https://kwbluepearldelhi.com/buy-property-in-delhi.html",
+    "https://kwbluepearldelhi.com/commercial-property-delhi.html",
+    "https://kwbluepearldelhi.com/commercial-property-investment-delhi.html",
+    "https://kwbluepearldelhi.com/pre-leased-commercial-property-delhi.html",
+    "https://kwbluepearldelhi.com/commercial-shops-for-sale-delhi.html",
+
+    "https://kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html",
+    "https://kwdelhi6ghaziabad.com/buy-commercial-property-in-delhi-ncr.html",
+    "https://kwdelhi6ghaziabad.com/commercial-property-investment-ghaziabad.html",
+    "https://kwdelhi6ghaziabad.com/commercial-investment-property-ghaziabad.html",
+    "https://kwdelhi6ghaziabad.com/commercial-real-estate-investment-ghaziabad.html",
+    "https://kwdelhi6ghaziabad.com/commercial-rental-property-for-sale-delhi-ncr.html",
+    "https://kwdelhi6ghaziabad.com/commercial-shops-for-sale-in-ghaziabad.html",
+    "https://kwdelhi6ghaziabad.com/commercial-shop-for-sale-delhi-ncr.html",
+    "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
+  ],
+
+  "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real lead into a real CRM, so each entry is a deliberate decision. All sixteen landing pages post to the same submit.php per domain, so two entries cover them — probing all sixteen pages above is what catches an individual page being down. `fields` maps the page's real field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain, because a submit.php that returns 200 and drops the lead is exactly the failure worth catching.",
   "forms": [
     {
-      "id": "kwgroup-lead",
-      "url": "https://kwgroup.in/submit-enquiry",
+      "id": "kwbluepearldelhi",
+      "url": "https://kwbluepearldelhi.com/submit.php",
       "method": "POST",
       "encoding": "form",
       "marker": "KW Estate monitor",
       "fields": {
-        "full_name": "name",
+        "name": "name",
         "email": "email",
-        "mobile": "phone",
-        "message": "message",
-        "source": "kw-estate-uptime-check"
+        "phone": "phone",
+        "budget": "Automated check",
+        "duration": "Automated check",
+        "utm_source": "kw-estate-check",
+        "utm_medium": "uptime-monitor",
+        "utm_campaign": "kw-estate-check",
+        "lp_url": "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html"
       },
-      "expect": "thank you"
+      "expect": "thank",
+      "_verify_todo": "Fill in the Cratio search endpoint and key, then this stops being 'the form said yes' and starts being 'the lead is in the CRM'. {email}, {phone} and {date} are substituted into url, headers and body.",
+      "verify": {
+        "url": "https://api.cratio.com/v1/leads?search={email}",
+        "method": "GET",
+        "headers": { "Authorization": "Bearer ***SET_ME***" },
+        "match": "{email}",
+        "attempts": 3,
+        "waitMs": 10000
+      }
+    },
+    {
+      "id": "kwdelhi6ghaziabad",
+      "url": "https://kwdelhi6ghaziabad.com/submit.php",
+      "method": "POST",
+      "encoding": "form",
+      "marker": "KW Estate monitor",
+      "fields": {
+        "name": "name",
+        "email": "email",
+        "phone": "phone",
+        "budget": "Automated check",
+        "duration": "Automated check",
+        "utm_source": "kw-estate-check",
+        "utm_medium": "uptime-monitor",
+        "utm_campaign": "kw-estate-check",
+        "lp_url": "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
+      },
+      "expect": "thank",
+      "verify": {
+        "url": "https://api.cratio.com/v1/leads?search={email}",
+        "method": "GET",
+        "headers": { "Authorization": "Bearer ***SET_ME***" },
+        "match": "{email}",
+        "attempts": 3,
+        "waitMs": 10000
+      }
     }
   ]
 }

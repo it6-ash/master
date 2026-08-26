@@ -28,6 +28,31 @@ test('targets come from the servers, not from a maintained list', () => {
     ['kwatch.leadq.co.in', 'www.kwgroup.in']);
 });
 
+test('extra targets cover pages the estate does not serve', () => {
+  // The ad landing pages are on domains none of the three boxes has heard of,
+  // so nothing derives them — and they are where the leads come from.
+  const t = targetsFrom({ s1: { vhosts: [{ domain: 'kwgroup.in' }] } }, {
+    extra: [
+      'https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html',
+      'https://kwdelhi6ghaziabad.com/',
+      'not a url',
+      { url: 'https://y.com/z', label: 'custom' },
+    ],
+  });
+
+  assert.deepEqual(t.map((x) => x.host), [
+    'custom',
+    'kwdelhi6ghaziabad.com',
+    'kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html',
+    'kwgroup.in',
+  ]);
+  // Labelled by path, because sixteen rows reading "kwdelhi6ghaziabad.com"
+  // would not tell you which page is broken.
+  assert.equal(t.find((x) => x.host.includes('raj-nagar')).server, null, 'not on one of our servers');
+  assert.equal(t.find((x) => x.host.includes('raj-nagar')).source, 'configured');
+  assert.ok(!t.some((x) => x.host === 'not a url'), 'an unparseable entry is dropped, not probed');
+});
+
 test('a test lead is obviously a test lead', () => {
   const form = {
     fields: {
@@ -45,6 +70,38 @@ test('a test lead is obviously a test lead', () => {
   assert.equal(lead.source, 'kw-estate-uptime-check');
   // Only the configured fields are sent — no surprise keys into someone's CRM.
   assert.deepEqual(Object.keys(lead).sort(), ['email', 'full_name', 'mobile', 'msg', 'source']);
+});
+
+test('accepted-but-absent is a different finding from rejected', () => {
+  const base = { today: '2026-08-26', at: '2026-08-26T05:00:00Z', sites: [] };
+
+  const rejected = checkIssues({ ...base, forms: [{ id: 'f', url: 'u', ok: false, status: 500 }] });
+  assert.equal(rejected[0].rule, 'form-broken');
+
+  // The page said thank-you and the CRM never saw it. Worst case, and the one
+  // nobody notices, because everything visible looks fine.
+  const lost = checkIssues({
+    ...base,
+    forms: [{ id: 'f', url: 'u', ok: false, accepted: true, status: 200, verified: { attempted: true, found: false, attempt: 3, afterMs: 30000 } }],
+  });
+  assert.equal(lost[0].rule, 'lead-not-in-crm');
+  assert.equal(lost[0].severity, 'critical');
+  assert.match(lost[0].body, /30s/);
+
+  // Cannot reach the CRM is not proof the lead is missing, and must not page
+  // someone at the same level as a lost enquiry.
+  const blind = checkIssues({
+    ...base,
+    forms: [{ id: 'f', url: 'u', ok: false, accepted: true, status: 200, verified: { attempted: true, found: false, error: 'ETIMEDOUT' } }],
+  });
+  assert.equal(blind[0].rule, 'crm-unreachable');
+  assert.equal(blind[0].severity, 'medium');
+
+  // Verified present: no issue at all.
+  assert.deepEqual(checkIssues({
+    ...base,
+    forms: [{ id: 'f', url: 'u', ok: true, accepted: true, status: 200, verified: { attempted: true, found: true } }],
+  }), []);
 });
 
 test('a broken form outranks a down site, and a skipped one raises nothing', () => {

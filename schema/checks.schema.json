@@ -2,41 +2,104 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "checks.schema.json",
   "title": "data/checks.json",
-  "description": "The last outside-in check: every hostname the estate serves, probed over the public internet, plus any lead form that was submitted. Machine-written by src/check.js. This is the only part of data/ that reports on things the servers themselves cannot see — DNS, certificates, and whether a form actually accepts a submission.",
+  "description": "The last outside-in check: every hostname the estate serves, probed over the public internet, plus any lead form that was submitted and then looked up in the CRM. Machine-written by src/check.js. This is the only part of data/ that reports on things the servers themselves cannot see: DNS, certificates, and whether a lead that the page accepted actually arrived.",
   "type": "object",
-  "required": ["at", "summary", "sites", "forms"],
+  "required": [
+    "at",
+    "summary",
+    "sites",
+    "forms"
+  ],
   "properties": {
-    "at": { "type": "string", "description": "ISO timestamp of the run." },
-    "today": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "at": {
+      "type": "string",
+      "description": "ISO timestamp of the run."
+    },
+    "today": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
     "summary": {
       "type": "object",
       "properties": {
-        "sites": { "type": "integer", "minimum": 0 },
-        "sitesOk": { "type": "integer", "minimum": 0 },
-        "forms": { "type": "integer", "minimum": 0 },
-        "formsOk": { "type": "integer", "minimum": 0 },
-        "failed": { "type": "integer", "minimum": 0 },
-        "slowestMs": { "type": "integer", "minimum": 0 }
+        "sites": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sitesOk": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "forms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "formsOk": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "slowestMs": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "sites": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["host", "ok"],
+        "required": [
+          "host",
+          "ok"
+        ],
         "properties": {
-          "host": { "type": "string" },
-          "url": { "type": "string" },
-          "server": { "type": "string", "description": "Which box serves this hostname, per the last collection." },
-          "source": { "type": "string", "description": "nginx or cloudflared." },
-          "ok": { "type": "boolean" },
-          "status": { "type": "integer" },
-          "ms": { "type": "integer", "minimum": 0 },
-          "bytes": { "type": "integer", "minimum": 0 },
-          "finalUrl": { "type": "string", "description": "Set only when the request was redirected." },
-          "empty": { "type": "boolean", "description": "A 2xx with almost no body. Up, but serving nothing." },
-          "skipped": { "type": "boolean" },
-          "error": { "type": "string", "description": "DNS, TLS or connection failure, named rather than 'fetch failed'." }
+          "host": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "server": {
+            "type": ["string", "null"],
+            "description": "Which box serves this hostname, per the last collection. null for a configured `extra` target — the ad landing pages are hosted outside this estate, which is exactly why nothing here can discover them."
+          },
+          "source": {
+            "type": "string",
+            "description": "nginx, cloudflared, or configured for an entry from config/checks.json."
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "finalUrl": {
+            "type": "string",
+            "description": "Set only when the request was redirected."
+          },
+          "empty": {
+            "type": "boolean",
+            "description": "A 2xx with almost no body. Up, but serving nothing."
+          },
+          "skipped": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string",
+            "description": "DNS, TLS or connection failure, named rather than 'fetch failed'."
+          }
         }
       }
     },
@@ -45,19 +108,73 @@
       "description": "Only forms listed in config/checks.json. Each entry represents a real submission to a real CRM.",
       "items": {
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "url": { "type": "string" },
-          "ok": { "type": "boolean" },
-          "status": { "type": "integer" },
-          "ms": { "type": "integer", "minimum": 0 },
-          "expected": { "type": "string" },
-          "matched": { "type": "boolean" },
-          "skipped": { "type": "boolean" },
-          "reason": { "type": "string" },
-          "error": { "type": "string" },
-          "payload": { "type": "object", "description": "Exactly what was submitted, so the lead is identifiable in the CRM." }
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "expected": {
+            "type": "string"
+          },
+          "matched": {
+            "type": "boolean"
+          },
+          "skipped": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "description": "Exactly what was submitted, so the lead is identifiable in the CRM."
+          },
+          "accepted": {
+            "type": "boolean",
+            "description": "The page took the submission. Not the same as the lead arriving."
+          },
+          "verified": {
+            "type": "object",
+            "description": "Result of looking the lead up in the CRM afterwards. accepted && !found is the silent-loss case.",
+            "properties": {
+              "attempted": {
+                "type": "boolean"
+              },
+              "found": {
+                "type": "boolean"
+              },
+              "attempt": {
+                "type": "integer"
+              },
+              "afterMs": {
+                "type": "integer"
+              },
+              "status": {
+                "type": "integer"
+              },
+              "error": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }

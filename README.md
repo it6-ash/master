@@ -160,10 +160,30 @@ Forms are the opposite of derived. **A form is submitted only if it is listed in
 `config/checks.json`**, because each run posts a real lead into a real CRM and
 guessing at an endpoint is how you fill someone's pipeline with junk.
 Submissions are marked — name `KW Estate monitor`, an undiallable number, and a
-plus-addressed email carrying the date — so they filter out in one rule. Set
-`expect` to a string the response must contain: a form that returns 200 while
-silently dropping the lead is the failure worth catching, and status alone
-misses it.
+plus-addressed email carrying the date — so they filter out in one rule.
+
+Then it checks the lead actually **arrived**. A landing page can accept a
+submission, return a cheerful 200 and drop it: a dead webhook, an expired key, a
+workflow switched off. Nothing anywhere reports that; enquiries simply stop. So
+after posting, `verify` looks the lead up by the one thing unique to it — the
+plus-addressed email — polling a few times because a CRM ingests asynchronously.
+`{email}`, `{phone}` and `{date}` are substituted into the URL, headers and
+body, so it is Cratio today and any other CRM later without a code change.
+
+That produces three distinct findings, because they need three different
+reactions:
+
+| What happened | Finding | Severity |
+|---|---|---|
+| The form rejected the submission | `form-broken` | critical |
+| It accepted, the CRM never got it | `lead-not-in-crm` | critical |
+| It accepted, the CRM would not answer | `crm-unreachable` | medium |
+
+The middle one is the reason this exists. Everything visible looks perfect —
+the page shows a thank-you, nginx is healthy, the box reports nothing — and the
+salesperson simply never sees the lead. The last one is deliberately *not*
+critical: being unable to see is not proof of loss, and paging someone for an
+API outage is how alerts get ignored.
 
 The report goes to the n8n on srv1340120 as a JSON POST — subject, summary and
 the failures, already shaped for an email node. `notify` takes one address or a

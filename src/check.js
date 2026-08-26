@@ -45,7 +45,7 @@ const SLOW_MS = 5000;
  * Provider-issued names are dropped: *.hstgr.cloud answers, but nobody visits
  * it and a cert warning there is noise. A bare catch-all `_` is not a hostname.
  */
-export function targetsFrom(servers, { skip = [] } = {}) {
+export function targetsFrom(servers, { skip = [], extra = [] } = {}) {
   const seen = new Map();
   for (const [id, server] of Object.entries(servers)) {
     for (const vhost of server.vhosts ?? []) {
@@ -57,6 +57,25 @@ export function targetsFrom(servers, { skip = [] } = {}) {
       seen.set(host, { host, server: id, url: `https://${host}/`, source: vhost.source ?? 'nginx' });
     }
   }
+
+  // Anything the estate does not serve. The landing pages live with an ad
+  // agency, on domains none of these three boxes has ever heard of, so no
+  // amount of collecting will discover them — but they are where the leads
+  // come from, which makes them the pages that most need watching.
+  //
+  // Labelled by host + path, because sixteen rows all reading
+  // "kwdelhi6ghaziabad.com" tell you nothing about which one is broken.
+  for (const entry of extra) {
+    const url = typeof entry === 'string' ? entry : entry.url;
+    if (!url) continue;
+    let parsed;
+    try { parsed = new URL(url); } catch { continue; }
+    const label = (typeof entry === 'object' && entry.label)
+      || `${parsed.hostname}${parsed.pathname === '/' ? '' : parsed.pathname}`;
+    if (skip.includes(label) || seen.has(label)) continue;
+    seen.set(label, { host: label, server: null, url, source: 'configured' });
+  }
+
   return [...seen.values()].sort((a, b) => a.host.localeCompare(b.host));
 }
 
@@ -116,6 +135,72 @@ export function testLead(form, { today }) {
   return out;
 }
 
+/**
+ * Did the lead actually arrive in the CRM?
+ *
+ * This is the half that matters. A landing page can accept a submission, return
+ * a cheerful 200, and drop it — a broken webhook, an expired API key, a
+ * workflow switched off. Nothing anywhere reports that; enquiries just stop.
+ * So after posting, look the lead up by the one thing that is unique to it: the
+ * plus-addressed email.
+ *
+ * Deliberately generic rather than Cratio-specific. `verify.url` is whatever
+ * search endpoint answers, with {email}, {phone} and {date} substituted in, and
+ * `verify.match` is the string the response must contain. Cratio today, another
+ * CRM later, no code change.
+ *
+ * Polled, because CRMs ingest asynchronously and a single immediate lookup
+ * would report every working form as broken.
+ */
+async function verifyLead(form, payload, { today }) {
+  const v = form.verify;
+  if (!v?.url) return { attempted: false };
+
+  const email = Object.values(payload).find((x) => String(x).includes('@')) ?? '';
+  const phone = Object.values(payload).find((x) => /^\+?[\d ]{8,}$/.test(String(x))) ?? '';
+  const fill = (s) => String(s)
+    .replaceAll('{email}', encodeURIComponent(email))
+    .replaceAll('{phone}', encodeURIComponent(phone))
+    .replaceAll('{date}', today);
+
+  const url = fill(v.url);
+  const needle = String(fill(v.match ?? '{email}')).toLowerCase();
+  const attempts = v.attempts ?? 3;
+  const waitMs = v.waitMs ?? 10000;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    await new Promise((r) => { setTimeout(r, waitMs); });
+    try {
+      const res = await fetch(url, {
+        method: v.method ?? 'GET',
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+        headers: { accept: 'application/json', ...(v.headers ?? {}) },
+        ...(v.body ? { body: fill(JSON.stringify(v.body)) } : {}),
+      });
+      const text = await res.text();
+      // decodeURIComponent because a CRM may echo the address unencoded.
+      if (text.toLowerCase().includes(decodeURIComponent(needle))) {
+        return { attempted: true, found: true, attempt, afterMs: attempt * waitMs };
+      }
+      if (attempt === attempts) {
+        return { attempted: true, found: false, attempt, afterMs: attempt * waitMs, status: res.status };
+      }
+    } catch (e) {
+      if (attempt === attempts) {
+        return {
+          attempted: true,
+          found: false,
+          attempt,
+          // Cannot reach the CRM is not the same as the lead is missing, and
+          // treating them alike would page someone for an API outage.
+          error: e.name === 'TimeoutError' ? 'timed out' : (e.cause?.code ?? e.message),
+        };
+      }
+    }
+  }
+  return { attempted: true, found: false };
+}
+
 async function submitForm(form, { today }) {
   const payload = testLead(form, { today });
   const started = Date.now();
@@ -144,14 +229,20 @@ async function submitForm(form, { today }) {
     const expected = form.expect ?? null;
     const matched = expected ? body.toLowerCase().includes(String(expected).toLowerCase()) : res.status < 400;
 
+    const accepted = res.status < 400 && matched;
+    // No point looking for a lead the page never accepted.
+    const verified = accepted ? await verifyLead(form, payload, { today }) : { attempted: false };
+
     return {
       id: form.id,
       url: form.url,
-      ok: res.status < 400 && matched,
+      accepted,
+      ok: accepted && (verified.attempted ? verified.found === true : true),
       status: res.status,
       ms: Date.now() - started,
       expected: expected ?? undefined,
       matched: expected ? matched : undefined,
+      verified,
       payload,
     };
   } catch (e) {
@@ -206,8 +297,43 @@ export function checkIssues(report) {
   }
 
   for (const form of report.forms.filter((f) => !f.ok && !f.skipped)) {
+    const slug = String(form.id).replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+
+    // Accepted but never arrived is the worse of the two and needs saying
+    // differently: the page looks perfect, so nobody goes looking.
+    if (form.accepted && form.verified?.attempted && form.verified.found === false) {
+      if (form.verified.error) {
+        issues.push({
+          id: `crm-unreachable-${slug}`,
+          severity: 'medium',
+          title: `Could not confirm the ${form.id} test lead — the CRM did not answer`,
+          body: `The form accepted the submission, but the lookup failed: ${form.verified.error}.`
+            + ' The lead may well be fine; this is the check being unable to see, not proof of loss.',
+          source: 'auto',
+          rule: 'crm-unreachable',
+          evidence: form.verified.error,
+          opened: report.today,
+        });
+        continue;
+      }
+      issues.push({
+        id: `lead-not-in-crm-${slug}`,
+        severity: 'critical',
+        title: `${form.id}: the form accepted a lead that never reached the CRM`,
+        body: `A test submission to ${form.url} returned HTTP ${form.status} and looked successful, but the lead`
+          + ` was still not in the CRM after ${Math.round((form.verified.afterMs ?? 0) / 1000)}s.`
+          + ' Enquiries are being accepted and silently dropped — the page shows a thank-you, the salesperson never'
+          + ' sees the lead, and nobody finds out until someone asks why the phone stopped ringing.',
+        source: 'auto',
+        rule: 'lead-not-in-crm',
+        evidence: `submitted, absent after ${form.verified.attempt ?? 0} lookups`,
+        opened: report.today,
+      });
+      continue;
+    }
+
     issues.push({
-      id: `form-broken-${String(form.id).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`,
+      id: `form-broken-${slug}`,
       severity: 'critical',
       title: `The ${form.id} lead form is not accepting submissions`,
       body: `A test submission to ${form.url} ${form.error ? `failed: ${form.error}` : `returned HTTP ${form.status}`}`
@@ -282,7 +408,7 @@ export async function runChecks() {
   const today = isoDate(new Date());
   const at = new Date().toISOString();
 
-  const targets = targetsFrom(serversFile.value, { skip: config.skip ?? [] });
+  const targets = targetsFrom(serversFile.value, { skip: config.skip ?? [], extra: config.extra ?? [] });
   const forms = noForms ? [] : (config.forms ?? []);
 
   process.stdout.write(`\n${dim(at.replace('T', ' ').slice(0, 19))} checking ${targets.length} hostname${targets.length === 1 ? '' : 's'}`
