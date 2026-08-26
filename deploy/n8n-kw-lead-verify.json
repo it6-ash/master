@@ -26,7 +26,7 @@
         "genericAuthType": "httpQueryAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ formname: \"Leads\", operation: \"getRecordsBySearch\", searchcondition: \"Mobile@is@\" + $json.body.phone + \"@AND$\", displayfields: [\"Contact Name\", \"Mobile\", \"Email\", \"Lead Date\"], pageno: 1, numofrecords: 5 }) }}",
+        "jsonBody": "={{ JSON.stringify({ formname: \"Leads\", operation: \"getRecordsBySearch\", searchcondition: \"Mobile Number@contains@\" + String($json.body.phone).replace(/\\D/g, \"\").slice(-10) + \"@AND$\", displayfields: [\"Contact Name\", \"Mobile Number\", \"Email Address\", \"Lead Date\", \"Lead Source\"], pageno: 1, numofrecords: 5 }) }}",
         "options": {
           "response": {
             "response": {
@@ -43,7 +43,7 @@
         -40,
         0
       ],
-      "notes": "Credential: Query Auth, name \"apikey\", value = your Cratio API key. Cratio takes the key as a query parameter, so a Query Auth credential keeps it in n8n and out of this file. Searched by MOBILE, not email: searchcondition uses @ as its field separator and the test email contains one."
+      "notes": "Credential: Query Auth, name \"apikey\", value = your Cratio API key. Cratio takes the key as a query parameter, so it stays in n8n and out of this file. searchcondition uses the FIELD LABEL exactly as the CRM shows it — \"Mobile Number\", not \"Mobile\". `contains` on the last ten digits, because Cratio stores +919643330741 and the form sends the bare number. Searched by mobile rather than email: the @ in an email address collides with searchcondition's own separator."
     },
     {
       "parameters": {
