@@ -459,7 +459,11 @@ async function postReport(report, config) {
         forms: report.forms,
       }),
     });
-    return { sent: res.status < 400, status: res.status };
+    // Carry n8n's reply back. When the mail fails the useful sentence is in
+    // there — "no credential", a Gmail refusal — and without it all you get is
+    // a status code and a trip to the executions list.
+    const reply = (await res.text()).slice(0, 200);
+    return { sent: res.status < 400, status: res.status, reply };
   } catch (e) {
     return { sent: false, reason: e.name === 'TimeoutError' ? 'timed out' : (e.cause?.code ?? e.message) };
   }
@@ -565,8 +569,8 @@ export async function runChecks() {
   if (!dryRun) writeJsonIfChanged(abs('data', 'checks.json'), report);
 
   process.stdout.write(posted.sent
-    ? `${green('✓')} report mailed — ${decision.why}\n`
-    : `${dim(`· no mail: ${posted.reason ?? `HTTP ${posted.status}`}`)}\n`);
+    ? `${green('✓')} report mailed — ${decision.why} ${dim(posted.reply ?? '')}\n`
+    : `${dim(`· no mail: ${posted.reason ?? `HTTP ${posted.status}`} ${posted.reply ?? ''}`)}\n`);
 
   process.stdout.write(`\n${report.summary.sitesOk}/${report.summary.sites} sites`
     + `${report.summary.forms ? ` · ${report.summary.formsOk}/${report.summary.forms} forms` : ''}`
