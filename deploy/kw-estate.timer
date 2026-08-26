@@ -9,11 +9,20 @@ Description=Rebuild the KW Estate dashboard four times a day
 
 [Timer]
 OnCalendar=00/6:07
+
+# The daily report run. The zone is spelled out because this box is on Etc/UTC:
+# a bare "09:30" would fire at 15:00 in Delhi, and nobody would notice for
+# weeks except that the mail kept arriving after lunch. Needs systemd 252+;
+# this box is Ubuntu 24.04 with systemd 255. On anything older, use 04:00.
+OnCalendar=*-*-* 09:30 Asia/Kolkata
+
 # Catch up after a reboot or a stretch of downtime instead of silently waiting
 # for the next slot — a dashboard six hours stale is worse than one that says so.
 Persistent=true
 OnBootSec=10min
-RandomizedDelaySec=3min
+# Zero, not 3min, on the report run: 09:30 should mean 09:30. The collection is
+# cheap enough that a thundering herd of one does not matter.
+RandomizedDelaySec=0
 AccuracySec=1min
 Unit=kw-estate.service
 

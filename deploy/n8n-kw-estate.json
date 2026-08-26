@@ -1,0 +1,212 @@
+{
+  "name": "KW Estate",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kw-estate-report",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Report webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        -200
+      ],
+      "webhookId": "a1b2c3d4-0001-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The webhook payload lands under .body; tolerate both shapes.\nconst r = $json.body ?? $json;\nconst s = r.summary ?? {};\nconst f = r.failures ?? [];\n\nconst esc = (v) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));\nconst th = 'padding:7px 10px;border-bottom:2px solid #333;text-align:left';\nconst td = 'padding:7px 10px;border-bottom:1px solid #eee';\n\nconst rows = f.map((x) =>\n  `<tr><td style=\"${td}\"><b>${esc(x.what)}</b><br><span style=\"color:#888;font-size:12px\">${esc(x.url)}</span></td>` +\n  `<td style=\"${td};color:#c0392b\">${esc(x.error)}</td>` +\n  `<td style=\"${td};color:#888\">${esc(x.server)}</td></tr>`).join('');\n\nconst formLine = s.forms\n  ? `, ${s.formsOk}/${s.forms} lead form${s.forms === 1 ? '' : 's'} accepted a test submission`\n  : '';\n\nconst body = r.healthy\n  ? `<p>All <b>${s.sites}</b> hostnames answered${formLine}.</p>`\n  : `<p><b style=\"color:#c0392b\">${f.length} failing</b> of ${s.sites} hostnames${formLine}.</p>\n     <table style=\"border-collapse:collapse;width:100%;font-size:13px\">\n       <thead><tr><th style=\"${th}\">What</th><th style=\"${th}\">Problem</th><th style=\"${th}\">Server</th></tr></thead>\n       <tbody>${rows}</tbody>\n     </table>`;\n\nconst html = `<div style=\"font:14px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;color:#222;max-width:680px\">\n  <h2 style=\"margin:0 0 4px\">KW Estate — outside-in check</h2>\n  <p style=\"margin:0 0 18px;color:#888;font-size:13px\">${esc(r.at)} · slowest response ${s.slowestMs ?? 0} ms</p>\n  ${body}\n  <p style=\"margin-top:22px;font-size:12px;color:#aaa\">\n    Sent by the KW Estate dashboard on srv1340120. Full detail at\n    <a href=\"https://estate.leadq.co.in\" style=\"color:#0d9c8a\">estate.leadq.co.in</a>.\n  </p>\n</div>`;\n\nreturn [{ json: { to: r.to, cc: r.cc ?? '', subject: r.subject, html, healthy: r.healthy === true } }];"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Format report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Send report",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ sent: true, to: $json.to }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Confirm sent",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -200
+      ],
+      "notes": "Only reached if the mail actually went. A failure upstream returns 500 to the caller, which is what makes \"report not sent\" honest."
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kw-lead-verify",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Verify webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        200
+      ],
+      "webhookId": "b1b2c3d4-0001-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apps.cratiocrm.com/api/apirequest.php?operation=getRecordsBySearch",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ formname: \"Leads\", operation: \"getRecordsBySearch\", searchcondition: \"Mobile Number@contains@\" + String($json.body.phone).replace(/\\D/g, \"\").slice(-10) + \"@AND$\", displayfields: [\"Contact Name\", \"Mobile Number\", \"Email Address\", \"Lead Date\", \"Lead Source\"], pageno: 1, numofrecords: 5 }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Search Cratio by mobile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        200
+      ],
+      "notes": "Credential: Query Auth, name \"apikey\", value = your Cratio API key. Cratio takes the key as a query parameter, so it stays in n8n and out of this file. searchcondition uses the FIELD LABEL exactly as the CRM shows it — \"Mobile Number\", not \"Mobile\". `contains` on the last ten digits, because Cratio stores +919643330741 and the form sends the bare number. Searched by mobile rather than email: the @ in an email address collides with searchcondition's own separator."
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Verify webhook').first().json.body ?? {};\nconst phone = String(req.phone ?? '').replace(/\\D/g, '').slice(-10);\nconst res = $json ?? {};\n\n// Cratio does not always answer at the top level. An IP-allowlist rejection\n// arrives as {\"data\":\"\\n{\\\"error\\\":\\\"You are not allowed...\\\"}\"} — the real\n// reply is a JSON STRING nested inside `data`. Unwrap before deciding, or a\n// hard refusal reads as \"no such lead\".\nlet body = res;\nif (typeof res?.data === 'string') {\n  try { body = JSON.parse(res.data.trim()); } catch { body = { error: res.data.trim() }; }\n}\n\n// THREE outcomes, not two. A bad key, a wrong formname, an unknown field or a\n// blocked IP all make Cratio return an error — and if that reads as \"not\n// found\", a misconfigured lookup is indistinguishable from a lead that\n// genuinely went missing, and the dashboard raises a critical alert about the\n// wrong system entirely.\nconst err = body?.error ?? body?.Error ?? (Array.isArray(body) ? body[0]?.error : null);\nif (err) {\n  return [{ json: { result: 'LEAD_ERROR', checked: phone, detail: String(err).slice(0, 200) } }];\n}\n\n// {\"success\":[{\"totalrows\":N,\"data\":[...]}]} on a hit.\nconst rows = Number(body?.success?.[0]?.totalrows ?? 0);\nconst found = rows > 0 || (phone.length === 10 && JSON.stringify(body).includes(phone));\n\n// A token, never the phone number itself: a not-found reply that echoed the\n// value back would match the search string and read as a hit.\nreturn [{ json: {\n  result: found ? 'LEAD_FOUND' : 'LEAD_MISSING',\n  checked: phone,\n  rows,\n  // Enough of the raw reply to diagnose the next problem without another run.\n  detail: found ? undefined : JSON.stringify(body).slice(0, 200),\n} }];"
+      },
+      "id": "b1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Found or not",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "b1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Answer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        460,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Report webhook": {
+      "main": [
+        [
+          {
+            "node": "Format report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format report": {
+      "main": [
+        [
+          {
+            "node": "Send report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send report": {
+      "main": [
+        [
+          {
+            "node": "Confirm sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify webhook": {
+      "main": [
+        [
+          {
+            "node": "Search Cratio by mobile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Cratio by mobile": {
+      "main": [
+        [
+          {
+            "node": "Found or not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found or not": {
+      "main": [
+        [
+          {
+            "node": "Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

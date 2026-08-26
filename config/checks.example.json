@@ -10,6 +10,11 @@
   "notify": [
     "it6@kwgroup.in"
   ],
+
+  "_schedule_comment": "One digest a day at reportAt, in `timezone` — NOT the server's clock. srv1340120 runs Etc/UTC, so a bare 09:30 would mail at 15:00 in Delhi. The probes run five times daily; nobody wants five identical 'all healthy' mails, which is how a report becomes a filter rule. The exception is alertOnNewFailures: something that breaks at 11:00 should not wait until tomorrow morning. Set it false if the morning mail is genuinely enough. npm run check -- --force-report mails now regardless.",
+  "reportAt": "09:30",
+  "timezone": "Asia/Kolkata",
+  "alertOnNewFailures": true,
   "cc": [],
 
   "skip": [

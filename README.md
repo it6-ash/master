@@ -173,8 +173,9 @@ body, so it is Cratio today and any other CRM later without a code change.
 **No CRM credential lives in this repo or on disk.** `verify` calls n8n over
 loopback (`127.0.0.1:5678`), and n8n already holds the Cratio credential in its
 own store. The request never leaves the box, and `config/checks.json` contains
-nothing worth stealing. `deploy/n8n-kw-lead-verify.json` is the workflow;
-point its HTTP node at Cratio and activate it.
+nothing worth stealing. `deploy/n8n-kw-estate.json` holds both branches — the report mailer
+and the lead lookup — in one workflow, so there is one thing to import,
+activate and hang credentials on.
 
 It answers `LEAD_FOUND` or `LEAD_MISSING` rather than echoing the address,
 deliberately: a not-found reply containing the email would match the search
@@ -195,6 +196,17 @@ the page shows a thank-you, nginx is healthy, the box reports nothing — and th
 salesperson simply never sees the lead. The last one is deliberately *not*
 critical: being unable to see is not proof of loss, and paging someone for an
 API outage is how alerts get ignored.
+
+**One digest a day, at 09:30 Asia/Kolkata.** The probes run five times daily
+and nobody wants five identical "all healthy" mails — that is how a report
+becomes a filter rule and then stops being read. The zone is explicit because
+srv1340120 runs Etc/UTC, where a bare `09:30` would mail at 15:00 in Delhi and
+the only symptom is post-lunch email.
+
+The exception is a failure that was not in the last report: something that
+breaks at 11:00 should not wait until tomorrow morning, so it mails
+immediately. `alertOnNewFailures: false` turns that off;
+`npm run check -- --force-report` mails now regardless.
 
 The report goes to the n8n on srv1340120 as a JSON POST — subject, summary and
 the failures, already shaped for an email node. `notify` takes one address or a

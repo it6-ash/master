@@ -28,6 +28,7 @@ const noForms = args.includes('--no-forms');
 // real lead in a real CRM, and four a day per landing page is somebody else's
 // afternoon spent deleting them.
 const forceForms = args.includes('--force-forms');
+const forceReport = args.includes('--force-report');
 
 const color = process.stdout.isTTY && !process.env.NO_COLOR;
 const paint = (c, s) => (color ? `[${c}m${s}[0m` : s);
@@ -379,6 +380,48 @@ export function checkIssues(report) {
 
 /* ---------------------------------------------------------------- report */
 
+/** Wall-clock HH:MM in the configured zone, not the server's. */
+export function localTime(date, timezone) {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: timezone, hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date);
+}
+
+/**
+ * Should this run mail anybody?
+ *
+ * One digest a day, at reportAt. The probes run five times daily and nobody
+ * wants five identical "all healthy" mails — that is how a report becomes a
+ * filter rule and then stops being read.
+ *
+ * The exception is a failure that was not in the last report. A digest that
+ * sits on a new outage until tomorrow morning is a newsletter, not monitoring.
+ * Set alertOnNewFailures to false if the morning mail is genuinely enough.
+ */
+export function shouldReport(report, config, { previous, now }) {
+  const timezone = config.timezone ?? 'Asia/Kolkata';
+  const at = config.reportAt ?? '09:30';
+
+  if (localTime(now, timezone) >= at && previous?.lastReported !== report.today) {
+    return { yes: true, why: `daily report, ${at} ${timezone}` };
+  }
+
+  if (config.alertOnNewFailures !== false) {
+    const key = (f) => `${f.host ?? f.id}`;
+    const before = new Set([
+      ...(previous?.sites ?? []).filter((s) => !s.ok).map(key),
+      ...(previous?.forms ?? []).filter((f) => !f.ok && !f.skipped).map(key),
+    ]);
+    const fresh = [
+      ...report.sites.filter((s) => !s.ok).map(key),
+      ...report.forms.filter((f) => !f.ok && !f.skipped).map(key),
+    ].filter((k) => !before.has(k));
+    if (fresh.length) return { yes: true, why: `newly failing: ${fresh.join(', ')}` };
+  }
+
+  return { yes: false, why: `holding until ${at} ${timezone}` };
+}
+
 async function postReport(report, config) {
   const url = config.webhook;
   if (!url) return { sent: false, reason: 'no webhook configured in config/checks.json' };
@@ -504,12 +547,26 @@ export async function runChecks() {
     lastSubmitted,
   };
 
+  const decision = forceReport
+    ? { yes: true, why: '--force-report' }
+    : shouldReport(report, config, { previous: previous.ok ? previous.value : null, now: new Date() });
+
+  let posted = { sent: false, reason: decision.why };
+  if (decision.yes) {
+    posted = await postReport(report, config);
+    // Only mark the day done when a mail actually went. A failed send must be
+    // retried on the next pass, not silently swallowed until tomorrow.
+    if (posted.sent) report.lastReported = report.today;
+  }
+  if (!report.lastReported && previous.ok && previous.value.lastReported) {
+    report.lastReported = previous.value.lastReported;
+  }
+
   if (!dryRun) writeJsonIfChanged(abs('data', 'checks.json'), report);
 
-  const posted = await postReport(report, config);
   process.stdout.write(posted.sent
-    ? `${green('✓')} report posted to n8n\n`
-    : `${yellow('!')} report not sent: ${posted.reason ?? `HTTP ${posted.status}`}\n`);
+    ? `${green('✓')} report mailed — ${decision.why}\n`
+    : `${dim(`· no mail: ${posted.reason ?? `HTTP ${posted.status}`}`)}\n`);
 
   process.stdout.write(`\n${report.summary.sitesOk}/${report.summary.sites} sites`
     + `${report.summary.forms ? ` · ${report.summary.formsOk}/${report.summary.forms} forms` : ''}`

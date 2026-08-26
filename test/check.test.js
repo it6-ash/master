@@ -1,7 +1,54 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { targetsFrom, testLead, checkIssues } from '../src/check.js';
+import { targetsFrom, testLead, checkIssues, shouldReport, localTime } from '../src/check.js';
+
+test('the report clock is the reader\'s, not the server\'s', () => {
+  // srv1340120 runs Etc/UTC. A naive 09:30 would mail at 15:00 in Delhi, and
+  // the only symptom would be mail that keeps arriving after lunch.
+  const t = new Date('2026-08-26T04:00:00Z');
+  assert.equal(localTime(t, 'Asia/Kolkata'), '09:30');
+  assert.equal(localTime(t, 'Etc/UTC'), '04:00');
+});
+
+test('one digest a day, but a new failure does not wait for morning', () => {
+  const at930 = new Date('2026-08-26T04:00:00Z');   // 09:30 IST
+  const at1200 = new Date('2026-08-26T06:30:00Z');  // 12:00 IST
+  const before930 = new Date('2026-08-26T02:00:00Z'); // 07:30 IST
+  const report = (fails = []) => ({
+    today: '2026-08-26',
+    sites: [{ host: 'a.com', ok: true }, ...fails.map((h) => ({ host: h, ok: false }))],
+    forms: [],
+  });
+
+  assert.equal(shouldReport(report(), {}, { previous: null, now: before930 }).yes, false,
+    'nothing before the reporting hour');
+  assert.equal(shouldReport(report(), {}, { previous: null, now: at930 }).yes, true,
+    'the daily digest');
+  assert.equal(
+    shouldReport(report(), {}, { previous: { lastReported: '2026-08-26' }, now: at1200 }).yes,
+    false, 'already sent today — the other four passes stay quiet',
+  );
+
+  // A site that broke at 11:00 must not wait until 09:30 tomorrow.
+  const fresh = shouldReport(report(['b.com']), {}, {
+    previous: { lastReported: '2026-08-26', sites: [{ host: 'a.com', ok: true }], forms: [] },
+    now: at1200,
+  });
+  assert.equal(fresh.yes, true);
+  assert.match(fresh.why, /newly failing: b\.com/);
+
+  // The same failure again is not news.
+  assert.equal(shouldReport(report(['b.com']), {}, {
+    previous: { lastReported: '2026-08-26', sites: [{ host: 'b.com', ok: false }], forms: [] },
+    now: at1200,
+  }).yes, false);
+
+  assert.equal(shouldReport(report(['b.com']), { alertOnNewFailures: false }, {
+    previous: { lastReported: '2026-08-26', sites: [], forms: [] },
+    now: at1200,
+  }).yes, false, 'opt out and the morning mail is the only mail');
+});
 
 test('targets come from the servers, not from a maintained list', () => {
   const servers = {
