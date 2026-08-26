@@ -196,6 +196,16 @@ async function verifyLead(form, payload, { today }) {
         ...(v.body ? { body: fill(JSON.stringify(v.body), false) } : {}),
       });
       const text = await res.text();
+
+      // A lookup that could not run is not a lead that went missing. Without
+      // this, a wrong API key or a renamed CRM field raises "the form accepted
+      // a lead that never arrived" — critical, alarming, and about the wrong
+      // system entirely.
+      const errorMatch = v.errorMatch ?? 'LEAD_ERROR';
+      if (errorMatch && text.includes(errorMatch)) {
+        return { attempted: true, found: false, attempt, error: `the lookup failed: ${text.slice(0, 160)}` };
+      }
+
       // decodeURIComponent because a CRM may echo the address unencoded.
       if (text.toLowerCase().includes(decodeURIComponent(needle))) {
         return { attempted: true, found: true, attempt, afterMs: attempt * waitMs };
