@@ -160,6 +160,24 @@ install -m 644 "$DIR/deploy/kw-estate.timer"   /etc/systemd/system/kw-estate.tim
 systemctl daemon-reload
 ok "kw-estate.service + kw-estate.timer installed"
 
+# The units are the one thing pull.sh will not update, so a schedule added
+# upstream reaches this box only by running THIS script. Print what is actually
+# armed rather than what the repo says should be.
+systemctl list-timers --all kw-estate.timer --no-pager 2>/dev/null | sed -n '1,3p' | sed 's/^/    /'
+grep -c '^OnCalendar=' /etc/systemd/system/kw-estate.timer | xargs -I{} echo "    {} schedules armed"
+
+# Everything about the outside-in check and the mail is inert without this file,
+# and it fails quietly: the probes still run, the report simply goes nowhere.
+if [ ! -f "$DIR/config/checks.json" ]; then
+  warn "no config/checks.json — no report will ever be mailed."
+  warn "  cp $DIR/config/checks.example.json $DIR/config/checks.json"
+  warn "  then set 'webhook' to the n8n production URL."
+elif ! grep -q '"webhook"[[:space:]]*:[[:space:]]*"http' "$DIR/config/checks.json"; then
+  warn "config/checks.json has no webhook URL — the probes run, the mail does not."
+else
+  ok "config/checks.json has a webhook; mail is armed"
+fi
+
 if [ "$REACHABLE" -eq 3 ]; then
   systemctl enable --now kw-estate.timer >/dev/null
   ok "timer enabled — four passes a day"
