@@ -66,7 +66,12 @@ export function targetsFrom(servers, { skip = [], extra = [], okStatus = {} } = 
     for (const vhost of server.vhosts ?? []) {
       const host = String(vhost.domain ?? '').toLowerCase();
       if (!host || host === '_' || !host.includes('.')) continue;
-      if (host.endsWith('.hstgr.cloud')) continue;
+      // Skip only the box's OWN provider name — srv1340120.hstgr.cloud, three
+      // labels, nobody visits it. NOT its subdomains: n8n.srv1340120.hstgr.cloud
+      // is where the automations live, and blanket-excluding the suffix meant
+      // this check sat silent while that host served the wrong TLS certificate
+      // and every HTTPS call to n8n failed validation.
+      if (/^srv\d+\.hstgr\.cloud$/.test(host)) continue;
       if (skip.includes(host)) continue;
       if (seen.has(host)) continue;
       seen.set(host, { host, server: id, url: `https://${host}/`, source: vhost.source ?? 'nginx' });

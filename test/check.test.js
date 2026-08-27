@@ -57,6 +57,7 @@ test('targets come from the servers, not from a maintained list', () => {
         { domain: 'kwgroup.in', source: 'nginx' },
         { domain: 'www.kwgroup.in', source: 'nginx' },
         { domain: 'n8n.srv1340120.hstgr.cloud', source: 'nginx' },
+        { domain: 'srv1340120.hstgr.cloud', source: 'nginx' },
         { domain: '_', source: 'nginx' },
         { domain: 'kwatch.leadq.co.in', source: 'cloudflared' },
       ],
@@ -65,14 +66,18 @@ test('targets come from the servers, not from a maintained list', () => {
   };
 
   const hosts = targetsFrom(servers).map((t) => t.host);
-  assert.deepEqual(hosts, ['kwatch.leadq.co.in', 'kwgroup.in', 'www.kwgroup.in']);
+  // n8n.srv1340120.hstgr.cloud IS checked; srv1340120.hstgr.cloud is not.
+  // Excluding the whole suffix let n8n serve the wrong certificate unnoticed.
+  assert.deepEqual(hosts, [
+    'kwatch.leadq.co.in', 'kwgroup.in', 'n8n.srv1340120.hstgr.cloud', 'www.kwgroup.in',
+  ]);
 
   // www. is its own hostname and can break on its own, so it is NOT collapsed.
   // *.hstgr.cloud is provider-issued and nobody visits it. `_` is a catch-all.
   assert.equal(targetsFrom(servers).find((t) => t.host === 'kwgroup.in').server, 'srv1',
     'first server to claim a hostname owns it');
   assert.deepEqual(targetsFrom(servers, { skip: ['kwgroup.in'] }).map((t) => t.host),
-    ['kwatch.leadq.co.in', 'www.kwgroup.in']);
+    ['kwatch.leadq.co.in', 'n8n.srv1340120.hstgr.cloud', 'www.kwgroup.in']);
 });
 
 test('extra targets cover pages the estate does not serve', () => {
