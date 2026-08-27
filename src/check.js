@@ -98,11 +98,17 @@ export function targetsFrom(servers, { skip = [], extra = [], okStatus = {} } = 
 
   // Not everything behind a hostname is a website. An MCP server has no route
   // at "/", so a bare GET is a correct 404 — the endpoint is healthy and the
-  // question was wrong. Listing the statuses that count as alive keeps the
-  // check honest: 502 and a refused connection still fail, because those mean
-  // the thing behind nginx is actually gone.
+  // question was wrong.
+  //
+  // Defaulted rather than configured, because a default nobody has to set is
+  // the only kind that is actually set. mcp-google-ads.leadq.co.in sat red for
+  // days purely because a checks.json written before this existed had no entry
+  // for it. 502 and a refused connection still fail either way: those mean the
+  // thing behind nginx is genuinely gone, which is the question worth asking.
+  const API_OK = [200, 204, 400, 404, 405, 406];
   for (const t of seen.values()) {
     if (okStatus[t.host]) t.okStatus = [okStatus[t.host]].flat().map(Number);
+    else if (/^(mcp|api)[-.]/.test(t.host)) t.okStatus = API_OK;
   }
 
   return [...seen.values()].sort((a, b) => a.host.localeCompare(b.host));
@@ -161,15 +167,20 @@ async function probeOnce(target) {
  */
 async function probe(target, { attempts = 3, gapMs = 4000 } = {}) {
   let last;
+  // How many requests were ACTUALLY made, not the ceiling. Reporting the
+  // ceiling made a 404 — which is never retried — claim "3 tries", so the
+  // output lied about how hard it had looked.
+  let tried = 0;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     last = await probeOnce(target);
+    tried = attempt;
     if (last.ok) return attempt === 1 ? last : { ...last, attempts: attempt };
 
     const transient = Boolean(last.error) || (last.status ?? 0) >= 500;
     if (!transient || attempt === attempts) break;
     await new Promise((r) => { setTimeout(r, gapMs); });
   }
-  return { ...last, attempts };
+  return { ...last, attempts: tried };
 }
 
 /* ----------------------------------------------------------------- forms */
