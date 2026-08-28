@@ -1,7 +1,8 @@
 {
   "_comment": "Copy to config/checks.json, which is git-ignored. The list of estate hostnames to probe is NOT here — it is derived from data/servers.json, so a site deployed today is checked today. This file holds only what cannot be derived: where to send the report, pages the estate does not host, and which forms may be submitted.",
 
-  "webhook": "https://n8n.srv1340120.hstgr.cloud/webhook/kw-estate-report",
+  "_webhook_comment": "Loopback, not the public hostname. check.js runs on the same box as n8n, so going out to DNS and back in through nginx adds a certificate, a vhost and a public route that can all break — and when they do, the mail that would have told you cannot be sent, because it goes the same way. This happened: nginx served estate.leadq.co.in's certificate on n8n's hostname and the daily report silently stopped. 127.0.0.1:5678 reaches n8n directly and cares about none of it. Use the https URL only when running check from somewhere else.",
+  "webhook": "http://127.0.0.1:5678/webhook/kw-estate-report",
   "webhookHeaders": {
     "_comment": "Optional. If the n8n webhook uses header auth, put it here. This file is git-ignored, so a token is safe — but it never reaches data/ or the dashboard."
   },
