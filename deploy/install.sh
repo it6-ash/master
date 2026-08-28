@@ -243,6 +243,19 @@ enable_vhost() {
       ;;
   esac
 
+  # certbot mirrors whatever it finds: give it `listen [::]:80` and it adds
+  # `listen [::]:443`. If no other vhost here listens on IPv6, ours becomes
+  # nginx's IPv6 default server and answers for EVERY hostname over IPv6 with
+  # our certificate. That silently broke n8n's TLS, its ACME renewal and the
+  # nightly report. Strip IPv6 unless the estate already speaks it.
+  if ! grep -rqs "listen \[::\]" /etc/nginx/sites-enabled/ --exclude=kw-estate; then
+    if grep -q "listen \[::\]" "$VHOST"; then
+      warn "removing IPv6 listeners: no other vhost here has one, so ours would"
+      warn "become the IPv6 default server and serve our cert for every hostname"
+      sed -i '/listen \[::\]/d' "$VHOST"
+    fi
+  fi
+
   ln -sfn "$VHOST" /etc/nginx/sites-enabled/kw-estate
   if nginx -t 2>/dev/null; then
     systemctl reload nginx
