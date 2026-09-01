@@ -125,10 +125,14 @@ test('a test lead is obviously a test lead', () => {
     lead.full_name,
     'the two landing domains must be tellable apart at a glance',
   );
-  assert.equal(lead.mobile, '0000082626', 'phone reads 0000 MMDD YY');
-  assert.equal(lead.mobile.length, 10, 'ten digits, so length validation passes');
-  assert.ok(/^0000/.test(lead.mobile), 'four leading zeros: no Indian mobile can be this, so nobody real is called');
+  assert.equal(lead.mobile, '9000082626', 'phone reads 9000 MMDD YY');
+  assert.equal(lead.mobile.length, 10, 'ten digits');
+  // Must satisfy the same rule the sites do, or a validating form rejects the
+  // submission and the check reports a working form as broken.
+  assert.ok(/^[6-9]\d{9}$/.test(lead.mobile), 'a well-formed Indian mobile');
   assert.notEqual(testLead(form, { today: '2026-08-27' }).mobile, lead.mobile, 'unique per day');
+  // A site that validates strictly can still be given a number KW controls.
+  assert.equal(testLead({ ...form, phone: '9876543210' }, { today: '2026-08-26' }).mobile, '9876543210');
   assert.match(lead.msg, /Not a real enquiry/);
   // Anything that is not a placeholder name is sent through literally.
   assert.equal(lead.source, 'kw-estate-uptime-check');

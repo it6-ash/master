@@ -198,16 +198,17 @@ export function testLead(form, { today }) {
   const marker = form.marker ?? 'KW Estate monitor';
   const [y, m, d] = today.split('-');
 
-  // Ten digits so length validation passes, but four leading zeros mean no
-  // Indian mobile can ever be this — nobody real gets called, and the date is
-  // readable straight off the number: 0000 MMDD YY.
+  // 9000 MMDD YY — ten digits starting with 9, so it passes the Indian mobile
+  // validation that kwbluepearl.com applies, and the date is still readable
+  // straight off the number.
   //
-  // A site that validates the number properly will refuse it, which is correct
-  // of that site. kwbluepearl.com answers "Name and a valid Indian mobile are
-  // required." Such a form needs `phone` set to a number KW actually controls;
-  // there is no reserved test range in India, so any plausible-looking number
-  // eventually belongs to a real person who would get called.
-  const phone = form.phone ?? `0000${m}${d}${y.slice(2)}`;
+  // Chosen by the owner over the previous 0000 prefix, which no real mobile
+  // could ever be. The trade: 9000090126 is a well-formed number and may
+  // belong to an actual subscriber, so what stops them being called is no
+  // longer the number itself but the marking — utm_source kw-estate-check and
+  // a contact name reading "KW Estate monitor". That filter rule in Cratio is
+  // now load-bearing rather than a convenience.
+  const phone = form.phone ?? `9000${m}${d}${y.slice(2)}`;
 
   const defaults = {
     // Contact Name is the column you actually read in a CRM list, so it

@@ -157,9 +157,7 @@
         "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000
-      },
-      "_phone_todo": "This site validates the number and rejects the 0000-prefixed one: \"Name and a valid Indian mobile are required.\" Set `phone` to a number KW actually controls — a spare SIM or an office DID. Do NOT invent a plausible one: India has no reserved test range, so any 6-9 number eventually belongs to somebody who would get called. Until this is set the form check for this site will fail, which is honest: the check genuinely cannot submit.",
-      "phone": "***SET_A_NUMBER_KW_OWNS***"
+      }
     },
     {
       "id": "ghaziabadcommercialshops",
@@ -218,5 +216,6 @@
       }
     }
   ],
-  "_forms_todo": "kwgroup.in has NO form on its homepage — nothing to check there until one exists, or until someone names the inner page that carries it."
+  "_forms_todo": "kwgroup.in has NO form on its homepage — nothing to check there until one exists, or until someone names the inner page that carries it.",
+  "_phone_comment": "Test leads carry 9000 MMDD YY — ten digits starting with 9, so forms that validate Indian mobiles accept it. It is a well-formed number and may belong to a real subscriber, so what keeps them from being called is the MARKING, not the number: utm_source kw-estate-check and a contact name reading 'KW Estate monitor'. Keep that filter rule in Cratio. Any form can override with `phone` if it needs a number KW controls."
 }
