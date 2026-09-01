@@ -17,6 +17,7 @@
  */
 
 import path from 'node:path';
+import os from 'node:os';
 
 import { ROOT, abs, readJson, writeJsonIfChanged } from './lib/fsx.js';
 import { isoDate } from './lib/units.js';
@@ -376,11 +377,51 @@ async function submitForm(form, { today }) {
   }
 }
 
+/**
+ * Did the watchlist shrink?
+ *
+ * The target list is derived from the collected vhosts, which makes it
+ * self-maintaining — and means a partial collection silently stops watching
+ * things. A failed `nginx -T` once emptied every vhost on a box; the count
+ * would simply have dropped and nobody would have been told, because a
+ * hostname that is no longer checked cannot fail.
+ *
+ * Only compares runs from the SAME machine. A laptop and the box have
+ * different data/servers.json, so their counts differ legitimately, and
+ * comparing across them reports a decrease that is really two sources.
+ */
+export function shrinkIssue(report, previous, { today }) {
+  if (!previous || previous.from !== report.from) return null;
+  const before = previous.sites?.length ?? 0;
+  const now = report.sites.length;
+  if (now >= before) return null;
+
+  const gone = (previous.sites ?? [])
+    .map((s) => s.host)
+    .filter((h) => !report.sites.some((s) => s.host === h));
+  if (!gone.length) return null;
+
+  return {
+    id: 'watchlist-shrank',
+    severity: 'high',
+    title: `${gone.length} hostname${gone.length === 1 ? '' : 's'} dropped out of the check`,
+    body: `The sweep went from ${before} to ${now} on ${report.from}: ${gone.join(', ')}.`
+      + ' The list comes from the collected vhosts, so this means either the hostname was genuinely'
+      + ' removed, or the last collection came back incomplete. The second is the dangerous one —'
+      + ' a hostname that is no longer checked cannot be reported as failing.',
+    source: 'auto',
+    rule: 'watchlist-shrank',
+    evidence: `${before} -> ${now}: ${gone.slice(0, 6).join(', ')}`,
+    opened: today,
+  };
+}
+
 /* ---------------------------------------------------------------- issues */
 
 /** Failures the dashboard should carry next to the ones from the dumps. */
 export function checkIssues(report) {
   const issues = [];
+  if (report.shrank) issues.push(report.shrank);
 
   for (const site of report.sites.filter((s) => !s.ok)) {
     issues.push({
@@ -680,6 +721,11 @@ export async function runChecks() {
   const report = {
     at,
     today,
+    // Which machine produced this. Reports from a laptop and reports from the
+    // box land in the same inbox, and their hostname counts differ because
+    // their data/servers.json differ — 35 from one, 37 from the other, looking
+    // for all the world like hostnames disappearing.
+    from: os.hostname(),
     summary: {
       sites: sites.length,
       sitesOk: sites.filter((s) => s.ok).length,
@@ -694,6 +740,15 @@ export async function runChecks() {
     forms: formResults,
     lastSubmitted,
   };
+
+  // A shrinking watchlist counts as a new failure, so it mails immediately
+  // rather than waiting for the morning — something stopped being watched.
+  const shrank = shrinkIssue(report, previous.ok ? previous.value : null, { today });
+  if (shrank) {
+    report.shrank = shrank;
+    process.stdout.write(`${yellow('!')} ${shrank.title}: ${shrank.evidence}
+`);
+  }
 
   const decision = forceReport
     ? { yes: true, why: '--force-report' }

@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { targetsFrom, testLead, checkIssues, shouldReport, localTime } from '../src/check.js';
+import {
+  targetsFrom, testLead, checkIssues, shouldReport, localTime, shrinkIssue,
+} from '../src/check.js';
 
 test('the report clock is the reader\'s, not the server\'s', () => {
   // srv1340120 runs Etc/UTC. A naive 09:30 would mail at 15:00 in Delhi, and
@@ -197,4 +199,33 @@ test('a broken form outranks a down site, and a skipped one raises nothing', () 
   assert.match(byRule['site-slow'].title, /8\.1s/);
   assert.equal(byRule['site-unreachable'].server, 'srv1');
   for (const i of issues) assert.match(i.id, /^[a-z0-9][a-z0-9-]*$/, `${i.id} must satisfy the issues schema`);
+});
+
+test('a hostname dropping out of the check is reported, not silently forgotten', () => {
+  // The list is derived from the collected vhosts, so a partial collection
+  // stops watching things — and a hostname that is no longer checked can never
+  // be reported as failing. That is the quiet way monitoring rots.
+  const run = (from, hosts) => ({ from, sites: hosts.map((host) => ({ host })) });
+  const today = '2026-09-01';
+
+  const lost = shrinkIssue(
+    run('srv1340120', ['a.com', 'b.com']),
+    run('srv1340120', ['a.com', 'b.com', 'c.com', 'd.com']),
+    { today },
+  );
+  assert.equal(lost.rule, 'watchlist-shrank');
+  assert.equal(lost.severity, 'high');
+  assert.match(lost.evidence, /4 -> 2: c\.com, d\.com/);
+
+  assert.equal(shrinkIssue(run('x', ['a', 'b', 'c']), run('x', ['a', 'b']), { today }), null, 'growing is fine');
+  assert.equal(shrinkIssue(run('x', ['a', 'b']), run('x', ['a', 'b']), { today }), null, 'unchanged is fine');
+  assert.equal(shrinkIssue(run('x', ['a']), null, { today }), null, 'no previous run to compare');
+
+  // 35 from a laptop and 37 from the box is two sources, not a decrease.
+  // Comparing across machines would report a fault every single day.
+  assert.equal(
+    shrinkIssue(run('laptop', ['a']), run('srv1340120', ['a', 'b', 'c']), { today }),
+    null,
+    'different machines are never compared',
+  );
 });
