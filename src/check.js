@@ -136,9 +136,13 @@ async function probeOnce(target) {
       ms: Date.now() - started,
       finalUrl: res.url !== target.url ? res.url : undefined,
       bytes: body.length,
-      // A 200 that serves nothing is still a broken site. Only for real 2xx
-      // though: an API answering 404 at / is supposed to have no body.
-      empty: res.status >= 200 && res.status < 300 && body.trim().length < 200 ? true : undefined,
+      // A 200 that serves nothing is still a broken site — but "nothing" means
+      // no words, not few bytes. fal.leadq.co.in answers in 125 bytes on
+      // purpose: it is an MCP proxy whose homepage exists only to say so. A
+      // byte threshold called that broken. Strip the tags and ask whether the
+      // page actually says anything.
+      empty: res.status >= 200 && res.status < 300
+        && body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().length < 20 ? true : undefined,
       body,
     };
   } catch (e) {
