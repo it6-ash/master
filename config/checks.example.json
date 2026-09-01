@@ -1,44 +1,48 @@
 {
   "_comment": "Copy to config/checks.json, which is git-ignored. The list of estate hostnames to probe is NOT here — it is derived from data/servers.json, so a site deployed today is checked today. This file holds only what cannot be derived: where to send the report, pages the estate does not host, and which forms may be submitted.",
-
   "_webhook_comment": "Loopback, not the public hostname. check.js runs on the same box as n8n, so going out to DNS and back in through nginx adds a certificate, a vhost and a public route that can all break — and when they do, the mail that would have told you cannot be sent, because it goes the same way. This happened: nginx served estate.leadq.co.in's certificate on n8n's hostname and the daily report silently stopped. 127.0.0.1:5678 reaches n8n directly and cares about none of it. Use the https URL only when running check from somewhere else.",
   "webhook": "http://127.0.0.1:5678/webhook/kw-estate-report",
   "webhookHeaders": {
     "_comment": "Optional. If the n8n webhook uses header auth, put it here. This file is git-ignored, so a token is safe — but it never reaches data/ or the dashboard."
   },
-
   "notify": [
     "it6@kwgroup.in",
     "mdo60@kwgroup.in",
     "sm3@kwgroup.in"
   ],
-
   "_retries_comment": "A single dropped TCP connect is not an outage. overview.leadq.co.in answered 200 in 1032 ms on one run and timed out on the next, and that mailed three people to say a working site was broken. Transient shapes only — a timeout, a refused connection, a 5xx. A server that answers 404 will answer 404 again.",
   "retries": 3,
-
   "_schedule_comment": "One digest a day at reportAt, in `timezone` — NOT the server's clock. srv1340120 runs Etc/UTC, so a bare 09:30 would mail at 15:00 in Delhi. The probes run five times daily; nobody wants five identical 'all healthy' mails, which is how a report becomes a filter rule. The exception is alertOnNewFailures: something that breaks at 11:00 should not wait until tomorrow morning. Set it false if the morning mail is genuinely enough. npm run check -- --force-report mails now regardless.",
   "reportAt": "09:30",
   "timezone": "Asia/Kolkata",
   "alertOnNewFailures": true,
   "cc": [],
-
   "skip": [
     "_",
     "srv1340120.hstgr.cloud"
   ],
-
   "_okStatus_comment": "Not everything behind a hostname is a website. An MCP server has no route at \"/\", so a bare GET is a correct 404 — the endpoint is healthy and the question was wrong. List the statuses that mean alive for those. 502 and a refused connection still fail, because those mean the thing behind nginx is genuinely gone.",
   "okStatus": {
-    "mcp-google-ads.leadq.co.in": [200, 400, 404, 405, 406],
-    "mcp-cratio.leadq.co.in": [200, 400, 404, 405, 406]
+    "mcp-google-ads.leadq.co.in": [
+      200,
+      400,
+      404,
+      405,
+      406
+    ],
+    "mcp-cratio.leadq.co.in": [
+      200,
+      400,
+      404,
+      405,
+      406
+    ]
   },
-
   "_extra_comment": "Pages the estate does not serve, so nothing can discover them. The ad landing pages live on domains none of the three boxes has heard of — and they are where the leads come from, which makes them the pages that most need watching. Labelled by host + path so a failure names the page, not just the domain.",
   "extra": [
     "https://kwgroup.in/",
     "https://kwbluepearl.com/",
     "https://www.kwdelhi6.com/",
-
     "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html",
     "https://kwbluepearldelhi.com/buy-commercial-real-estate-delhi.html",
     "https://kwbluepearldelhi.com/buy-property-in-delhi.html",
@@ -46,7 +50,6 @@
     "https://kwbluepearldelhi.com/commercial-property-investment-delhi.html",
     "https://kwbluepearldelhi.com/pre-leased-commercial-property-delhi.html",
     "https://kwbluepearldelhi.com/commercial-shops-for-sale-delhi.html",
-
     "https://kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html",
     "https://kwdelhi6ghaziabad.com/buy-commercial-property-in-delhi-ncr.html",
     "https://kwdelhi6ghaziabad.com/commercial-property-investment-ghaziabad.html",
@@ -57,7 +60,6 @@
     "https://kwdelhi6ghaziabad.com/commercial-shop-for-sale-delhi-ncr.html",
     "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
   ],
-
   "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real lead into a real CRM, so each entry is a deliberate decision. All sixteen landing pages post to the same submit.php per domain, so two entries cover them — probing all sixteen pages above is what catches an individual page being down. `fields` maps the page's real field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain, because a submit.php that returns 200 and drops the lead is exactly the failure worth catching. Keep utm_source identical across forms — it is the single rule that filters every test lead out of the pipeline — and make utm_campaign per-site, because Campaign Name is a column in the Cratio list and two identical values there mean you cannot tell which landing domain the lead came from.",
   "forms": [
     {
@@ -83,8 +85,13 @@
       "verify": {
         "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
         "method": "POST",
-        "headers": { "content-type": "application/json" },
-        "body": { "phone": "{phone}", "email": "{email}" },
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "phone": "{phone}",
+          "email": "{email}"
+        },
         "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000
@@ -112,12 +119,104 @@
       "verify": {
         "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
         "method": "POST",
-        "headers": { "content-type": "application/json" },
-        "body": { "phone": "{phone}", "email": "{email}" },
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "phone": "{phone}",
+          "email": "{email}"
+        },
+        "match": "LEAD_FOUND",
+        "attempts": 3,
+        "waitMs": 10000
+      }
+    },
+    {
+      "id": "kwbluepearl",
+      "url": "https://kwbluepearl.com/api/enquiry",
+      "method": "POST",
+      "encoding": "json",
+      "marker": "KW Estate monitor",
+      "fields": {
+        "name": "name",
+        "phone": "phone",
+        "email": "email",
+        "budget": "Automated check",
+        "message": "message"
+      },
+      "verify": {
+        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "phone": "{phone}",
+          "email": "{email}"
+        },
+        "match": "LEAD_FOUND",
+        "attempts": 3,
+        "waitMs": 10000
+      },
+      "_phone_todo": "This site validates the number and rejects the 0000-prefixed one: \"Name and a valid Indian mobile are required.\" Set `phone` to a number KW actually controls — a spare SIM or an office DID. Do NOT invent a plausible one: India has no reserved test range, so any 6-9 number eventually belongs to somebody who would get called. Until this is set the form check for this site will fail, which is honest: the check genuinely cannot submit.",
+      "phone": "***SET_A_NUMBER_KW_OWNS***"
+    },
+    {
+      "id": "ghaziabadcommercialshops",
+      "url": "https://ghaziabadcommercialshops.org/api/leads",
+      "method": "POST",
+      "encoding": "form",
+      "marker": "KW Estate monitor",
+      "fields": {
+        "name-1": "name",
+        "email-1": "email",
+        "phone-1": "phone",
+        "textarea-1": "message",
+        "source": "kw-estate-check"
+      },
+      "verify": {
+        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "phone": "{phone}",
+          "email": "{email}"
+        },
+        "match": "LEAD_FOUND",
+        "attempts": 3,
+        "waitMs": 10000
+      }
+    },
+    {
+      "id": "kwdelhi6",
+      "url": "https://www.kwdelhi6.com/process-lead.php",
+      "method": "POST",
+      "encoding": "form",
+      "marker": "KW Estate monitor",
+      "fields": {
+        "name": "name",
+        "email": "email",
+        "mobile": "phone",
+        "city": "Automated check",
+        "query": "message"
+      },
+      "verify": {
+        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "phone": "{phone}",
+          "email": "{email}"
+        },
         "match": "LEAD_FOUND",
         "attempts": 3,
         "waitMs": 10000
       }
     }
-  ]
+  ],
+  "_forms_todo": "kwgroup.in has NO form on its homepage — nothing to check there until one exists, or until someone names the inner page that carries it."
 }

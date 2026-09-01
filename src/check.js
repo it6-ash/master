@@ -201,7 +201,13 @@ export function testLead(form, { today }) {
   // Ten digits so length validation passes, but four leading zeros mean no
   // Indian mobile can ever be this — nobody real gets called, and the date is
   // readable straight off the number: 0000 MMDD YY.
-  const phone = `0000${m}${d}${y.slice(2)}`;
+  //
+  // A site that validates the number properly will refuse it, which is correct
+  // of that site. kwbluepearl.com answers "Name and a valid Indian mobile are
+  // required." Such a form needs `phone` set to a number KW actually controls;
+  // there is no reserved test range in India, so any plausible-looking number
+  // eventually belongs to a real person who would get called.
+  const phone = form.phone ?? `0000${m}${d}${y.slice(2)}`;
 
   const defaults = {
     // Contact Name is the column you actually read in a CRM list, so it
