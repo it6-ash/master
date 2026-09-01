@@ -459,6 +459,37 @@ export function checkIssues(report) {
 
 /* ---------------------------------------------------------------- report */
 
+/**
+ * The same webhook, reached without leaving the machine.
+ *
+ * The mailer runs on the box this check runs on. Sending the report out to DNS
+ * and back in through nginx puts a certificate, a vhost and a public route in
+ * front of it — and when any of those break, the mail that would have told you
+ * cannot be sent, because it travels the same road. That is not hypothetical:
+ * an IPv6 default-server mix-up made nginx serve the wrong certificate for
+ * n8n's hostname and the daily report silently stopped for two days.
+ *
+ * The upstream is DERIVED, not assumed. The collector already recorded that
+ * this hostname proxies to 127.0.0.1:5678, so the fallback uses that rather
+ * than a port guessed in advance.
+ */
+export function loopbackFor(url, servers) {
+  let parsed;
+  try { parsed = new URL(url); } catch { return null; }
+  if (parsed.protocol !== 'https:') return null;
+
+  for (const server of Object.values(servers ?? {})) {
+    for (const vhost of server.vhosts ?? []) {
+      if (String(vhost.domain ?? '').toLowerCase() !== parsed.hostname.toLowerCase()) continue;
+      const upstream = String(vhost.proxyTo ?? '');
+      // "127.0.0.1:5678" or "127.0.0.1:8791/mcp" — take host:port, keep our path.
+      const m = /^(?:https?:\/\/)?(127\.0\.0\.1|localhost):(\d+)/.exec(upstream);
+      if (m) return `http://${m[1]}:${m[2]}${parsed.pathname}${parsed.search}`;
+    }
+  }
+  return null;
+}
+
 /** Wall-clock HH:MM in the configured zone, not the server's. */
 export function localTime(date, timezone) {
   return new Intl.DateTimeFormat('en-GB', {
@@ -501,7 +532,7 @@ export function shouldReport(report, config, { previous, now }) {
   return { yes: false, why: `holding until ${at} ${timezone}` };
 }
 
-async function postReport(report, config) {
+async function postReport(report, config, servers) {
   const url = config.webhook;
   if (!url) return { sent: false, reason: 'no webhook configured in config/checks.json' };
   if (dryRun) return { sent: false, reason: 'dry run' };
@@ -515,8 +546,7 @@ async function postReport(report, config) {
   // differ: most want one comma-separated string, some want an array.
   const recipients = [config.notify ?? []].flat().filter(Boolean);
 
-  try {
-    const res = await fetch(url, {
+  const send = (to) => fetch(to, {
       method: 'POST',
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { 'content-type': 'application/json', ...headersFrom(config.webhookHeaders) },
@@ -537,14 +567,34 @@ async function postReport(report, config) {
         sites: report.sites.map(({ body: _b, ...rest }) => rest),
         forms: report.forms,
       }),
-    });
+  });
+
+  const attempt = async (to, via) => {
+    const res = await send(to);
     // Carry n8n's reply back. When the mail fails the useful sentence is in
     // there — "no credential", a Gmail refusal — and without it all you get is
     // a status code and a trip to the executions list.
     const reply = (await res.text()).slice(0, 200);
-    return { sent: res.status < 400, status: res.status, reply };
+    return { sent: res.status < 400, status: res.status, reply, via };
+  };
+
+  try {
+    return await attempt(url, 'configured URL');
   } catch (e) {
-    return { sent: false, reason: e.name === 'TimeoutError' ? 'timed out' : (e.cause?.code ?? e.message) };
+    const why = e.name === 'TimeoutError' ? 'timed out' : (e.cause?.code ?? e.message);
+
+    // The public path failed. If this hostname is one the estate serves, go
+    // straight to the upstream instead — same n8n, no DNS, no certificate, no
+    // nginx. A broken certificate must not be able to silence the alert that
+    // would have reported it.
+    const direct = loopbackFor(url, servers);
+    if (!direct) return { sent: false, reason: why };
+    try {
+      const out = await attempt(direct, `loopback after ${why}`);
+      return out;
+    } catch (e2) {
+      return { sent: false, reason: `${why}; loopback also failed: ${e2.cause?.code ?? e2.message}` };
+    }
   }
 }
 
@@ -640,7 +690,7 @@ export async function runChecks() {
 
   let posted = { sent: false, reason: decision.why };
   if (decision.yes) {
-    posted = await postReport(report, config);
+    posted = await postReport(report, config, serversFile.value);
     // Only mark the day done when a mail actually went. A failed send must be
     // retried on the next pass, not silently swallowed until tomorrow.
     if (posted.sent) report.lastReported = report.today;
@@ -652,7 +702,7 @@ export async function runChecks() {
   if (!dryRun) writeJsonIfChanged(abs('data', 'checks.json'), report);
 
   process.stdout.write(posted.sent
-    ? `${green('✓')} report mailed — ${decision.why} ${dim(posted.reply ?? '')}\n`
+    ? `${green('✓')} report mailed — ${decision.why} ${dim(`${posted.via && posted.via !== 'configured URL' ? `via ${posted.via} ` : ''}${posted.reply ?? ''}`.trim())}\n`
     : `${dim(`· no mail: ${posted.reason ?? `HTTP ${posted.status}`} ${posted.reply ?? ''}`)}\n`);
 
   process.stdout.write(`\n${report.summary.sitesOk}/${report.summary.sites} sites`
