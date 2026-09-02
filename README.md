@@ -96,9 +96,21 @@ an ingress rule and an Access policy, and is worthless without both.
 edits it. Re-running the installer must not silently undo TLS.
 
 **What this costs the box it monitors.** One more `server_name` on an nginx that
-already terminates several; no new port, no change to any existing server block,
-nothing proxied — the other tenants are untouched, and `nginx -T | grep
-server_name` before reloading will show you that. The service runs `Nice=15`
+already terminates several: no new port, no change to any existing server block,
+nothing proxied.
+
+That reasoning was right and still broke a neighbour. The vhost shipped with
+`listen [::]:80`; certbot mirrored it to 443; and because no other vhost on that
+box listened on IPv6, ours became nginx's IPv6 **default server** — serving its
+certificate for every hostname over IPv6. n8n's UI threw certificate warnings,
+its ACME renewal failed, and the nightly report stopped, all from one line that
+claimed no port and touched no other block. The dimension I checked was not the
+dimension that mattered.
+
+So `install.sh` no longer argues, it measures. Before enabling the vhost it
+records the certificate every other hostname serves over IPv4 **and** IPv6;
+after reloading it looks again; if any of them moved, it removes the vhost,
+reloads, and stops. A dashboard is not worth breaking a neighbour for. The service runs `Nice=15`
 with idle I/O, root-only for the SSH key, under `ProtectSystem=strict`. Three
 things are pruned so a timer cannot become a disk problem: snapshots to the
 newest 60 per server, `raw/` dumps to the newest 5 per host, and the collector's

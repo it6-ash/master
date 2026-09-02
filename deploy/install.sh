@@ -208,6 +208,28 @@ if [ "$AUTH" = "basic" ] && [ "$MODE" = "public" ] && ! command -v htpasswd >/de
   apt-get install -y -qq apache2-utils
 fi
 
+# What certificate does every OTHER hostname on this box currently serve, over
+# both address families? One line per host per family.
+#
+# This exists because reasoning was not enough. Adding this vhost claimed no new
+# port and edited no other server block — both true, both checked — and it still
+# broke n8n, by claiming an address family none of its neighbours had claimed.
+# The neighbours are shared production; the only honest test is to look at them
+# before and after, and put the change back if anything moved.
+neighbour_certs() {
+  command -v openssl >/dev/null || return 0
+  nginx -T 2>/dev/null \
+    | sed -n 's/^[[:space:]]*server_name[[:space:]]\+\([^;]*\);.*/\1/p' \
+    | tr ' ' '\n' | grep -E '^[a-z0-9.-]+\.[a-z]{2,}$' | grep -v "^${DOMAIN}$" \
+    | sort -u | while read -r host; do
+      for fam in -4 -6; do
+        cn=$(timeout 6 openssl s_client "$fam" -servername "$host" -connect "$host:443" \
+               </dev/null 2>/dev/null | openssl x509 -noout -subject 2>/dev/null)
+        [ -n "$cn" ] && printf '%s %s %s\n' "$host" "$fam" "$cn"
+      done
+    done
+}
+
 # Idempotent, and safe to re-run after certbot has been at the file.
 enable_vhost() {
   local wanted="$DIR/deploy/$1"
@@ -271,14 +293,33 @@ enable_vhost() {
     warn "none. Check with: openssl s_client -6 -servername <host> -connect <host>:443"
   fi
 
+  say "Recording what the neighbours serve, before touching anything"
+  BEFORE_CERTS=$(neighbour_certs)
+  printf '    %s hostname/family pairs sampled\n' "$(printf '%s' "$BEFORE_CERTS" | grep -c . || true)"
+
   ln -sfn "$VHOST" /etc/nginx/sites-enabled/kw-estate
-  if nginx -t 2>/dev/null; then
-    systemctl reload nginx
-    ok "vhost enabled and nginx reloaded"
-  else
+  if ! nginx -t 2>/dev/null; then
     rm -f /etc/nginx/sites-enabled/kw-estate
     nginx -t || true
     die "nginx -t failed; the vhost was removed again and nginx was NOT reloaded."
+  fi
+  systemctl reload nginx
+  ok "vhost enabled and nginx reloaded"
+
+  # Did anything else change hands? A neighbour whose certificate is suddenly
+  # ours means we became the default server for something.
+  if [ -n "$BEFORE_CERTS" ]; then
+    AFTER_CERTS=$(neighbour_certs)
+    MOVED=$(diff <(printf '%s\n' "$BEFORE_CERTS") <(printf '%s\n' "$AFTER_CERTS") 2>/dev/null | grep '^>' || true)
+    if [ -n "$MOVED" ]; then
+      warn "this change altered what OTHER hostnames serve:"
+      printf '%s\n' "$MOVED" | sed 's/^/      /'
+      warn "reverting — a dashboard is not worth breaking a neighbour for"
+      rm -f /etc/nginx/sites-enabled/kw-estate
+      nginx -t >/dev/null 2>&1 && systemctl reload nginx
+      die "vhost removed and nginx reloaded. Fix the conflict, then re-run."
+    fi
+    ok "every other hostname serves exactly what it served before"
   fi
 }
 
