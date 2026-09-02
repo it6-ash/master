@@ -1,13 +1,14 @@
 {
   "summary": {
-    "failed": 0,
+    "failed": 6,
     "forms": 5,
-    "formsOk": 5,
+    "formsAccepted": 4,
+    "formsOk": 0,
     "sites": 35,
-    "sitesOk": 35,
-    "slowestMs": 3574
+    "sitesOk": 34,
+    "slowestMs": 4061
   },
-  "at": "2026-09-01T10:52:32.632Z",
+  "at": "2026-09-02T09:57:25.548Z",
   "forms": [
     {
       "id": "kwbluepearldelhi",
@@ -15,15 +16,15 @@
       "accepted": true,
       "expected": "thank",
       "matched": true,
-      "ms": 750,
-      "ok": true,
+      "ms": 30876,
+      "ok": false,
       "payload": {
-        "name": "KW Estate monitor · kwbluepearldelhi · 2026-09-01",
+        "name": "KW Estate monitor · kwbluepearldelhi · 2026-09-02",
         "budget": "Automated check",
         "duration": "Automated check",
-        "email": "estate-monitor+kwbluepearldelhi-2026-09-01@kwgroup.in",
+        "email": "estate-monitor+kwbluepearldelhi-2026-09-02@kwgroup.in",
         "lp_url": "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html",
-        "phone": "9000090126",
+        "phone": "9000090226",
         "utm_campaign": "kw-estate-kwbluepearldelhi",
         "utm_medium": "uptime-monitor",
         "utm_source": "kw-estate-check",
@@ -31,7 +32,10 @@
       },
       "url": "https://kwbluepearldelhi.com/submit.php",
       "verified": {
-        "attempted": false
+        "attempt": 3,
+        "attempted": true,
+        "error": "ECONNREFUSED",
+        "found": false
       }
     },
     {
@@ -40,15 +44,15 @@
       "accepted": true,
       "expected": "thank",
       "matched": true,
-      "ms": 1450,
-      "ok": true,
+      "ms": 30550,
+      "ok": false,
       "payload": {
-        "name": "KW Estate monitor · kwdelhi6ghaziabad · 2026-09-01",
+        "name": "KW Estate monitor · kwdelhi6ghaziabad · 2026-09-02",
         "budget": "Automated check",
         "duration": "Automated check",
-        "email": "estate-monitor+kwdelhi6ghaziabad-2026-09-01@kwgroup.in",
+        "email": "estate-monitor+kwdelhi6ghaziabad-2026-09-02@kwgroup.in",
         "lp_url": "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html",
-        "phone": "9000090126",
+        "phone": "9000090226",
         "utm_campaign": "kw-estate-kwdelhi6ghaziabad",
         "utm_medium": "uptime-monitor",
         "utm_source": "kw-estate-check",
@@ -56,39 +60,45 @@
       },
       "url": "https://kwdelhi6ghaziabad.com/submit.php",
       "verified": {
-        "attempted": false
+        "attempt": 3,
+        "attempted": true,
+        "error": "ECONNREFUSED",
+        "found": false
       }
     },
     {
       "id": "kwbluepearl",
       "status": 200,
       "accepted": true,
-      "ms": 1040,
-      "ok": true,
+      "ms": 30163,
+      "ok": false,
       "payload": {
-        "name": "KW Estate monitor · kwbluepearl · 2026-09-01",
+        "name": "KW Estate monitor · kwbluepearl · 2026-09-02",
         "budget": "Automated check",
-        "email": "estate-monitor+kwbluepearl-2026-09-01@kwgroup.in",
-        "message": "Automated availability check from the KW Estate dashboard, 2026-09-01. Not a real enquiry — safe to delete.",
-        "phone": "9000090126"
+        "email": "estate-monitor+kwbluepearl-2026-09-02@kwgroup.in",
+        "message": "Automated availability check from the KW Estate dashboard, 2026-09-02. Not a real enquiry — safe to delete.",
+        "phone": "9000090226"
       },
       "url": "https://kwbluepearl.com/api/enquiry",
       "verified": {
-        "attempted": false
+        "attempt": 3,
+        "attempted": true,
+        "error": "ECONNREFUSED",
+        "found": false
       }
     },
     {
       "id": "ghaziabadcommercialshops",
-      "status": 201,
-      "accepted": true,
-      "ms": 276,
-      "ok": true,
+      "status": 500,
+      "accepted": false,
+      "ms": 129,
+      "ok": false,
       "payload": {
         "source": "kw-estate-check",
-        "email-1": "estate-monitor+ghaziabadcommercialshops-2026-09-01@kwgroup.in",
-        "name-1": "KW Estate monitor · ghaziabadcommercialshops · 2026-09-01",
-        "phone-1": "9000090126",
-        "textarea-1": "Automated availability check from the KW Estate dashboard, 2026-09-01. Not a real enquiry — safe to delete."
+        "email-1": "estate-monitor+ghaziabadcommercialshops-2026-09-02@kwgroup.in",
+        "name-1": "KW Estate monitor · ghaziabadcommercialshops · 2026-09-02",
+        "phone-1": "9000090226",
+        "textarea-1": "Automated availability check from the KW Estate dashboard, 2026-09-02. Not a real enquiry — safe to delete."
       },
       "url": "https://ghaziabadcommercialshops.org/api/leads",
       "verified": {
@@ -99,28 +109,32 @@
       "id": "kwdelhi6",
       "status": 200,
       "accepted": true,
-      "ms": 5588,
-      "ok": true,
+      "ms": 36902,
+      "ok": false,
       "payload": {
-        "name": "KW Estate monitor · kwdelhi6 · 2026-09-01",
+        "name": "KW Estate monitor · kwdelhi6 · 2026-09-02",
         "city": "Automated check",
-        "email": "estate-monitor+kwdelhi6-2026-09-01@kwgroup.in",
-        "mobile": "9000090126",
-        "query": "Automated availability check from the KW Estate dashboard, 2026-09-01. Not a real enquiry — safe to delete."
+        "email": "estate-monitor+kwdelhi6-2026-09-02@kwgroup.in",
+        "mobile": "9000090226",
+        "query": "Automated availability check from the KW Estate dashboard, 2026-09-02. Not a real enquiry — safe to delete."
       },
       "url": "https://www.kwdelhi6.com/process-lead.php",
       "verified": {
-        "attempted": false
+        "attempt": 3,
+        "attempted": true,
+        "error": "ECONNREFUSED",
+        "found": false
       }
     }
   ],
+  "from": "KWGROUP",
   "lastReported": "2026-09-01",
   "lastSubmitted": {
-    "ghaziabadcommercialshops": "2026-09-01",
-    "kwbluepearl": "2026-09-01",
-    "kwbluepearldelhi": "2026-09-01",
-    "kwdelhi6": "2026-09-01",
-    "kwdelhi6ghaziabad": "2026-09-01"
+    "ghaziabadcommercialshops": "2026-09-02",
+    "kwbluepearl": "2026-09-02",
+    "kwbluepearldelhi": "2026-09-02",
+    "kwdelhi6": "2026-09-02",
+    "kwdelhi6ghaziabad": "2026-09-02"
   },
   "sites": [
     {
@@ -129,7 +143,7 @@
       "source": "nginx",
       "bytes": 14184,
       "host": "gbt.leadq.co.in",
-      "ms": 644,
+      "ms": 243,
       "ok": true,
       "url": "https://gbt.leadq.co.in/"
     },
@@ -139,7 +153,7 @@
       "source": "nginx",
       "bytes": 136919,
       "host": "ghaziabadcommercialshops.org",
-      "ms": 491,
+      "ms": 304,
       "ok": true,
       "url": "https://ghaziabadcommercialshops.org/"
     },
@@ -150,7 +164,7 @@
       "bytes": 2984,
       "finalUrl": "https://hrportal.leadq.co.in/login",
       "host": "hrportal.leadq.co.in",
-      "ms": 2528,
+      "ms": 522,
       "ok": true,
       "url": "https://hrportal.leadq.co.in/"
     },
@@ -160,7 +174,7 @@
       "source": "nginx",
       "bytes": 347514,
       "host": "kw-site-visit.leadq.co.in",
-      "ms": 770,
+      "ms": 432,
       "ok": true,
       "url": "https://kw-site-visit.leadq.co.in/"
     },
@@ -171,7 +185,7 @@
       "bytes": 3656,
       "finalUrl": "https://kwatch.leadq.co.in/login",
       "host": "kwatch.leadq.co.in",
-      "ms": 2527,
+      "ms": 2587,
       "ok": true,
       "url": "https://kwatch.leadq.co.in/"
     },
@@ -181,7 +195,7 @@
       "source": "nginx",
       "bytes": 25446,
       "host": "kwbluepearl.com",
-      "ms": 731,
+      "ms": 208,
       "ok": true,
       "url": "https://kwbluepearl.com/"
     },
@@ -191,7 +205,7 @@
       "source": "configured",
       "bytes": 56302,
       "host": "kwbluepearldelhi.com/blue-pearl-karol-bagh.html",
-      "ms": 734,
+      "ms": 407,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html"
     },
@@ -201,7 +215,7 @@
       "source": "configured",
       "bytes": 46766,
       "host": "kwbluepearldelhi.com/buy-commercial-real-estate-delhi.html",
-      "ms": 708,
+      "ms": 405,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/buy-commercial-real-estate-delhi.html"
     },
@@ -211,7 +225,7 @@
       "source": "configured",
       "bytes": 46634,
       "host": "kwbluepearldelhi.com/buy-property-in-delhi.html",
-      "ms": 705,
+      "ms": 326,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/buy-property-in-delhi.html"
     },
@@ -221,7 +235,7 @@
       "source": "configured",
       "bytes": 46634,
       "host": "kwbluepearldelhi.com/commercial-property-delhi.html",
-      "ms": 704,
+      "ms": 327,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/commercial-property-delhi.html"
     },
@@ -231,7 +245,7 @@
       "source": "configured",
       "bytes": 48854,
       "host": "kwbluepearldelhi.com/commercial-property-investment-delhi.html",
-      "ms": 699,
+      "ms": 306,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/commercial-property-investment-delhi.html"
     },
@@ -241,7 +255,7 @@
       "source": "configured",
       "bytes": 55470,
       "host": "kwbluepearldelhi.com/commercial-shops-for-sale-delhi.html",
-      "ms": 705,
+      "ms": 317,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/commercial-shops-for-sale-delhi.html"
     },
@@ -251,7 +265,7 @@
       "source": "configured",
       "bytes": 47368,
       "host": "kwbluepearldelhi.com/pre-leased-commercial-property-delhi.html",
-      "ms": 725,
+      "ms": 324,
       "ok": true,
       "url": "https://kwbluepearldelhi.com/pre-leased-commercial-property-delhi.html"
     },
@@ -261,7 +275,7 @@
       "source": "configured",
       "bytes": 67448,
       "host": "kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html",
-      "ms": 1919,
+      "ms": 316,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html"
     },
@@ -271,7 +285,7 @@
       "source": "configured",
       "bytes": 68348,
       "host": "kwdelhi6ghaziabad.com/buy-commercial-property-in-delhi-ncr.html",
-      "ms": 1783,
+      "ms": 323,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/buy-commercial-property-in-delhi-ncr.html"
     },
@@ -281,7 +295,7 @@
       "source": "configured",
       "bytes": 82039,
       "host": "kwdelhi6ghaziabad.com/commercial-investment-property-ghaziabad.html",
-      "ms": 2273,
+      "ms": 411,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/commercial-investment-property-ghaziabad.html"
     },
@@ -291,7 +305,7 @@
       "source": "configured",
       "bytes": 82044,
       "host": "kwdelhi6ghaziabad.com/commercial-property-investment-ghaziabad.html",
-      "ms": 2249,
+      "ms": 437,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/commercial-property-investment-ghaziabad.html"
     },
@@ -301,7 +315,7 @@
       "source": "configured",
       "bytes": 82059,
       "host": "kwdelhi6ghaziabad.com/commercial-real-estate-investment-ghaziabad.html",
-      "ms": 1952,
+      "ms": 427,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/commercial-real-estate-investment-ghaziabad.html"
     },
@@ -311,7 +325,7 @@
       "source": "configured",
       "bytes": 63141,
       "host": "kwdelhi6ghaziabad.com/commercial-rental-property-for-sale-delhi-ncr.html",
-      "ms": 1922,
+      "ms": 324,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/commercial-rental-property-for-sale-delhi-ncr.html"
     },
@@ -321,7 +335,7 @@
       "source": "configured",
       "bytes": 67423,
       "host": "kwdelhi6ghaziabad.com/commercial-shop-for-sale-delhi-ncr.html",
-      "ms": 2003,
+      "ms": 402,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/commercial-shop-for-sale-delhi-ncr.html"
     },
@@ -331,7 +345,7 @@
       "source": "configured",
       "bytes": 67615,
       "host": "kwdelhi6ghaziabad.com/commercial-shops-for-sale-in-ghaziabad.html",
-      "ms": 2003,
+      "ms": 400,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/commercial-shops-for-sale-in-ghaziabad.html"
     },
@@ -341,7 +355,7 @@
       "source": "configured",
       "bytes": 68069,
       "host": "kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html",
-      "ms": 2002,
+      "ms": 402,
       "ok": true,
       "url": "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
     },
@@ -351,7 +365,7 @@
       "source": "nginx",
       "bytes": 693054,
       "host": "kwgroup.in",
-      "ms": 2322,
+      "ms": 4061,
       "ok": true,
       "url": "https://kwgroup.in/"
     },
@@ -361,7 +375,7 @@
       "source": "nginx",
       "bytes": 42995,
       "host": "leadq.co.in",
-      "ms": 2164,
+      "ms": 388,
       "ok": true,
       "url": "https://leadq.co.in/"
     },
@@ -372,7 +386,7 @@
       "bytes": 2984,
       "finalUrl": "https://hrportal.leadq.co.in/login",
       "host": "manashi.leadq.co.in",
-      "ms": 2515,
+      "ms": 535,
       "ok": true,
       "url": "https://manashi.leadq.co.in/"
     },
@@ -382,7 +396,7 @@
       "source": "nginx",
       "bytes": 615,
       "host": "mcp-cratio.leadq.co.in",
-      "ms": 2207,
+      "ms": 317,
       "ok": true,
       "okStatus": [
         200,
@@ -399,7 +413,7 @@
       "source": "nginx",
       "bytes": 9,
       "host": "mcp-google-ads.leadq.co.in",
-      "ms": 2207,
+      "ms": 296,
       "ok": true,
       "okStatus": [
         200,
@@ -412,12 +426,12 @@
     },
     {
       "server": "srv1340120",
-      "status": 200,
       "source": "nginx",
-      "bytes": 14800,
+      "attempts": 3,
+      "error": "ERR_TLS_CERT_ALTNAME_INVALID",
       "host": "n8n.srv1340120.hstgr.cloud",
-      "ms": 2244,
-      "ok": true,
+      "ms": 90,
+      "ok": false,
       "url": "https://n8n.srv1340120.hstgr.cloud/"
     },
     {
@@ -426,7 +440,7 @@
       "source": "nginx",
       "bytes": 8678,
       "host": "overview.leadq.co.in",
-      "ms": 2302,
+      "ms": 1087,
       "ok": true,
       "url": "https://overview.leadq.co.in/"
     },
@@ -437,7 +451,7 @@
       "bytes": 20952,
       "finalUrl": "https://skills.leadq.co.in/login?redirect=%2F",
       "host": "skills.leadq.co.in",
-      "ms": 2651,
+      "ms": 558,
       "ok": true,
       "url": "https://skills.leadq.co.in/"
     },
@@ -448,7 +462,7 @@
       "bytes": 136919,
       "finalUrl": "https://ghaziabadcommercialshops.org/",
       "host": "www.ghaziabadcommercialshops.org",
-      "ms": 2549,
+      "ms": 447,
       "ok": true,
       "url": "https://www.ghaziabadcommercialshops.org/"
     },
@@ -458,7 +472,7 @@
       "source": "nginx",
       "bytes": 25446,
       "host": "www.kwbluepearl.com",
-      "ms": 2946,
+      "ms": 393,
       "ok": true,
       "url": "https://www.kwbluepearl.com/"
     },
@@ -468,7 +482,7 @@
       "source": "configured",
       "bytes": 103305,
       "host": "www.kwdelhi6.com",
-      "ms": 3574,
+      "ms": 1261,
       "ok": true,
       "url": "https://www.kwdelhi6.com/"
     },
@@ -476,9 +490,9 @@
       "server": "srv1900820",
       "status": 200,
       "source": "nginx",
-      "bytes": 693054,
+      "bytes": 693011,
       "host": "www.kwgroup.in",
-      "ms": 3076,
+      "ms": 3906,
       "ok": true,
       "url": "https://www.kwgroup.in/"
     },
@@ -488,10 +502,11 @@
       "source": "nginx",
       "bytes": 42995,
       "host": "www.leadq.co.in",
-      "ms": 2627,
+      "ms": 485,
       "ok": true,
       "url": "https://www.leadq.co.in/"
     }
   ],
-  "today": "2026-09-01"
+  "today": "2026-09-02",
+  "why": "daily report, 09:30 Asia/Kolkata"
 }

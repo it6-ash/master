@@ -220,6 +220,18 @@ breaks at 11:00 should not wait until tomorrow morning, so it mails
 immediately. `alertOnNewFailures: false` turns that off;
 `npm run check -- --force-report` mails now regardless.
 
+**The config is tracked, not git-ignored.** `config/checks.example.json` is the
+real configuration and ships with the code, so a form added here starts being
+checked on the box by itself. It was git-ignored once, and three landing-page
+forms then sat in this repo for days while srv1340120 kept testing two — the
+only fix being somebody remembering to copy a file. Nothing in it is secret:
+public endpoints, field names, internal addresses, a loopback URL.
+
+`config/checks.json` remains git-ignored and is now an **override** layered on
+top: forms merge by id with the local copy winning, so a hand-set `phone` for a
+site that validates strictly survives while new forms still arrive. A webhook
+token, if you ever need one, belongs there.
+
 The report goes to the n8n on srv1340120 as a JSON POST — subject, summary and
 the failures, already shaped for an email node. `notify` takes one address or a
 list; the payload carries `to` comma-separated and `toList` as an array, since

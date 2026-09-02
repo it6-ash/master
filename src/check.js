@@ -670,6 +670,40 @@ async function postReport(report, config, servers) {
   }
 }
 
+/* ---------------------------------------------------------------- config */
+
+/**
+ * The tracked example is the BASE; config/checks.json is an override on top.
+ *
+ * checks.json is git-ignored, so anything added to it here can never reach
+ * srv1340120 — three landing-page forms sat in this repo for days while the box
+ * kept testing two, and the only fix was somebody remembering to copy a file.
+ * Nothing in that config is secret: public endpoints, field names, internal
+ * addresses and a loopback URL. So the tracked file carries it, pull.sh ships
+ * it on the next pass, and new forms start being checked on their own.
+ *
+ * Forms merge by id and the local copy wins, so a hand-set `phone` for a site
+ * that validates strictly survives, while a form only the example knows about
+ * still gets picked up. Anything genuinely secret — a webhook token — belongs
+ * in the local file, which is exactly what it is still for.
+ */
+export function loadCheckConfig() {
+  const base = readJson(abs('config', 'checks.example.json'));
+  const local = readJson(abs('config', 'checks.json'));
+  if (!base.ok) return local.ok ? local.value : {};
+  if (!local.ok) return base.value;
+
+  const merged = { ...base.value, ...local.value };
+
+  const byId = new Map((base.value.forms ?? []).map((f) => [f.id, f]));
+  for (const f of local.value.forms ?? []) byId.set(f.id, { ...byId.get(f.id), ...f });
+  merged.forms = [...byId.values()];
+
+  // Union, so a page added to either file is probed.
+  merged.extra = [...new Set([...(base.value.extra ?? []), ...(local.value.extra ?? [])])];
+  return merged;
+}
+
 /* ------------------------------------------------------------------- run */
 
 export async function runChecks() {
@@ -679,8 +713,7 @@ export async function runChecks() {
     return 1;
   }
 
-  const configFile = readJson(abs('config', 'checks.json'));
-  const config = configFile.ok ? configFile.value : {};
+  const config = loadCheckConfig();
   const today = isoDate(new Date());
   const at = new Date().toISOString();
 
@@ -734,7 +767,7 @@ export async function runChecks() {
     formResults.push(result);
     if (result.skipped) process.stdout.write(`${dim(`  · ${form.id} not submitted (${result.reason})`)}\n`);
     else if (result.ok) process.stdout.write(`${green('  ✓')} ${form.id} ${dim(`${result.status} · ${result.ms}ms`)}\n`);
-    else process.stdout.write(`${red('  ✗')} ${form.id} — ${result.error ?? `HTTP ${result.status}`}\n`);
+    else process.stdout.write(`${red('  ✗')} ${form.id} — ${describeFailure(result)}\n`);
   }
 
   const failed = sites.filter((s) => !s.ok).length + formResults.filter((f) => !f.ok && !f.skipped).length;
