@@ -509,6 +509,25 @@ export function checkIssues(report) {
   return issues;
 }
 
+/**
+ * Why this thing is in the failures list, in words a reader can act on.
+ *
+ * "HTTP 200" as a problem is nonsense, and that is what the mail said for a
+ * form that submitted fine but could not be confirmed in the CRM: the status
+ * was the only field left to print. Accepted-but-unconfirmed and rejected are
+ * different problems for different people.
+ */
+export function describeFailure(f) {
+  if (f.error) return f.error;
+  if (f.accepted && f.verified?.attempted && f.verified.found === false) {
+    return f.verified.error
+      ? `submitted fine, but the CRM could not be checked: ${String(f.verified.error).replace(/^the lookup failed: /, '').slice(0, 120)}`
+      : 'submitted fine, but the lead never arrived in the CRM';
+  }
+  if (f.matched === false) return `HTTP ${f.status}, but the reply did not contain "${f.expected}"`;
+  return `HTTP ${f.status}`;
+}
+
 /* ---------------------------------------------------------------- report */
 
 /**
@@ -608,12 +627,13 @@ async function postReport(report, config, servers) {
         toList: recipients,
         cc: [config.cc ?? []].flat().filter(Boolean).join(', ') || undefined,
         at: report.at,
+        reason: report.why ?? null,
         healthy: failures.length === 0,
         summary: report.summary,
         failures: failures.map((f) => ({
           what: f.host ?? f.id,
           url: f.url,
-          error: f.error ?? `HTTP ${f.status}`,
+          error: describeFailure(f),
           server: f.server ?? null,
         })),
         sites: report.sites.map(({ body: _b, ...rest }) => rest),
@@ -731,6 +751,8 @@ export async function runChecks() {
       sitesOk: sites.filter((s) => s.ok).length,
       forms: formResults.filter((f) => !f.skipped).length,
       formsOk: formResults.filter((f) => f.ok).length,
+      // Accepted by the page, whether or not the CRM could confirm it.
+      formsAccepted: formResults.filter((f) => f.accepted).length,
       failed,
       slowestMs: Math.max(0, ...sites.map((s) => s.ms ?? 0)),
     },
@@ -756,6 +778,7 @@ export async function runChecks() {
 
   let posted = { sent: false, reason: decision.why };
   if (decision.yes) {
+    report.why = decision.why;
     posted = await postReport(report, config, serversFile.value);
     // Only mark the day done when a mail actually went. A failed send must be
     // retried on the next pass, not silently swallowed until tomorrow.

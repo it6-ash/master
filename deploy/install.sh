@@ -256,6 +256,21 @@ enable_vhost() {
     fi
   fi
 
+  # A vhost that listens on IPv6 while its neighbours do not becomes nginx's
+  # IPv6 default server and answers for EVERY hostname over IPv6 with its own
+  # certificate. Ours did that to n8n; then a newly added vhost did it again.
+  # Some-but-not-all is the dangerous state, so name the offenders — this recurs
+  # every time someone adds a site and cannot be fixed from inside our own file.
+  V6=$(grep -ls "listen \[::\]" /etc/nginx/sites-enabled/* 2>/dev/null | xargs -r -n1 basename | tr '\n' ' ')
+  ALL=$(ls /etc/nginx/sites-enabled/ 2>/dev/null | wc -l)
+  N6=$(printf '%s' "$V6" | wc -w)
+  if [ "$N6" -gt 0 ] && [ "$N6" -lt "$ALL" ]; then
+    warn "$N6 of $ALL vhosts listen on IPv6: $V6"
+    warn "whichever sorts first is nginx's IPv6 default and serves ITS certificate"
+    warn "for every hostname over IPv6. Either give them all an IPv6 listener, or"
+    warn "none. Check with: openssl s_client -6 -servername <host> -connect <host>:443"
+  fi
+
   ln -sfn "$VHOST" /etc/nginx/sites-enabled/kw-estate
   if nginx -t 2>/dev/null; then
     systemctl reload nginx
