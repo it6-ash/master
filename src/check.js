@@ -195,7 +195,7 @@ async function probe(target, { attempts = 3, gapMs = 4000 } = {}) {
  * every time, a phone nobody can dial, and a plus-addressed email carrying the
  * date. Whoever works the leads must be able to filter these out in one rule.
  */
-export function testLead(form, { today }) {
+export function testLead(form, { today, phone: configured }) {
   const marker = form.marker ?? 'KW Estate monitor';
   const [y, m, d] = today.split('-');
 
@@ -209,7 +209,19 @@ export function testLead(form, { today }) {
   // longer the number itself but the marking — utm_source kw-estate-check and
   // a contact name reading "KW Estate monitor". That filter rule in Cratio is
   // now load-bearing rather than a convenience.
-  const phone = form.phone ?? `9000${m}${d}${y.slice(2)}`;
+  // One constant number, not a new one each day.
+  //
+  // A date-derived number created a fresh lead every morning: five forms times
+  // thirty days is 150 records somebody has to clear out. A number the CRM
+  // already knows lets its own duplicate handling update the SAME lead instead,
+  // so the pipeline carries one row that says "last checked today" rather than
+  // a growing pile.
+  //
+  // The date therefore has to live somewhere else, and it does — in the contact
+  // name and the email. That matters for the verification: with a constant
+  // number, "a lead with this number exists" would be true even if today's
+  // submission failed, so the lookup checks the record mentions TODAY.
+  const phone = form.phone ?? configured ?? `9000${m}${d}${y.slice(2)}`;
 
   const defaults = {
     // Contact Name is the column you actually read in a CRM list, so it
@@ -254,6 +266,7 @@ async function verifyLead(form, payload, { today }) {
   if (!v?.url) return { attempted: false };
 
   const email = Object.values(payload).find((x) => String(x).includes('@')) ?? '';
+  const name = Object.values(payload).find((x) => String(x).includes('KW Estate monitor')) ?? '';
   const phone = Object.values(payload).find((x) => /^\+?[\d ]{8,}$/.test(String(x))) ?? '';
 
   // Percent-encoding belongs in a URL and nowhere else. Encoding into a JSON
@@ -262,6 +275,7 @@ async function verifyLead(form, payload, { today }) {
   const fill = (s, encode) => String(s)
     .replaceAll('{email}', encode ? encodeURIComponent(email) : email)
     .replaceAll('{phone}', encode ? encodeURIComponent(phone) : phone)
+    .replaceAll('{name}', encode ? encodeURIComponent(name) : name)
     .replaceAll('{date}', today);
 
   const url = fill(v.url, true);
@@ -321,8 +335,8 @@ async function verifyLead(form, payload, { today }) {
   return { attempted: true, found: false };
 }
 
-async function submitForm(form, { today }) {
-  const payload = testLead(form, { today });
+async function submitForm(form, { today, checkPhone }) {
+  const payload = testLead(form, { today, phone: form.phone ?? checkPhone });
   const started = Date.now();
 
   if (dryRun || noForms) {
@@ -760,7 +774,7 @@ export async function runChecks() {
       continue;
     }
 
-    const result = await submitForm(form, { today });
+    const result = await submitForm(form, { today, checkPhone: config.phone });
     // Record the attempt, not the success: a form that 500s must not be
     // retried on every pass for the rest of the day.
     if (!result.skipped) lastSubmitted[form.id] = today;
