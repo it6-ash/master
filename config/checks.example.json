@@ -190,6 +190,38 @@
         "attempts": 3,
         "waitMs": 10000
       }
+    },
+    {
+      "id": "kwgroup",
+      "url": "https://kwgroup.in/api/enquiry",
+      "method": "POST",
+      "encoding": "json",
+      "marker": "KW Estate monitor",
+      "fields": {
+        "company": "KW Estate monitor",
+        "name": "name",
+        "email": "email",
+        "phone": "phone",
+        "budget": "Automated check",
+        "message": "message",
+        "consent": true
+      },
+      "verify": {
+        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
+        "method": "POST",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "phone": "{phone}",
+          "email": "{email}",
+          "date": "{date}"
+        },
+        "match": "LEAD_FOUND",
+        "attempts": 3,
+        "waitMs": 10000
+      },
+      "expect": "\"ok\":true"
     }
   ],
   "_forms_todo": "ghaziabadcommercialshops is deliberately NOT submitted to: no test lead is created for that project. The site is still probed for uptime, which writes nothing anywhere. kwdelhi6ghaziabad is a different project (KW Delhi 6) and is still submitted — remove it too if that was also meant.",
