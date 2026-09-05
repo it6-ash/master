@@ -163,35 +163,6 @@
       }
     },
     {
-      "id": "ghaziabadcommercialshops",
-      "url": "https://ghaziabadcommercialshops.org/api/leads",
-      "method": "POST",
-      "encoding": "form",
-      "marker": "KW Estate monitor",
-      "fields": {
-        "name-1": "name",
-        "email-1": "email",
-        "phone-1": "phone",
-        "textarea-1": "message",
-        "source": "kw-estate-check"
-      },
-      "verify": {
-        "url": "http://127.0.0.1:5678/webhook/kw-lead-verify",
-        "method": "POST",
-        "headers": {
-          "content-type": "application/json"
-        },
-        "body": {
-          "phone": "{phone}",
-          "email": "{email}",
-          "date": "{date}"
-        },
-        "match": "LEAD_FOUND",
-        "attempts": 3,
-        "waitMs": 10000
-      }
-    },
-    {
       "id": "kwdelhi6",
       "url": "https://www.kwdelhi6.com/process-lead.php",
       "method": "POST",
@@ -221,7 +192,7 @@
       }
     }
   ],
-  "_forms_todo": "kwgroup.in has NO form on its homepage — nothing to check there until one exists, or until someone names the inner page that carries it.",
+  "_forms_todo": "ghaziabadcommercialshops is deliberately NOT submitted to: no test lead is created for that project. The site is still probed for uptime, which writes nothing anywhere. kwdelhi6ghaziabad is a different project (KW Delhi 6) and is still submitted — remove it too if that was also meant.",
   "_phone_comment": "One constant number for every form, so Cratio updates the SAME lead each day instead of creating a new one — five forms times thirty days was 150 records a month for somebody to clear out. 9643330741 is a number KW controls, which is what makes this safe: a daily submission against a stranger's number would be a daily nuisance call. The date therefore lives in the contact name and email, and the CRM lookup checks for it, because \"a lead with this number exists\" would otherwise be true even if today's submission failed.",
   "phone": "9643330741"
 }
