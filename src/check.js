@@ -430,6 +430,39 @@ export function shrinkIssue(report, previous, { today }) {
   };
 }
 
+/**
+ * A failure has to happen twice in a row before anyone is told.
+ *
+ * www.kwdelhi6.com times out from srv1340120 now and then — three retries
+ * apart — and answers in 300 ms from everywhere else the rest of the day. Every
+ * blip mailed three people about a site that was already working again by the
+ * time they read it. That is how a monitoring mail becomes a filter rule.
+ *
+ * Two consecutive passes is roughly six hours of genuinely being down, which no
+ * real outage clears before. A blip cannot survive it, and nothing that matters
+ * is lost: the run that first sees the problem still records it, and the
+ * dashboard still shows it. Only the alarm waits for a second opinion.
+ */
+export function confirmFailures(report, previous) {
+  const streak = { ...(previous?.failStreak ?? {}) };
+  const confirmed = new Set();
+
+  for (const s of report.sites) {
+    const key = s.host;
+    if (s.ok) { delete streak[key]; continue; }
+    streak[key] = (streak[key] ?? 0) + 1;
+    if (streak[key] >= 2) confirmed.add(key);
+  }
+
+  // Forms are submitted once a day, so "twice in a row" would mean two days.
+  // A form that rejects a submission is reported the first time.
+  for (const f of report.forms) {
+    if (!f.ok && !f.skipped) confirmed.add(f.id);
+  }
+
+  return { streak, confirmed };
+}
+
 /* ---------------------------------------------------------------- issues */
 
 /** Failures the dashboard should carry next to the ones from the dumps. */
@@ -437,7 +470,7 @@ export function checkIssues(report) {
   const issues = [];
   if (report.shrank) issues.push(report.shrank);
 
-  for (const site of report.sites.filter((s) => !s.ok)) {
+  for (const site of report.sites.filter((s) => !s.ok && report.confirmed?.has(s.host) !== false)) {
     issues.push({
       id: `site-unreachable-${site.host.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`,
       severity: 'high',
@@ -812,7 +845,18 @@ export async function runChecks() {
 
   // A shrinking watchlist counts as a new failure, so it mails immediately
   // rather than waiting for the morning — something stopped being watched.
-  const shrank = shrinkIssue(report, previous.ok ? previous.value : null, { today });
+  // Two consecutive passes before an alarm: a blip that has already cleared
+  // must not mail anybody.
+  const prev = previous.ok ? previous.value : null;
+  const { streak, confirmed } = confirmFailures(report, prev);
+  report.failStreak = streak;
+  report.confirmed = confirmed;
+  const unconfirmed = report.sites.filter((s) => !s.ok && !confirmed.has(s.host)).map((s) => s.host);
+  if (unconfirmed.length) {
+    process.stdout.write(`${dim(`· ${unconfirmed.join(', ')} failed once — waiting for a second pass before reporting`)}\n`);
+  }
+
+  const shrank = shrinkIssue(report, prev, { today });
   if (shrank) {
     report.shrank = shrank;
     process.stdout.write(`${yellow('!')} ${shrank.title}: ${shrank.evidence}
