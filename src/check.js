@@ -748,6 +748,24 @@ export function loadCheckConfig() {
 
   // Union, so a page added to either file is probed.
   merged.extra = [...new Set([...(base.value.extra ?? []), ...(local.value.extra ?? [])])];
+
+  // Recipients union too, and for the same reason forms do.
+  //
+  // it5, it7, it8 and it9 were added to the tracked file and never received a
+  // thing: the box had its own checks.json listing the original three, and for
+  // a plain key the local copy wins. So the 09:30 mail kept going to three
+  // people while the repo said seven, with nothing anywhere reporting the
+  // difference. An address list is additive by nature — adding somebody should
+  // not require editing a file on the server as well.
+  //
+  // The cost is that removing a recipient has to be done in BOTH files, which
+  // is the rarer operation and fails loudly (they keep getting mail) rather
+  // than silently (they never do).
+  for (const key of ['notify', 'cc']) {
+    const both = [...new Set([...[base.value[key] ?? []].flat(), ...[local.value[key] ?? []].flat()])];
+    if (both.length) merged[key] = both.filter(Boolean);
+  }
+
   return merged;
 }
 
