@@ -293,12 +293,29 @@ export async function fetchExecutionDetail(instance, executionId) {
  */
 export const DETAIL_CHUNK = 25;
 
-export async function fetchExecutionDetails(instance, executionIds) {
+/**
+ * How many BYTES of payload one workflow may pull in one pass.
+ *
+ * Budgeting by row count is the wrong unit. An execution's payload here runs
+ * from four kilobytes to several megabytes, so "150 executions" is somewhere
+ * between half a megabyte and three quarters of a gigabyte depending entirely
+ * on which workflow it is — and the expensive ones are exactly the
+ * high-volume ones you most want to watch. A byte budget bounds the work
+ * whatever the shape of the data: a workflow with small payloads gets deep
+ * history, one with huge payloads gets fewer and says so.
+ */
+export const DETAIL_MAX_BYTES = 8 * 1024 * 1024;
+
+export async function fetchExecutionDetails(instance, executionIds, {
+  maxBytes = DETAIL_MAX_BYTES,
+} = {}) {
   const ids = executionIds.map(Number).filter(Number.isInteger);
-  if (!ids.length) return { executions: [], ms: 0 };
+  if (!ids.length) return { executions: [], ms: 0, bytes: 0, stoppedEarly: false };
 
   const started = Date.now();
   const out = [];
+  let bytes = 0;
+  let stoppedEarly = false;
 
   for (let i = 0; i < ids.length; i += DETAIL_CHUNK) {
     const chunk = ids.slice(i, i + DETAIL_CHUNK);
@@ -312,6 +329,7 @@ export async function fetchExecutionDetails(instance, executionIds) {
 
     if (!got.ok) throw new Error(got.error);
     for (const row of got.rows) {
+      bytes += typeof row.data === 'string' ? row.data.length : 0;
       out.push({
         ...row,
         finished: row.finished === 1 || row.finished === true,
@@ -321,9 +339,16 @@ export async function fetchExecutionDetails(instance, executionIds) {
         })(),
       });
     }
+
+    // Checked after a chunk rather than before: the size is only known once
+    // the rows are here, and a chunk of 25 is a bounded overshoot.
+    if (bytes >= maxBytes) {
+      stoppedEarly = i + DETAIL_CHUNK < ids.length;
+      break;
+    }
   }
 
-  return { executions: out, ms: Date.now() - started };
+  return { executions: out, ms: Date.now() - started, bytes, stoppedEarly };
 }
 
 /** Is the database reachable and shaped the way this driver expects? */

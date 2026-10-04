@@ -5,6 +5,7 @@
  *   npm run wf-sync                  every monitored workflow
  *   npm run wf-sync -- <workflow id> just that one
  *   npm run wf-sync -- --full        ignore the cursor and re-walk the history
+ *   npm run wf-sync -- --fast        metadata only; skip the payload reads
  *   npm run wf-sync -- --dry-run     fetch and report, write nothing
  *
  * Incremental by design. Each workflow stores the timestamp and id of the
@@ -51,6 +52,9 @@ const driverFor = (instance) => (instance.source === 'sqlite' ? sqliteDriver : a
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const full = args.includes('--full');
+// Metadata only: when a workflow ran, how often, whether it failed, how long.
+// Skips the payload reads, which are the entire cost of a first backfill.
+const fast = args.includes('--fast');
 const only = args.filter((a) => !a.startsWith('--'));
 
 const color = process.stdout.isTTY && !process.env.NO_COLOR;
@@ -302,10 +306,15 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
     byId.set(row.id, existing ? { ...existing, ...row } : row);
   }
 
-  /* node-level detail, budgeted */
-  const candidates = detailCandidates([...byId.values()], workflow.nodeDetailBudget ?? 150);
+  /* node-level detail, budgeted.
+     --fast skips it entirely. Metadata alone answers when a workflow ran, how
+     often, whether it failed and how long it took — which is most of the
+     dashboard — and it costs a single indexed query per workflow. Item counts
+     need the payloads, and on a first backfill those are the whole cost. */
+  const candidates = fast ? [] : detailCandidates([...byId.values()], workflow.nodeDetailBudget ?? 60);
   let detailed = 0;
   let detailMs = 0;
+  let detailBytes = 0;
   const failures = [];
 
   /** Fold one fetched payload back into the row it belongs to. */
@@ -337,8 +346,23 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
     try {
       const got = await driver.fetchExecutionDetails(instance, candidates.map((r) => r.id));
       detailMs += got.ms ?? 0;
+      detailBytes += got.bytes ?? 0;
+
       const byExecutionId = new Map(got.executions.map((e) => [String(e.id), e]));
-      for (const row of candidates) absorb(row, byExecutionId.get(String(row.id)) ?? null);
+      for (const row of candidates) {
+        const execution = byExecutionId.get(String(row.id));
+        // Nothing came back for this id because the byte budget stopped the
+        // read, not because the execution is gone. Leaving it unmarked means
+        // the NEXT pass picks it up; marking it detailTried would retire it
+        // forever on the strength of a budget.
+        if (!execution && got.stoppedEarly) continue;
+        absorb(row, execution ?? null);
+      }
+
+      if (got.stoppedEarly) {
+        failures.push(`payload budget reached after ${got.executions.length} of ${candidates.length}`
+          + ' executions; the rest are queued for the next pass');
+      }
     } catch (e) {
       // A failed bulk read must not cost the workflow its metadata rows.
       failures.push(`bulk detail: ${e.message}`);
@@ -400,6 +424,7 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
       detailed,
       pages,
       apiMs: ms + detailMs,
+    detailBytes,
       truncated: truncated || undefined,
       error: null,
       warnings: failures.length ? failures.slice(0, 3) : undefined,
@@ -523,7 +548,7 @@ export async function runSync({ now = new Date() } = {}) {
       });
       results.push(result);
       process.stdout.write(`${green('  ✓')} ${String(workflow.name ?? workflow.id).slice(0, 44).padEnd(46)}`
-        + `${dim(`+${result.added} new · ${result.detailed} with node data · ${result.rows} rows · ${result.apiMs}ms`)}\n`);
+        + `${dim(`+${result.added} new · ${result.detailed} with node data${result.detailBytes ? ` (${(result.detailBytes/1048576).toFixed(1)} MB)` : ''} · ${result.rows} rows · ${result.apiMs}ms`)}\n`);
       if (result.truncated) process.stdout.write(`${yellow('    !')} hit the page cap; run again to continue the backfill\n`);
       for (const w of result.warnings.slice(0, 2)) process.stdout.write(`${dim(`    · ${w}`)}\n`);
     } catch (e) {
