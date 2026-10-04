@@ -205,6 +205,12 @@
         "type": "integer",
         "minimum": 1
       }
+    },
+    "confirmed": {
+      "type": ["array", "object"],
+      "description": "Which hosts and forms have failed often enough to be reported. An ARRAY is the correct shape. The object form is what the bug produced: this was written as a Set, JSON.stringify turns a Set into {}, and every reader got an empty object — the build crashed on .has, and before that the whole two-passes-before-telling-anyone rule silently did nothing across a process boundary. The object form is still accepted so a box that has not re-run `npm run check` yet does not fail validate for carrying state it was given; confirmedSet() reads it as \"no list\" and reports everything, which is the safe direction. It is rewritten as an array on the next check.",
+      "items": { "type": "string" },
+      "uniqueItems": true
     }
   }
 }

@@ -26,6 +26,8 @@ export const PAGE_LIMIT = 250;
 /** 250 x 40 = 10,000 executions in one pass, which is n8n's own prune ceiling. */
 const MAX_PAGES = 40;
 
+import fs from 'node:fs';
+
 /**
  * Strip anything key-shaped out of a message before it is stored or printed.
  *
@@ -42,11 +44,24 @@ export function apiKeyFor(instance) {
   const name = instance?.apiKeyEnv;
   if (!name) throw new Error(`instance "${instance?.id}" does not name an apiKeyEnv`);
   const key = process.env[name];
-  if (!key) {
-    throw new Error(`$${name} is not set, so ${instance.id} cannot be reached.`
-      + ' Create an API key in n8n under Settings -> n8n API and export it on the box that runs the collector.');
-  }
-  return key;
+  if (key) return key;
+
+  // The variable being absent and the FILE being absent are different
+  // problems with different fixes, and saying "create an API key" to somebody
+  // who has already created one and put it in the right file is how an
+  // afternoon goes. /etc/kw-estate.env is read by systemd's EnvironmentFile
+  // and by the npm scripts — never by a bare `node src/...`, which is exactly
+  // how this gets hit.
+  let envFileHasIt = false;
+  try {
+    envFileHasIt = new RegExp(`^${name}=.+`, 'm').test(fs.readFileSync('/etc/kw-estate.env', 'utf8'));
+  } catch { /* no such file, or not readable: the first case below applies */ }
+
+  throw new Error(envFileHasIt
+    ? `$${name} is set in /etc/kw-estate.env but not in this shell — that file is read by systemd and by the`
+      + ' npm scripts, not by a bare `node`. Use `npm run wf-sync`, or: set -a; . /etc/kw-estate.env; set +a'
+    : `$${name} is not set, so ${instance.id} cannot be reached. Create an API key in n8n under`
+      + ' Settings -> n8n API, put it in /etc/kw-estate.env, and run `npm run wf-sync`.');
 }
 
 /**

@@ -19,13 +19,13 @@
     "test:e2e": "playwright test",
     "test:all": "npm test && npm run test:e2e",
     "check": "node src/check.js",
-    "sync": "node --env-file-if-exists=.env src/sync.js",
+    "sync": "node --env-file-if-exists=/etc/kw-estate.env --env-file-if-exists=.env src/sync.js",
     "deploy": "node src/deploy.js",
-    "admin": "node --env-file-if-exists=.env src/admin.js",
-    "wf-add": "node --env-file-if-exists=.env src/n8n/registry.js",
-    "wf-sync": "node --env-file-if-exists=.env src/n8n/collect.js",
-    "wf-fields": "node --env-file-if-exists=.env src/n8n/fields.js",
-    "wf-report": "node --env-file-if-exists=.env src/n8n/report.js"
+    "admin": "node --env-file-if-exists=/etc/kw-estate.env --env-file-if-exists=.env src/admin.js",
+    "wf-add": "node --env-file-if-exists=/etc/kw-estate.env --env-file-if-exists=.env src/n8n/registry.js",
+    "wf-sync": "node --env-file-if-exists=/etc/kw-estate.env --env-file-if-exists=.env src/n8n/collect.js",
+    "wf-fields": "node --env-file-if-exists=/etc/kw-estate.env --env-file-if-exists=.env src/n8n/fields.js",
+    "wf-report": "node --env-file-if-exists=/etc/kw-estate.env --env-file-if-exists=.env src/n8n/report.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"

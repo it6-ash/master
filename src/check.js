@@ -466,11 +466,41 @@ export function confirmFailures(report, previous) {
 /* ---------------------------------------------------------------- issues */
 
 /** Failures the dashboard should carry next to the ones from the dumps. */
+/**
+ * The confirmed-failure list, however it arrives.
+ *
+ * confirmFailures() builds a Set, and `JSON.stringify(new Set())` is `{}` —
+ * so once it had been through data/checks.json it came back as an object with
+ * no `.has`, and `report.confirmed?.has(...)` threw. Optional chaining guards
+ * the property being absent, not the method.
+ *
+ * Two bugs in one: the build crashed, and before it crashed the "wait for a
+ * second failure before telling anyone" rule had silently never worked across
+ * a process boundary — every reader saw an empty object and fell back to
+ * reporting everything. It is written as an array now; this accepts both so
+ * an existing checks.json does not have to be deleted first.
+ *
+ * @returns {Set<string>|null} null meaning "no opinion, report everything"
+ */
+export function confirmedSet(confirmed) {
+  if (!confirmed) return null;
+  if (confirmed instanceof Set) return confirmed;
+  if (Array.isArray(confirmed)) return new Set(confirmed);
+  // A Set that has been through JSON. `{}` carries nothing, so it is not an
+  // empty confirmation list — it is no list at all.
+  if (typeof confirmed === 'object') {
+    const keys = Object.keys(confirmed);
+    return keys.length ? new Set(keys) : null;
+  }
+  return null;
+}
+
 export function checkIssues(report) {
   const issues = [];
   if (report.shrank) issues.push(report.shrank);
 
-  for (const site of report.sites.filter((s) => !s.ok && report.confirmed?.has(s.host) !== false)) {
+  const confirmed = confirmedSet(report.confirmed);
+  for (const site of report.sites.filter((s) => !s.ok && (confirmed ? confirmed.has(s.host) : true))) {
     issues.push({
       id: `site-unreachable-${site.host.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`,
       severity: 'high',
@@ -868,7 +898,9 @@ export async function runChecks() {
   const prev = previous.ok ? previous.value : null;
   const { streak, confirmed } = confirmFailures(report, prev);
   report.failStreak = streak;
-  report.confirmed = confirmed;
+  // An ARRAY, not the Set. A Set serialises to `{}`, which is how this list
+  // reached the next process empty for as long as it has existed.
+  report.confirmed = [...confirmed].sort();
   const unconfirmed = report.sites.filter((s) => !s.ok && !confirmed.has(s.host)).map((s) => s.host);
   if (unconfirmed.length) {
     process.stdout.write(`${dim(`· ${unconfirmed.join(', ')} failed once — waiting for a second pass before reporting`)}\n`);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  targetsFrom, testLead, checkIssues, shouldReport, localTime, shrinkIssue,
+  targetsFrom, testLead, checkIssues, shouldReport, localTime, shrinkIssue, confirmFailures, confirmedSet,
 } from '../src/check.js';
 
 test('the report clock is the reader\'s, not the server\'s', () => {
@@ -228,4 +228,61 @@ test('a hostname dropping out of the check is reported, not silently forgotten',
     null,
     'different machines are never compared',
   );
+});
+
+/* ----------------------------------------------- confirmed, across a write */
+
+test('the confirmed list survives a JSON round trip', () => {
+  // It did not. confirmFailures() returns a Set, JSON.stringify turns a Set
+  // into {}, and the next process got an object with no .has — so the build
+  // threw, and before it threw the "wait for a second failure" rule quietly
+  // did nothing at all across a process boundary.
+
+  const report = {
+    sites: [{ host: 'a.example', ok: false }, { host: 'b.example', ok: false }],
+    forms: [],
+  };
+  const { confirmed } = confirmFailures(report, { failStreak: { 'a.example': 1 } });
+  assert.ok(confirmed instanceof Set);
+  assert.deepEqual([...confirmed], ['a.example'], 'only the one already failing once is confirmed');
+
+  // What actually gets written, and read back.
+  const written = JSON.parse(JSON.stringify({ confirmed: [...confirmed].sort() }));
+  const back = confirmedSet(written.confirmed);
+  assert.ok(back instanceof Set);
+  assert.equal(back.has('a.example'), true);
+  assert.equal(back.has('b.example'), false);
+});
+
+test('confirmedSet reads every shape it has ever been written in', () => {
+  assert.deepEqual([...confirmedSet(['x', 'y'])], ['x', 'y'], 'the array it writes now');
+  assert.deepEqual([...confirmedSet(new Set(['x']))], ['x'], 'the Set it holds in memory');
+  // A Set that went through JSON. Empty carries nothing, so it is not an
+  // empty confirmation list — it is no list at all, and everything is
+  // reported rather than nothing.
+  assert.equal(confirmedSet({}), null);
+  assert.equal(confirmedSet(undefined), null);
+  assert.equal(confirmedSet(null), null);
+});
+
+test('an unconfirmed failure is held back; with no list at all, everything reports', () => {
+  const base = {
+    at: '2026-10-04T12:00:00Z', today: '2026-10-04', from: 'box',
+    sites: [{ host: 'flaky.example', ok: false, status: 500, url: 'https://flaky.example/' }],
+    forms: [],
+  };
+
+  // Confirmed elsewhere, so this one waits for a second opinion.
+  assert.equal(checkIssues({ ...base, confirmed: ['other.example'] })
+    .filter((i) => i.rule === 'site-unreachable').length, 0);
+
+  // Confirmed.
+  assert.equal(checkIssues({ ...base, confirmed: ['flaky.example'] })
+    .filter((i) => i.rule === 'site-unreachable').length, 1);
+
+  // No list — an older checks.json, or the first ever run. Report it rather
+  // than silently sit on a real outage.
+  assert.equal(checkIssues(base).filter((i) => i.rule === 'site-unreachable').length, 1);
+  assert.equal(checkIssues({ ...base, confirmed: {} })
+    .filter((i) => i.rule === 'site-unreachable').length, 1);
 });
