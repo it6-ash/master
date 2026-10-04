@@ -797,8 +797,20 @@ export function workflowAnalyticsBoard(a, { startNum = 1, executionUrl }) {
           <button class="chip" type="button" data-csv="${escapeHtml(w.key)}">Export CSV</button>
         </div>
         ${recent.length ? `<div class="table-wrap"><table class="exec-table" data-exec="${escapeHtml(w.key)}">
-          <thead><tr><th>Started</th><th>Execution</th><th>Status</th><th class="num">Duration</th><th class="num">Items in</th><th class="num">Peak</th><th class="num">Items out</th><th>Error</th></tr></thead>
-          <tbody>${recent.map((r) => `<tr data-status="${escapeHtml(r.status)}">
+          <thead><tr><th></th><th>Started</th><th>Execution</th><th>Status</th><th class="num">Duration</th><th class="num">Items in</th><th class="num">Peak</th><th class="num">Items out</th><th>Error</th></tr></thead>
+          <tbody>${recent.map((r, i) => {
+      // What each node emitted in THIS execution. Collected already; it was
+      // simply never rendered, so the table could say a run happened and not
+      // what it did — which is the question the table exists to answer.
+      const nodes = r.nodes ? Object.entries(r.nodes) : [];
+      const rowId = `x-${w.key}-${r.id}`;
+      const peak = nodes.length ? Math.max(1, ...nodes.map(([, n]) => n.items ?? 0)) : 1;
+
+      return `<tr data-status="${escapeHtml(r.status)}"${nodes.length ? ` class="exec-row" data-expands="${escapeHtml(rowId)}"` : ''}>
+            <td data-label="">${nodes.length
+        ? `<button class="exec-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(rowId)}"
+             title="What each node emitted">&#9656;</button>`
+        : `<span class="faint" title="${escapeHtml(r.dataWithheld ?? 'node data not collected for this execution')}">·</span>`}</td>
             <td data-label="Started" class="num">${escapeHtml(String(r.startedAt ?? '').replace('T', ' ').slice(0, 19))}</td>
             <td data-label="Execution" class="num">${executionUrl(w, r.id, `#${r.id}`)}</td>
             <td data-label="Status"><span class="dot dot--${r.status === 'success' ? 'live' : (r.status === 'error' ? 'broken' : 'idle')}"></span> ${escapeHtml(r.status)}${r.retryOf ? ` <span class="faint">retry of ${escapeHtml(r.retryOf)}</span>` : ''}</td>
@@ -807,7 +819,25 @@ export function workflowAnalyticsBoard(a, { startNum = 1, executionUrl }) {
             <td data-label="Peak" class="num">${Number.isFinite(r.items) ? fmt(r.items) : `<span class="faint" title="${escapeHtml(r.dataWithheld ?? r.volumeSource ?? '')}">${escapeHtml(r.bytes ? bytes(r.bytes) : 'n/a')}</span>`}</td>
             <td data-label="Items out" class="num">${Number.isFinite(r.outputItems) ? fmt(r.outputItems) : '—'}</td>
             <td data-label="Error">${r.error ? escapeHtml(r.error.slice(0, 90)) : ''}</td>
-          </tr>`).join('')}</tbody>
+          </tr>
+          ${nodes.length ? `<tr class="exec-detail" id="${escapeHtml(rowId)}" hidden>
+            <td colspan="9">
+              <ol class="xnodes">${nodes.map(([name, n], idx) => {
+          const prev = idx > 0 ? (nodes[idx - 1][1].items ?? 0) : null;
+          const dropped = prev === null ? null : prev - (n.items ?? 0);
+          return `<li class="xnode">
+                  <span class="xnode-n">${idx + 1}</span>
+                  <span class="xnode-name">${escapeHtml(name)}</span>
+                  <span class="xnode-bar"><span style="width:${(((n.items ?? 0) / peak) * 100).toFixed(1)}%"></span></span>
+                  <span class="xnode-items">${fmt(n.items ?? 0)}</span>
+                  <span class="xnode-drop">${dropped === null ? '' : (dropped > 0 ? `−${fmt(dropped)}` : (dropped < 0 ? `+${fmt(-dropped)}` : '='))}</span>
+                  <span class="xnode-ms">${Number.isFinite(n.ms) ? ms(n.ms) : ''}</span>
+                </li>`;
+        }).join('')}</ol>
+              ${r.failedNode ? `<p class="xnode-fail">Stopped at <strong>${escapeHtml(r.failedNode)}</strong>${r.error ? ` — ${escapeHtml(r.error)}` : ''}</p>` : ''}
+            </td>
+          </tr>` : ''}`;
+    }).join('')}</tbody>
         </table></div>
         <p class="chart-note">The newest <strong>${Math.min(EXEC_ROWS, recent.length)}</strong> of
         <strong>${fmt((a.store.rows ?? []).length)}</strong> rows held — <strong>Export CSV</strong> gives all of them,
@@ -1253,7 +1283,19 @@ export function analyticsScript() {
 
   /* --------------------------------------------- execution filter + CSV */
 
+  /* Expand an execution to see what each node emitted. */
   document.addEventListener('click', function (e) {
+    var row = e.target.closest('.exec-row[data-expands]');
+    if (row && !e.target.closest('a')) {
+      var panel = document.getElementById(row.getAttribute('data-expands'));
+      var toggle = row.querySelector('.exec-toggle');
+      if (panel) {
+        panel.hidden = !panel.hidden;
+        if (toggle) toggle.setAttribute('aria-expanded', String(!panel.hidden));
+      }
+      return;
+    }
+
     var chip = e.target.closest('[data-exec-filter] [data-status]');
     if (chip) {
       var bar = chip.closest('[data-exec-filter]');

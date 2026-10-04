@@ -193,12 +193,22 @@ export async function fetchExecutions(instance, workflowId, {
   const started = Date.now();
   const cap = Math.min(limit * maxPages, 10000);
 
+  // execution_entity ONLY. The payload table is deliberately not joined here.
+  //
+  // This query used to carry `length(d.data) AS jsonSizeBytes`, which looks
+  // free and is not: SQLite stores no length for a TEXT column, so length()
+  // has to read the whole value. Across 5,600 executions with large payloads
+  // that is gigabytes of reading to produce one number per row, and it was
+  // most of why a first collection looked like it had hung.
+  //
+  // The size is taken in the detail pass instead, where the payload is being
+  // read anyway. A row with no detail therefore has no byte count — which is
+  // the honest outcome, and better than an exact number nobody asked for at
+  // the cost of the pass finishing.
   const sql = `SELECT
       e.id, e.workflowId, e.status, e.finished, e.mode, e.retryOf, e.retrySuccessId,
-      ${ISO('e.startedAt')}, ${ISO('e.stoppedAt')}, ${ISO('e.createdAt')},
-      length(d.data) AS jsonSizeBytes
+      ${ISO('e.startedAt')}, ${ISO('e.stoppedAt')}, ${ISO('e.createdAt')}
     FROM execution_entity e
-    LEFT JOIN execution_data d ON d.executionId = e.id
     WHERE e.workflowId = '${workflowId}'
       ${startedAfter ? `AND datetime(e.startedAt) > datetime('${sqlTime(startedAfter)}')` : ''}
     ORDER BY e.startedAt DESC
