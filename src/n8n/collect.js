@@ -260,13 +260,43 @@ async function pool(items, width, fn) {
  * answer will not change, and retrying it every pass forever is how a
  * collector turns into a load problem.
  */
-export function detailCandidates(rows, budget, { successSample = 10 } = {}) {
+export function detailCandidates(rows, budget, {
+  successSample = 10, maxBytes = 8 * 1024 * 1024,
+} = {}) {
   const want = rows.filter((r) => r.volumeSource !== 'node-data' && !r.detailTried);
 
   const failures = want.filter((r) => r.status === 'error')
     .sort((a, b) => String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
   const successes = want.filter((r) => r.status !== 'error')
     .sort((a, b) => String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
+
+  /**
+   * Stop once the payloads would cost more than the budget.
+   *
+   * The list response already carries jsonSizeBytes, so the size is known
+   * BEFORE anything is fetched — an execution can be skipped without paying
+   * for it. That matters: eight executions of the Google Enhanced Conversions
+   * workflow took thirty-five seconds, because its payloads are enormous and
+   * nothing was looking at how big they were before asking for them.
+   *
+   * A row with no size recorded is counted as the average so far, so an
+   * instance that reports no sizes still gets a bounded pass rather than an
+   * unbounded one.
+   */
+  const withinBudget = (list) => {
+    const out = [];
+    let bytes = 0;
+    for (const row of list) {
+      const size = Number.isFinite(row.bytes) ? row.bytes
+        : (out.length ? bytes / out.length : 64 * 1024);
+      // Always take the first, whatever it costs: a workflow whose every
+      // payload is above budget would otherwise never report an error.
+      if (out.length && bytes + size > maxBytes) break;
+      bytes += size;
+      out.push(row);
+    }
+    return out;
+  };
 
   // EVERY failure, then a small sample of successes.
   //
@@ -281,10 +311,10 @@ export function detailCandidates(rows, budget, { successSample = 10 } = {}) {
   //
   // The sample is the NEWEST successes, because a funnel describes the
   // current shape of a workflow rather than its history.
-  return [
+  return withinBudget([
     ...failures.slice(0, Math.max(0, budget)),
     ...successes.slice(0, Math.max(0, Math.min(successSample, budget - Math.min(failures.length, budget)))),
-  ];
+  ]);
 }
 
 async function syncOne(workflow, instance, { retention, tz, now }) {

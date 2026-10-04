@@ -34,9 +34,19 @@ import fs from 'node:fs';
  * An n8n 401 body can echo the header back. This file is the one place a key
  * exists in memory, so it is the one place that has to care.
  */
+const MIN_SECRET = 12;
+
 export function safeError(message, key) {
   let text = String(message ?? 'unknown error').slice(0, 300);
-  if (key) text = text.split(key).join('[REDACTED:n8n-api-key]');
+  // Long enough to be a real key before substituting it. A blind replace of a
+  // short string rewrites every occurrence of those characters anywhere in
+  // the message — a one-character key turned "Unknown query parameter" into
+  // "Un[REDACTED:n8n-api-key]nown query parameter", which hides the very
+  // sentence the operator needs. An n8n key is 40-odd characters; anything
+  // under twelve is not a secret worth destroying a message for.
+  if (key && String(key).length >= MIN_SECRET) {
+    text = text.split(key).join('[REDACTED:n8n-api-key]');
+  }
   return text.replace(/X-N8N-API-KEY\s*:\s*\S+/gi, 'X-N8N-API-KEY: [REDACTED:n8n-api-key]');
 }
 
@@ -127,6 +137,23 @@ export async function fetchWorkflow(instance, workflowId) {
  *
  * @returns {{ executions: object[], pages: number, ms: number, truncated: boolean }}
  */
+/**
+ * Which instances have told us they do not understand `startedAfter`.
+ *
+ * It is documented on the current API and is genuinely useful — it lets n8n
+ * filter server-side so an incremental pass transfers almost nothing. It is
+ * also NOT present on every version in the field: this estate's n8n answers
+ * `HTTP 400 Unknown query parameter 'startedAfter'`, which took out five of
+ * thirteen workflows — the five that had a cursor to send.
+ *
+ * So it is treated as an optimisation to be discovered rather than a contract
+ * to be assumed: sent once, and on a 400 that names it, dropped for this
+ * instance and retried immediately. `stopAtId` does the same job, slightly
+ * less efficiently, and works everywhere — executions come back newest first,
+ * so the known id is near the top of the first page on any normal pass.
+ */
+const noStartedAfter = new Set();
+
 export async function fetchExecutions(instance, workflowId, {
   startedAfter = null, stopAtId = null, limit = PAGE_LIMIT, maxPages = MAX_PAGES,
 } = {}) {
@@ -135,24 +162,33 @@ export async function fetchExecutions(instance, workflowId, {
   let pages = 0;
   let ms = 0;
   let truncated = false;
+  let after = noStartedAfter.has(instance.id) ? null : startedAfter;
 
   for (;;) {
-    const { body, ms: took } = await request(instance, '/executions', {
-      workflowId,
-      limit,
-      cursor,
-      startedAfter,
-      // Deliberately false. includeData on a LIST response returns every node's
-      // input and output for every execution in the page — megabytes per page,
-      // and n8n may withhold it anyway past its size limit. Node-level counts
-      // are fetched per execution, budgeted, by fetchExecutionDetail.
-      includeData: false,
-    });
+    let page;
+    try {
+      page = await request(instance, '/executions', {
+        workflowId, limit, cursor, startedAfter: after, includeData: false,
+      });
+    } catch (e) {
+      // Only this one error, and only once. Anything else is a real failure.
+      if (after && /Unknown query parameter 'startedAfter'/i.test(e.message)) {
+        noStartedAfter.add(instance.id);
+        after = null;
+        continue;
+      }
+      throw e;
+    }
+    // includeData stays false above, deliberately. On a LIST response it
+    // returns every node's input and output for every execution in the page —
+    // megabytes per page, and n8n may withhold it past its size limit anyway.
+    // Node-level counts are fetched per execution, budgeted, below.
+    const { body, ms: took } = page;
     ms += took;
     pages += 1;
 
-    const page = Array.isArray(body?.data) ? body.data : [];
-    for (const execution of page) {
+    const rows = Array.isArray(body?.data) ? body.data : [];
+    for (const execution of rows) {
       if (stopAtId != null && String(execution.id) === String(stopAtId)) {
         return { executions, pages, ms, truncated };
       }
@@ -160,7 +196,7 @@ export async function fetchExecutions(instance, workflowId, {
     }
 
     cursor = body?.nextCursor ?? null;
-    if (!cursor || page.length === 0) break;
+    if (!cursor || rows.length === 0) break;
     if (pages >= maxPages) { truncated = true; break; }
   }
 
