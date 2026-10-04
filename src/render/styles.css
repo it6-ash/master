@@ -1075,6 +1075,203 @@ figure.chart svg {
 .legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-meta); color: var(--ink-2); }
 .legend-swatch { width: 9px; height: 9px; border-radius: 2px; flex: none; }
 
+/* ------------------------------------------------- workflow analytics */
+
+/* The one chart family on this page painted in the browser rather than at
+   build time. Seven time ranges plus a custom one is fourteen pre-rendered
+   SVGs per workflow, which is megabytes; the painter is thirty lines and uses
+   these same tokens, so a theme switch repaints it with no re-render. The
+   table-view twin below each one is still server-rendered, which is what keeps
+   every number readable with JavaScript off and on paper. */
+.chart--painted .wf-plot {
+  max-width: none;
+  background: var(--sunken);
+  border-radius: var(--r-sm);
+  /* preserveAspectRatio="none" on the plot, so a fixed box keeps bar widths
+     honest instead of stretching 12px labels into 20px ones. */
+  aspect-ratio: 560 / 170;
+}
+.chart .wf-grid { stroke: var(--border); stroke-width: 1; }
+
+.wf-ranges { align-items: center; row-gap: 6px; }
+.wf-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-meta);
+  margin-left: auto;
+}
+.wf-custom input[type="date"] {
+  background: var(--sunken);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 5px 7px;
+  font: var(--fs-meta) var(--mono);
+  min-height: 30px;
+  color-scheme: inherit;
+}
+.wf-custom input[type="date"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Health is never a bare colour. Each reason is a sentence with the dot that
+   produced it beside the words, so the state is readable without the hue. */
+.wf-reasons { margin: 0 0 12px; padding: 0; list-style: none; display: grid; gap: 5px; }
+.wf-reasons li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+}
+.wf-reasons .dot { margin-top: 5px; }
+
+/* What was in the items. A breakdown gets bars; a population count gets a
+   number, because only salted pseudonyms are held and there is nothing to
+   list — which is the design, not a limitation. */
+.dims { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--gap); }
+.dim { border: 1px solid var(--border); border-radius: var(--r-inner); padding: 12px 14px; background: var(--sunken); }
+.dim-title { font-size: var(--fs-meta); font-weight: 620; margin: 0 0 10px; color: var(--ink); }
+.dim-count { font: 10.5px var(--mono); color: var(--ink-3); font-weight: 400; margin-left: 6px; }
+.dim-big { font: 600 28px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.dim-unit { font-size: var(--fs-meta); color: var(--ink-3); font-weight: 400; margin-left: 8px; }
+.dim-note { font-size: 11px; color: var(--ink-3); line-height: 1.5; margin: 9px 0 0; }
+.dim-refused { font-size: 11.5px; color: var(--warning); line-height: 1.5; margin: 0; }
+.dim-bars { display: grid; gap: 5px; }
+.dim-row { display: grid; grid-template-columns: minmax(70px, 1fr) 2fr auto auto; gap: 8px; align-items: center; }
+.dim-label {
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dim-track { height: 7px; background: var(--track); border-radius: 4px; overflow: hidden; }
+.dim-fill { display: block; height: 100%; background: var(--s1); border-radius: 4px; }
+.dim-n { font: var(--fs-meta) var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.dim-pct { font: 10.5px var(--mono); color: var(--ink-3); width: 30px; text-align: right; }
+
+/* ------------------------------- workflows, as seen from the estate page */
+
+/* What needs attention, by name and with the reason, because "4 need
+   attention" without saying which four is a number that sends you looking.
+   Each one is a link straight to that workflow's page. */
+.wf-attention { display: grid; gap: 6px; margin-top: var(--gap); }
+.wf-att {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-inner);
+  background: var(--sunken);
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+  text-decoration: none;
+  min-height: var(--touch);
+}
+.wf-att:hover { border-color: var(--border-hover); }
+.wf-att:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wf-att .dot { align-self: center; }
+.wf-att-name { color: var(--ink); font-weight: 560; flex: none; }
+.wf-att-why { color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wf-att--more { justify-content: center; color: var(--ink-3); }
+
+/* The groups, as counts rather than as a hundred and thirty-eight rows. The
+   estate page says how many and how healthy; the workflows page has the list. */
+.wf-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px;
+  margin-top: var(--gap);
+}
+.wf-sum {
+  display: grid;
+  gap: 2px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-inner);
+  text-decoration: none;
+  background: linear-gradient(160deg, var(--surface-start), var(--surface-end));
+}
+.wf-sum:hover { border-color: var(--border-hover); }
+.wf-sum:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wf-sum-n { font: 600 20px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.wf-sum-of { color: var(--ink-3); font-size: 13px; font-weight: 400; }
+.wf-sum-label { font-size: var(--fs-meta); color: var(--ink-2); }
+
+.chip--quiet { color: var(--ink-3); cursor: default; }
+.chip--quiet:hover { border-color: var(--border); }
+
+/* In the inventory list: what the watcher knows, where it knows anything. */
+.wf-watch { font: 10.5px var(--mono); color: var(--ink-2); flex: none; }
+.wf-unwatched { font-style: italic; opacity: 0.75; }
+
+/* How fresh the section is, above the numbers rather than among them. A
+   dashboard that cannot say when it last looked is a dashboard quoting
+   yesterday with today's confidence. */
+.freshness {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 9px 13px;
+  margin-bottom: var(--gap);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--r-inner);
+  background: var(--sunken);
+  font-size: var(--fs-meta);
+  color: var(--ink-2);
+}
+.freshness strong { color: var(--ink); font-weight: 620; }
+.freshness .dot { align-self: center; }
+.freshness--ok { border-left-color: var(--ok); }
+.freshness--warn { border-left-color: var(--warning); }
+.freshness--bad { border-left-color: var(--critical); }
+.freshness-bad, .freshness strong.freshness-bad { color: var(--critical); }
+
+/* A grid must never end on a hole. Seven tiles in a six-column grid left one
+   stranded on a row of its own, reading as a rendering fault rather than a
+   number. Any odd tail now spans the remainder instead. */
+.tiles > .tile:last-child:nth-child(odd) { grid-column: auto / -1; }
+
+/* Three independent filter groups that AND together, so "Yamini + needs
+   attention" is one question rather than two passes of reading. Each row of
+   chips is labelled, because four unlabelled rows of pills is a puzzle. */
+.wf-filters { display: grid; gap: 7px; margin-bottom: var(--gap); }
+.wf-filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.wf-filter-label {
+  font: var(--fs-meta) var(--mono);
+  color: var(--ink-3);
+  width: 68px;
+  flex: none;
+  text-transform: lowercase;
+}
+.wf-filter-group .chip { gap: 6px; }
+.chip-n { font: 10.5px var(--mono); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] .chip-n { color: inherit; opacity: 0.75; }
+.wf-filter-count { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 560px) {
+  /* The label above its chips rather than beside them: at 68px of gutter the
+     chips wrap to two characters each and the row becomes unreadable. */
+  .wf-filter-group { display: grid; grid-template-columns: 1fr; gap: 5px; }
+  .wf-filter-label { width: auto; }
+  .wf-filter-group > .chip { display: inline-flex; }
+}
+
+.wf-table-wrap { border: 1px solid var(--border); border-radius: var(--r-card); overflow: auto hidden; }
+.wf-table th[data-sort] { cursor: pointer; user-select: none; white-space: nowrap; }
+.wf-table th[data-sort]:hover { color: var(--ink); }
+.wf-table th[data-sort]::after { content: "\00a0\2195"; opacity: 0.35; }
+.wf-table th[aria-sort="ascending"]::after { content: "\00a0\2191"; opacity: 1; }
+.wf-table th[aria-sort="descending"]::after { content: "\00a0\2193"; opacity: 1; }
+.wf-table th[data-sort]:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.wf-table tbody tr:last-child td { border-bottom: 0; }
+
+.exec-table td { white-space: nowrap; }
+.exec-table td[data-label="Error"] { white-space: normal; color: var(--critical); max-width: 32ch; }
+
 .table-view { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 9px; }
 .table-view > summary {
   cursor: pointer;

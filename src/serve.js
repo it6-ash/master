@@ -36,6 +36,10 @@ const root = abs('dist');
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${HOST}:${PORT}`);
   let pathname = decodeURIComponent(url.pathname);
+  // The same alias src/admin.js serves. Without it the analytics page lives at
+  // /workflows/analytics in production and /workflows.html here, so a URL
+  // copied from one 404s in the other — which is a trap, not a difference.
+  if (pathname === '/workflows/analytics' || pathname === '/workflows') pathname = '/workflows.html';
   if (pathname === '/' || pathname.endsWith('/')) pathname += 'index.html';
 
   // Resolve inside dist/ only — no traversal out of the served root.

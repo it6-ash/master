@@ -13,6 +13,10 @@ import { renderMarkdown, escapeHtml } from './markdown.js';
 import { renderFlowSvg, escapeRegExp } from './flow-svg.js';
 import { parseFlow } from '../parse/flow-dsl.js';
 import { funnelChart, workflowChart, costChart, sparkline, statTile } from './charts.js';
+import {
+  analyticsTiles, crossWorkflowTable, rankBars, runtimeChart, anomalyPanel,
+  collectorPanel, workflowAnalyticsBoard, seriesPayload, execPayload, analyticsScript, healthBadge,
+} from './workflow-analytics.js';
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
 const bySeverity = (a, b) => (SEV_ORDER[a.severity] ?? 9) - (SEV_ORDER[b.severity] ?? 9);
@@ -45,7 +49,7 @@ const EVENT_LABELS = {
  * looked like it had done nothing at all. Matching against a real index and
  * showing a real result list is both clearer and faster.
  */
-function buildSearchIndex({ servers, projects, workflows, issues }) {
+function buildSearchIndex({ servers, projects, workflows, issues, analytics }) {
   const entries = [];
 
   for (const [id, server] of Object.entries(servers)) {
@@ -71,15 +75,49 @@ function buildSearchIndex({ servers, projects, workflows, issues }) {
     });
   }
 
+  // Monitored workflows carry their health and their last-24h volume into the
+  // result row, so searching "CRM" answers "is it alright" in the same glance
+  // as "does it exist". Keyed by id so a monitored workflow is one entry, not
+  // two competing ones.
+  const monitored = new Map((analytics?.analysed ?? []).map((a) => [a.workflow.id, a]));
+
+  // A workflow page is on the workflows page. From anywhere else the result
+  // has to be a link across rather than a drawer that is not in this document.
+  const reach = (id) => (ON_WORKFLOWS_PAGE
+    ? { open: `workflow:${id}` }
+    : { href: `${ANALYTICS_PAGE}#workflow=${id}` });
+
   for (const [id, wf] of Object.entries(workflows)) {
+    const a = monitored.get(id);
     entries.push({
       kind: 'workflow',
-      open: `workflow:${id}`,
+      ...(wf.noise ? {} : reach(id)),
       label: wf.name,
-      sub: [wf.group, wf.server, wf.active ? 'active' : 'off'].filter(Boolean).join(' · '),
-      state: wf.active ? 'live' : 'idle',
+      sub: [
+        a ? `${a.health.state} · ${a.stats.executions} runs/24h` : null,
+        wf.group, wf.server, wf.active ? 'active' : 'off',
+      ].filter(Boolean).join(' · '),
+      state: a
+        ? ({ HEALTHY: 'live', CRITICAL: 'broken', UNKNOWN: 'idle' }[a.health.state] ?? 'partial')
+        : (wf.active ? 'live' : 'idle'),
       noise: wf.noise === true,
-      text: [id, wf.name, wf.group, wf.server].filter(Boolean).join(' ').toLowerCase(),
+      text: [id, wf.name, wf.group, wf.server, a?.workflow.project, a?.health.state, a ? 'monitored analytics' : null]
+        .filter(Boolean).join(' ').toLowerCase(),
+    });
+  }
+
+  // A registered workflow the inventory has not seen yet — the dump is
+  // 6-hourly, a registration is immediate — would otherwise be unfindable.
+  for (const a of monitored.values()) {
+    if (workflows[a.workflow.id]) continue;
+    entries.push({
+      kind: 'workflow',
+      ...reach(a.workflow.id),
+      label: a.workflow.name ?? a.workflow.id,
+      sub: `${a.health.state} · monitored, not yet in the inventory`,
+      state: 'partial',
+      text: [a.workflow.id, a.workflow.name, a.workflow.project, a.workflow.instance, a.health.state]
+        .filter(Boolean).join(' ').toLowerCase(),
     });
   }
 
@@ -1078,12 +1116,45 @@ function explain(label, glossary, className = 'tag') {
  * three helpers are the only way a link is written, so nothing that has a
  * destination is ever rendered as plain text by accident.
  */
-const linkProject = (id, label) => `<a href="#project=${escapeHtml(id)}" data-open="project:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
-const linkServer = (id, label) => `<a href="#server=${escapeHtml(id)}" data-open="server:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`;
+/**
+ * Project and server pages live on the estate page; workflow pages live on the
+ * workflows page. A link from one to the other has to cross rather than open a
+ * drawer the document does not contain.
+ *
+ * Both directions matter and both have been got wrong once: workflow links on
+ * the estate page, then project and server links on the workflows page. The
+ * symptom is identical and silent — a link that highlights on hover, does
+ * nothing on click, and leaves no error anywhere.
+ */
+const linkProject = (id, label) => (ON_WORKFLOWS_PAGE
+  ? `<a href="/#project=${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`
+  : `<a href="#project=${escapeHtml(id)}" data-open="project:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`);
+
+const linkServer = (id, label) => (ON_WORKFLOWS_PAGE
+  ? `<a href="/#server=${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`
+  : `<a href="#server=${escapeHtml(id)}" data-open="server:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`);
+
+/**
+ * Which page is being rendered, so a workflow link knows whether it opens a
+ * drawer or crosses to the other page.
+ *
+ * Every workflow page now lives on /workflows/analytics. A `data-open` link on
+ * the estate page would target a drawer panel that is not in that document —
+ * a link that silently does nothing, which is worse than no link. So the
+ * estate page emits a real href across, and the workflows page keeps the
+ * drawer. Module-level because linkWorkflow is called from a dozen places that
+ * have no business knowing about page composition.
+ */
+let ON_WORKFLOWS_PAGE = false;
+
 // A template import gets no page, so it is plain text rather than a dead link.
-const linkWorkflow = (id, label, noise) => (noise
-  ? escapeHtml(label ?? id)
-  : `<a href="#workflow=${escapeHtml(id)}" data-open="workflow:${escapeHtml(id)}">${escapeHtml(label ?? id)}</a>`);
+const linkWorkflow = (id, label, noise) => {
+  if (noise) return escapeHtml(label ?? id);
+  const text = escapeHtml(label ?? id);
+  return ON_WORKFLOWS_PAGE
+    ? `<a href="#workflow=${escapeHtml(id)}" data-open="workflow:${escapeHtml(id)}">${text}</a>`
+    : `<a href="${ANALYTICS_PAGE}#workflow=${escapeHtml(id)}">${text}</a>`;
+};
 
 /**
  * Which project a service or container name belongs to.
@@ -1115,7 +1186,27 @@ function projectForWorkflow(id, projects) {
  * Each one now has a page carrying everything held about it plus every thing
  * it is attached to.
  */
-function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
+/**
+ * A link to the execution inside n8n, when there is a public route to it.
+ *
+ * n8n's editor puts an execution at /workflow/<id>/executions/<execution>.
+ * Built from the instance's `publicUrl`, never from its `baseUrl`: baseUrl is
+ * loopback so the collector does not depend on DNS, and a 127.0.0.1 link on a
+ * page served to a browser somewhere else is worse than no link at all.
+ */
+function executionLinker(instances) {
+  return (workflow, executionId, label) => {
+    const base = instances?.[workflow.instance]?.publicUrl;
+    const text = escapeHtml(String(label ?? executionId));
+    if (!base) return text;
+    return `<a href="${escapeHtml(`${base}/workflow/${workflow.id}/executions/${executionId}`)}"
+      rel="noreferrer noopener" target="_blank">${text}</a>`;
+  };
+}
+
+function renderWorkflowPanel(id, wf, {
+  projects, workflows, servers, issues, analysis, instances, monitored = false,
+}) {
   const owner = projectForWorkflow(id, projects);
   const server = wf.server ? servers[wf.server] : null;
   const siblings = wf.noise ? [] : Object.entries(workflows)
@@ -1126,22 +1217,49 @@ function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
 
   const history = (wf.history ?? []).slice().reverse();
 
+  // "Switched on" is inventory. "Executed 1,284 times, 1.8% of them failing"
+  // is telemetry, and when both are known the telemetry leads — a workflow can
+  // be active and have not run for a fortnight, and the state flag says
+  // nothing about that.
+  const live = analysis ?? null;
+
   return `<section class="drawer-panel" data-panel="workflow:${escapeHtml(id)}"
-      data-title="${escapeHtml(wf.name)}" data-state="${wf.active ? 'live' : 'idle'}"
-      data-sub="${escapeHtml(`${wf.group ?? 'Ungrouped'} · ${id}`)}">
+      data-title="${escapeHtml(wf.name)}" data-state="${live
+    ? ({ HEALTHY: 'live', CRITICAL: 'broken', UNKNOWN: 'idle' }[live.health.state] ?? 'partial')
+    : (wf.active ? 'live' : 'idle')}"
+      data-sub="${escapeHtml(`${live ? `${live.health.state} · ` : ''}${wf.group ?? 'Ungrouped'} · ${id}`)}">
     <p class="section-note">
       An automation running inside n8n${wf.server ? ` on ${linkServer(wf.server)}` : ''}. It is currently
       <strong>${wf.active ? 'switched on and running' : 'switched off'}</strong>.
-      ${wf.noise
-    ? 'This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.'
-    : 'Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.'}
+      ${live
+    ? `It is monitored, so the rest of this page is what it actually did rather than what it is configured to do:
+       <strong>${fmt(live.stats.executions)} executions in the last 24 hours</strong>, ${fmt(live.stats.failed)} of them
+       failing${live.stats.itemsCovered ? `, ${fmt(live.stats.items)} items processed` : ''}.`
+    : wf.noise
+      ? 'This is one of roughly a hundred demo templates that were imported into n8n and never removed. It is almost certainly not something anyone built.'
+      : 'Workflows are how every integration in this estate is built, so this page is the closest thing to source code for it.'}
+      ${live || monitored ? '' : 'It is not registered for execution monitoring, so nothing on this page says whether it has '
+      + 'ever actually run. Connect it in <a href="/admin">the admin panel</a> to get its execution history, data '
+      + 'volume and health.'}
+      ${!live && monitored
+    ? `It <strong>is</strong> monitored. Its execution history, data volume, runtime, failures and per-stage counts are
+       on <a href="${ANALYTICS_PAGE}#workflow=${escapeHtml(id)}">the workflow analytics page</a> — this page carries the
+       inventory, that one carries what it did.`
+    : ''}
     </p>
     <div class="tags" style="margin-bottom:14px">
+      ${live ? healthBadge(live.health.state) : ''}
       <span class="pill"><span class="dot dot--${wf.active ? 'live' : 'idle'}"></span>${wf.active ? 'active' : 'off'}</span>
       <span class="pill">${escapeHtml(wf.group ?? 'Ungrouped')}</span>
-      ${wf.server ? `<a class="pill" href="#server=${escapeHtml(wf.server)}" data-open="server:${escapeHtml(wf.server)}">${escapeHtml(wf.server)}</a>` : ''}
-      ${owner ? `<a class="pill pill--accent" href="#project=${escapeHtml(owner.id)}" data-open="project:${escapeHtml(owner.id)}">${escapeHtml(owner.name)}</a>` : ''}
+      ${live ? `<span class="pill">${escapeHtml(live.workflow.instance)}</span>` : ''}
+      ${wf.server ? `<span class="pill">${linkServer(wf.server)}</span>` : ''}
+      ${owner ? `<span class="pill pill--accent">${linkProject(owner.id, owner.name)}</span>` : ''}
       ${wf.noise ? '<span class="pill">template import</span>' : ''}
+      ${live && instances?.[live.workflow.instance]?.publicUrl
+    ? `<a class="pill" rel="noreferrer noopener" target="_blank"
+         href="${escapeHtml(`${instances[live.workflow.instance].publicUrl}/workflow/${id}`)}">open in n8n</a>`
+    : ''}
+      ${!live && monitored ? `<a class="pill pill--accent" href="${ANALYTICS_PAGE}#workflow=${escapeHtml(id)}">analytics</a>` : ''}
     </div>
 
     <div class="board">
@@ -1184,8 +1302,13 @@ function renderWorkflowPanel(id, wf, { projects, workflows, servers, issues }) {
         </div>
       </section>` : ''}
 
+      ${live ? workflowAnalyticsBoard(live, {
+    startNum: history.length ? 4 : 3,
+    executionUrl: executionLinker(instances),
+  }) : ''}
+
       ${siblings.length ? `<section class="board-panel board-panel--wide">
-        <h2 class="board-title"><span class="board-num">${history.length ? 4 : 3}</span>Others in ${escapeHtml(wf.group ?? 'this group')}</h2>
+        <h2 class="board-title"><span class="board-num">${(history.length ? 4 : 3) + (live ? 7 : 0)}</span>Others in ${escapeHtml(wf.group ?? 'this group')}</h2>
         <div class="board-content"><div class="table-wrap"><table>
           <thead><tr><th>Workflow</th><th>State</th><th>Project</th></tr></thead>
           <tbody>${siblings.slice(0, 12).map(([wid, w]) => {
@@ -1267,7 +1390,7 @@ function renderTree(servers, projects, workflows) {
 
 /* --------------------------------------------------- workflow explorer */
 
-function renderWorkflows(workflows, projects) {
+function renderWorkflows(workflows, projects, monitored = new Map()) {
   const owner = new Map();
   for (const p of projects) for (const id of p.workflows ?? []) owner.set(id, p);
 
@@ -1296,16 +1419,317 @@ function renderWorkflows(workflows, projects) {
       </summary>
       <div class="wf-list">${list.map((w) => {
       const own = owner.get(w.id);
-      return `<div class="wf${w.noise ? ' wf--noise' : ''} searchable" data-search="${escapeHtml(`${w.name} ${w.id} ${group} ${w.server ?? ''}`.toLowerCase())}">
-        <span class="dot dot--${w.active ? 'live' : 'idle'}"></span>
+      const live = monitored.get(w.id);
+      // Health beats the on/off flag wherever it is known: a workflow can be
+      // switched on and not have run for a fortnight, and only one of those
+      // two facts is worth a coloured dot.
+      const dot = live
+        ? ({ HEALTHY: 'live', CRITICAL: 'broken', UNKNOWN: 'idle' }[live.health.state] ?? 'partial')
+        : (w.active ? 'live' : 'idle');
+      return `<div class="wf${w.noise ? ' wf--noise' : ''} searchable" data-search="${escapeHtml(`${w.name} ${w.id} ${group} ${w.server ?? ''} ${live ? `monitored ${live.health.state}` : ''}`.toLowerCase())}">
+        <span class="dot dot--${dot}"></span>
         <span class="wf-name">${linkWorkflow(w.id, w.name, w.noise)}</span>
+        ${live
+    ? `<span class="wf-watch" title="${escapeHtml(live.health.state)}">${escapeHtml(live.health.state.toLowerCase())}
+         · ${fmt(live.stats.executions)} runs/24h</span>`
+    : (w.active && !w.noise ? '<span class="wf-id wf-unwatched">not monitored</span>' : '')}
         ${own ? `<span class="wf-id">${linkProject(own.id, own.name)}</span>` : ''}
         ${w.server ? `<span class="wf-id">${escapeHtml(w.server)}</span>` : ''}
-        <span class="wf-id">${escapeHtml(w.id)}</span>
       </div>`;
     }).join('')}</div>
     </details>`;
   }).join('');
+}
+
+/* ---------------------------------------------------- workflow analytics */
+
+/**
+ * Execution telemetry, in the order the questions get asked.
+ *
+ * Is everything healthy → what happened → how much data moved → when → where
+ * is the problem → what changed from normal → is the collector still awake.
+ * That ordering is the section, and it is why the health counts come before
+ * the execution counts rather than after the prettier charts.
+ *
+ * This section is deliberately NOT built from the workflow inventory above.
+ * That inventory comes out of `n8n list:workflow` in a diagnostic dump and can
+ * only ever say a workflow exists and is switched on. Everything here comes
+ * from the n8n executions API via `npm run wf-sync`, and the two are kept
+ * apart on purpose: a workflow can be active and not have run for a fortnight,
+ * and only one of these two datasets can tell you that.
+ */
+export const ANALYTICS_PAGE = '/workflows/analytics';
+
+/**
+ * Filters over the cross-workflow table: health, project, instance.
+ *
+ * Three independent groups that AND together, so "Yamini + needs attention" is
+ * one question rather than two passes of reading. Each chip states its own
+ * count, because a filter that leads to an empty table is a worse answer than
+ * one that says up front there is nothing behind it.
+ *
+ * Only rendered where it earns its space — below about eight rows the table is
+ * already one glance and a filter bar is furniture.
+ */
+function workflowFilters(analysed) {
+  if (analysed.length < 8) return '';
+
+  const count = (fn) => analysed.filter(fn).length;
+  const attention = count((a) => !['HEALTHY', 'UNKNOWN'].includes(a.health.state));
+
+  const group = (name, label, chips) => {
+    const live = chips.filter((c) => c.n > 0);
+    if (live.length < 2) return '';
+    return `<div class="wf-filter-group" data-filter-group="${escapeHtml(name)}">
+      <span class="wf-filter-label">${escapeHtml(label)}</span>
+      <button class="chip" type="button" data-value="all" aria-pressed="true">All <span class="chip-n">${analysed.length}</span></button>
+      ${live.map((c) => `<button class="chip" type="button" data-value="${escapeHtml(c.value)}" aria-pressed="false">
+        ${c.dot ? `<span class="dot dot--${c.dot}"></span>` : ''}${escapeHtml(c.label)} <span class="chip-n">${c.n}</span>
+      </button>`).join('')}
+    </div>`;
+  };
+
+  const projects = [...new Set(analysed.map((a) => a.workflow.project).filter(Boolean))].sort();
+  const instances = [...new Set(analysed.map((a) => a.workflow.instance))].sort();
+
+  return `<div class="wf-filters" id="wf-filters">
+    ${group('health', 'Health', [
+    { value: 'attention', label: 'Needs attention', n: attention, dot: 'partial' },
+    { value: 'CRITICAL', label: 'Critical', n: count((a) => a.health.state === 'CRITICAL'), dot: 'broken' },
+    { value: 'WARNING', label: 'Warning', n: count((a) => a.health.state === 'WARNING'), dot: 'partial' },
+    { value: 'STALE', label: 'Stale', n: count((a) => a.health.state === 'STALE'), dot: 'partial' },
+    { value: 'NO DATA', label: 'No data', n: count((a) => a.health.state === 'NO DATA'), dot: 'partial' },
+    { value: 'HEALTHY', label: 'Healthy', n: count((a) => a.health.state === 'HEALTHY'), dot: 'live' },
+    { value: 'UNKNOWN', label: 'Not enough history', n: count((a) => a.health.state === 'UNKNOWN'), dot: 'idle' },
+  ])}
+    ${group('project', 'Project', [
+    ...projects.map((p) => ({ value: p, label: p, n: count((a) => a.workflow.project === p) })),
+    { value: '~none', label: 'Unclaimed', n: count((a) => !a.workflow.project) },
+  ])}
+    ${group('instance', 'Instance', instances.map((i) => ({
+    value: i, label: i, n: count((a) => a.workflow.instance === i),
+  })))}
+    ${group('anomaly', 'Change', [
+    { value: 'anomaly', label: 'Outside normal', n: count((a) => a.anomalies.length), dot: 'partial' },
+    { value: 'failing', label: 'Failed in window', n: count((a) => a.stats.failed > 0), dot: 'broken' },
+  ])}
+  </div>`;
+}
+
+/**
+ * The strip the ESTATE page carries: the headline answer plus a way through.
+ *
+ * Deliberately small. The full analytics is its own page now, and duplicating
+ * it here would double the bytes of the file nginx serves most often to show
+ * numbers that have their own home.
+ */
+function analyticsTeaser(wfa, { workflows, wfGroups }) {
+  const { analysed, totals, sync } = wfa;
+  const total = Object.keys(workflows).length;
+  const active = Object.values(workflows).filter((w) => w.active && !w.noise).length;
+
+  const head = (count) => section('Workflows',
+    'Every automation in the estate lives on its own page now. This is the summary: how many exist, how many run, '
+    + 'and whether the ones being watched are alright. The detail — timelines, data volume per stage, failures, '
+    + 'anomalies — is one click away.',
+    count);
+
+  if (!analysed.length) {
+    return `${head(`${active} active of ${total}`)}
+    <div class="changes"><div class="empty">
+      ${active} workflows are switched on, and nothing is watching any of them: the inventory can say a workflow
+      <em>exists</em>, not whether it has run this week. Connect them in
+      <a href="/admin">the admin panel</a>, or <code>npm run wf-add -- --discover</code>.
+      <a href="${ANALYTICS_PAGE}">Browse all ${total} workflows</a>.
+    </div></div>`;
+  }
+
+  const h = totals.byHealth;
+  const attention = (h.CRITICAL ?? 0) + (h.WARNING ?? 0) + (h.STALE ?? 0) + (h['NO DATA'] ?? 0);
+  const unwatched = Math.max(0, active - analysed.length);
+  const needing = analysed
+    .filter((a) => !['HEALTHY', 'UNKNOWN'].includes(a.health.state))
+    .sort((a, b) => (a.health.state === 'CRITICAL' ? 0 : 1) - (b.health.state === 'CRITICAL' ? 0 : 1));
+
+  return `${head(`${analysed.length} monitored of ${active} active`)}
+  <div class="tiles">
+    ${statTile({
+    value: `${h.HEALTHY ?? 0}/${totals.workflows}`,
+    label: 'Healthy',
+    note: attention ? `${attention} need attention` : 'nothing flagged',
+    state: (h.CRITICAL ?? 0) > 0 ? 'critical' : (attention > 0 ? 'warning' : 'good'),
+  })}
+    ${statTile({ value: fmt(totals.executions), label: 'Executions', note: 'last 24 hours' })}
+    ${statTile({
+    value: fmt(totals.failed),
+    label: 'Failed',
+    note: totals.failureRate === null ? 'no executions' : `${totals.failureRate.toFixed(1)}% of all runs`,
+    state: totals.failed > 0 ? ((totals.failureRate ?? 0) > 10 ? 'critical' : 'warning') : 'good',
+  })}
+    ${statTile({
+    value: fmt(totals.items),
+    label: 'Items processed',
+    note: totals.items === 0 && totals.executions > 0 ? 'no node data yet' : 'last 24 hours',
+  })}
+  </div>
+
+  ${needing.length ? `<div class="wf-attention">
+    ${needing.slice(0, 6).map((a) => `<a class="wf-att" href="${ANALYTICS_PAGE}#workflow=${escapeHtml(a.workflow.id)}">
+      <span class="dot dot--${a.health.state === 'CRITICAL' ? 'broken' : 'partial'}"></span>
+      <span class="wf-att-name">${escapeHtml(String(a.workflow.name ?? a.workflow.id))}</span>
+      <span class="wf-att-why">${escapeHtml(a.health.reasons[0]?.why ?? a.health.state)}</span>
+    </a>`).join('')}
+    ${needing.length > 6 ? `<a class="wf-att wf-att--more" href="${ANALYTICS_PAGE}">and ${needing.length - 6} more</a>` : ''}
+  </div>` : ''}
+
+  <div class="wf-summary">
+    ${wfGroups.slice(0, 7).map((g) => `<a class="wf-sum" href="${ANALYTICS_PAGE}">
+      <span class="wf-sum-n">${g.active}<span class="wf-sum-of">/${g.active + g.inactive}</span></span>
+      <span class="wf-sum-label">${escapeHtml(g.group)}</span>
+    </a>`).join('')}
+  </div>
+
+  <div class="filter-row" style="margin-top:var(--gap)">
+    <a class="chip chip--go" href="${ANALYTICS_PAGE}">Open workflows</a>
+    ${unwatched ? `<span class="chip chip--quiet"><span class="dot dot--idle"></span>${unwatched} active, not monitored</span>` : ''}
+    <span class="chip chip--quiet">${total} in the inventory</span>
+  </div>
+  ${!sync?.lastRunAt || Math.floor((Date.now() - Date.parse(sync.lastRunAt)) / 60000) > 480
+    ? `<p class="chart-note">${sync?.lastRunAt
+      ? `Last collected ${escapeHtml(sync.lastRunAt.replace('T', ' ').slice(0, 16))} UTC — more than a scheduled pass
+         ago, so these figures predate it.`
+      : 'The collector has never completed a pass here, so these figures are empty rather than good.'}</p>`
+    : ''}`;
+}
+
+function renderAnalytics(wfa, { projects, workflows, standalone = false }) {
+  const { analysed, totals, sync } = wfa;
+  const range = analysed[0]?.range ?? { label: '24 hours' };
+  const projectOf = (id) => projects.find((p) => p.id === id);
+
+  const head = section(
+    'Workflow analytics',
+    'What the automations actually did, from the n8n executions API rather than from a dump: when each workflow ran, '
+    + 'how often, how many items it moved, how long it took, and how far that is from its own normal. '
+    + 'The inventory above is the list of workflows that exist — this is the only part of the page that knows whether '
+    + 'any of them is working.',
+    analysed.length
+      ? `${analysed.length} monitored · ${fmt(totals.executions)} executions in ${range.label}`
+      : 'nothing registered yet',
+  );
+
+  if (!analysed.length) {
+    return `${head}
+    ${crossWorkflowTable(analysed, { linkWorkflow, linkProject, range })}
+    ${section('Collector', 'The monitoring of the monitoring.')}
+    ${collectorPanel(sync, { linkServer })}`;
+  }
+
+  const estateKeys = analysed.map((a) => a.workflow.key);
+  const estateStats = {
+    avgMs: totals.avgMs,
+    medianMs: null,
+    p95Ms: null,
+    maxMs: Math.max(0, ...analysed.map((a) => a.stats.maxMs ?? 0)) || null,
+    runtimeFromRows: false,
+    executions: totals.executions,
+    rows: [],
+  };
+
+  return `${head}
+  ${analyticsTiles(totals, { range, syncState: sync })}
+
+  <div class="filter-row wf-ranges" data-chart-group="estate">
+    <button class="chip" type="button" data-range="1h" aria-pressed="false">1 hour</button>
+    <button class="chip" type="button" data-range="6h" aria-pressed="false">6 hours</button>
+    <button class="chip" type="button" data-range="12h" aria-pressed="false">12 hours</button>
+    <button class="chip" type="button" data-range="24h" aria-pressed="true">24 hours</button>
+    <button class="chip" type="button" data-range="7d" aria-pressed="false">7 days</button>
+    <button class="chip" type="button" data-range="30d" aria-pressed="false">30 days</button>
+    <button class="chip" type="button" data-range="90d" aria-pressed="false">90 days</button>
+    <label class="wf-custom">
+      <span class="faint">from</span><input type="date" data-custom="from" aria-label="Custom range start">
+      <span class="faint">to</span><input type="date" data-custom="to" aria-label="Custom range end">
+    </label>
+  </div>
+  <div class="chart-grid">
+    <figure class="chart chart--painted" id="estate-exec">
+      <figcaption>Executions across every monitored workflow</figcaption>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--s1)"></span>Successful</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--critical)"></span>Failed</span>
+      </div>
+      <svg class="wf-plot" viewBox="0 0 560 170" role="img" aria-label="Executions over time"
+           preserveAspectRatio="none" data-measure="executions" data-stacked="1"
+           data-workflows="${escapeHtml(estateKeys.join(','))}"></svg>
+      <p class="chart-note" data-plot-caption>Bars are executions started in each bucket, failed ones stacked on top.</p>
+    </figure>
+    <figure class="chart chart--painted" id="estate-items">
+      <figcaption>Items processed</figcaption>
+      <svg class="wf-plot" viewBox="0 0 560 170" role="img" aria-label="Items processed over time"
+           preserveAspectRatio="none" data-measure="items"
+           data-workflows="${escapeHtml(estateKeys.join(','))}"></svg>
+      <p class="chart-note" data-plot-caption>How much data moved, and when.</p>
+    </figure>
+  </div>
+  <p class="chart-note">Hourly up to seven days, then daily, then weekly past forty-five — the resolution follows the
+  range because 2,160 bars in a 560px box is a texture, not a chart. Volume per execution is the largest number of
+  items any single node emitted: a webhook trigger emits one item while the fetch behind it emits five thousand, so
+  neither end of the chain is a fair reading. Every bar carries its own figures on hover and the table under each
+  chart carries them without.</p>
+
+  ${section('Every monitored workflow', 'Filter and sort to the question you have. Health is not "switched on" — a workflow can be active and not have run for a fortnight.', `${analysed.length}`)}
+  ${workflowFilters(analysed)}
+  ${crossWorkflowTable(analysed, { linkWorkflow, linkProject, range })}
+
+  <div class="chart-grid">
+    ${rankBars(analysed.map((a) => ({ label: a.workflow.name ?? a.workflow.id, value: a.stats.items })), {
+    title: 'Items processed by workflow', id: 'rank-items', unit: 'items', headers: ['Workflow', 'Items'],
+    note: `Last ${range.label}. A workflow absent from this chart reported no item counts, which is not the same as reporting zero.`,
+  })}
+    ${rankBars(analysed.map((a) => ({ label: a.workflow.name ?? a.workflow.id, value: a.stats.executions })), {
+    title: 'Executions by workflow', id: 'rank-runs', unit: 'executions', headers: ['Workflow', 'Executions'],
+  })}
+    ${rankBars(analysed.map((a) => ({ label: a.workflow.name ?? a.workflow.id, value: a.stats.failed })), {
+    title: 'Failures by workflow', id: 'rank-fails', unit: 'failures', headers: ['Workflow', 'Failures'],
+    note: 'Empty is the right answer here.',
+  })}
+    ${rankBars(wfa.projects.map((p) => ({ label: p.label, value: p.items })), {
+    title: 'Items processed by project', id: 'rank-proj-items', unit: 'items', headers: ['Project', 'Items'],
+    note: 'Joined onto the Estate project hierarchy by each workflow\'s registered project id.',
+  })}
+    ${rankBars(wfa.projects.map((p) => ({ label: p.label, value: p.executions })), {
+    title: 'Executions by project', id: 'rank-proj-runs', unit: 'executions', headers: ['Project', 'Executions'],
+  })}
+    ${runtimeChart(estateStats, {
+    id: 'estate-runtime',
+    title: 'Runtime across the estate',
+    // A median across thirteen workflows is not a thing: a WhatsApp reply and
+    // a nightly bulk upload do not belong in one distribution, and averaging
+    // their percentiles produces a number about nothing. The per-workflow
+    // panels carry the real distribution.
+    note: 'Execution-weighted mean across every monitored workflow, and the single slowest run among them. '
+      + 'Median and p95 are deliberately absent here — a reply bot and a nightly bulk upload do not belong in one '
+      + 'distribution, so the percentile would describe nothing. Open a workflow for its own.',
+  })}
+  </div>
+
+  ${section('What changed from normal', 'An anomaly is a comparison against this workflow\'s own history — median and median-absolute-deviation over its last four weeks, not a threshold somebody guessed. Two guards stop it crying wolf: a percentage floor as well as a statistical one, and no judgement at all on a workflow whose normal day is under twenty items.', `${totals.anomalous} flagged`)}
+  ${anomalyPanel(analysed)}
+
+  ${section('Collector', 'The monitoring of the monitoring. Every number above is only as true as the last successful collection, so this says when that was and what it could not reach. A monitor that stops quietly is worse than none.')}
+  ${collectorPanel(sync, { linkServer })}
+
+  ${wfa.projects.some((p) => p.project && projectOf(p.project)) ? `<p class="chart-note">
+    Project totals link back into the project pages: ${wfa.projects.filter((p) => p.project && projectOf(p.project))
+    .map((p) => linkProject(p.project, projectOf(p.project).name)).join(' · ')}.
+  </p>` : ''}
+  ${Object.keys(workflows).length && analysed.length < 6 ? `<p class="chart-note">
+    ${analysed.length} of ${Object.values(workflows).filter((w) => w.active && !w.noise).length} active workflows are
+    monitored. Register another with <code>npm run wf-add -- &lt;n8n workflow URL&gt;</code> — registration is one line in
+    <code>config/n8n.example.json</code>, which is tracked, so it reaches srv1340120 on the next pull and starts
+    collecting by itself.
+  </p>` : ''}`;
 }
 
 /* ------------------------------------------------------ outside-in check */
@@ -1447,37 +1871,31 @@ function renewalsPanel(costs) {
   </figure>`;
 }
 
-/* --------------------------------------------------------------- page */
+/* -------------------------------------------------------------- shell */
 
-export function renderPage({
-  servers, projects, workflows, issues, events, history, staleness, analysis, costs, checks, glossary, css, builtAt,
+const FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1226'/%3E%3Cpath d='M9 8v16M9 16l8-8M9 16l8 8' stroke='%2335e0c8' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='16' r='2.6' fill='%2335e0c8'/%3E%3C/svg%3E";
+
+/**
+ * The chrome both pages share: head, theme bootstrap, header, search results,
+ * drawer shell and client script.
+ *
+ * Factored out when Workflow analytics became its own page rather than a
+ * section. Two copies of sixty lines of <head> is two places for the theme
+ * bootstrap to drift, and the symptom of that is a white flash on one page and
+ * not the other.
+ */
+function pageShell({
+  title, description, css, builtAt, brandSuffix, nav = '', main, drawers = '',
+  searchIndex = [], series = null, executions = null, extraScript = '',
 }) {
-  const openIssues = issues.filter((i) => !i.resolved);
-  const globalIssues = openIssues.filter((i) => !i.project).sort(bySeverity);
-  const reconciled = issues.filter((i) => i.claimStatus === 'reconciled');
-
-  const wfGroups = (() => {
-    const map = new Map();
-    for (const wf of Object.values(workflows)) {
-      if (wf.noise) continue;
-      const key = wf.group ?? 'Ungrouped';
-      const row = map.get(key) ?? { group: key, active: 0, inactive: 0 };
-      if (wf.active) row.active += 1; else row.inactive += 1;
-      map.set(key, row);
-    }
-    return [...map.values()].sort((a, b) => (b.active - a.active) || (b.inactive - a.inactive));
-  })();
-
-  const serverIds = Object.keys(servers);
-
   return `<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
-<title>KW Estate</title>
-<meta name="description" content="Every server, project and workflow KW Group runs, read out of diagnostic dumps taken off the machines themselves.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1226'/%3E%3Cpath d='M9 8v16M9 16l8-8M9 16l8 8' stroke='%2335e0c8' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='16' r='2.6' fill='%2335e0c8'/%3E%3C/svg%3E">
+<title>${escapeHtml(title)}</title>
+<meta name="description" content="${escapeHtml(description)}">
+<link rel="icon" href="${FAVICON}">
 <script>
 /* Runs before first paint, so the chosen theme is never repainted in front of
    the reader. Stored choice wins; otherwise the OS preference decides, with
@@ -1501,9 +1919,10 @@ ${css}
 
 <header class="top">
   <div class="top-inner">
-    <div class="brand">KW Estate <span>· infrastructure knowledge</span></div>
+    <div class="brand">KW Estate <span>· ${escapeHtml(brandSuffix)}</span></div>
     <input class="search" id="search" type="search" placeholder="Search anything  (press /)" autocomplete="off">
     <div class="top-actions">
+      ${nav}
       <div class="built">built ${escapeHtml(builtAt)}</div>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false" title="Switch theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -1521,7 +1940,158 @@ ${css}
   <div id="results-list"></div>
 </div>
 
-<main class="wrap" id="dashboard">
+${main}
+
+<section class="detail" id="detail" aria-hidden="true" tabindex="-1" aria-labelledby="detail-title">
+  <div class="detail-head">
+    <button class="back" id="detail-close" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
+      Back
+    </button>
+    <span class="dot" id="detail-dot"></span>
+    <div class="detail-heading">
+      <h1 class="detail-title" id="detail-title">—</h1>
+      <div class="detail-sub" id="detail-sub"></div>
+    </div>
+  </div>
+  <div class="detail-body" id="detail-body">
+    ${drawers}
+  </div>
+</section>
+
+<script type="application/json" id="search-index">${
+  JSON.stringify(searchIndex).replace(/</g, '\\u003c')
+}</script>
+${series ? `<script type="application/json" id="wf-series">${
+  JSON.stringify(series).replace(/</g, '\\u003c')
+}</script>` : ''}
+${executions ? `<script type="application/json" id="wf-executions">${
+  JSON.stringify(executions).replace(/</g, '\\u003c')
+}</script>` : ''}
+<script>
+${clientScript()}
+${extraScript}
+</script>
+</body>
+</html>`;
+}
+
+/* ------------------------------------------------- analytics page */
+
+/**
+ * `/workflows/analytics` — Workflow analytics as its own page.
+ *
+ * It was a section on the main dashboard first, and it did not belong there.
+ * The estate page answers "what exists and is it healthy" from diagnostic
+ * dumps; this one answers "what did the automations do with the data" from the
+ * n8n executions API. Different dataset, different refresh cadence, different
+ * question — and a 900 KB page where two thirds of the bytes were telemetry
+ * nobody had scrolled to yet.
+ *
+ * Still a built artifact, not a server-rendered view: `npm run build` writes
+ * dist/workflows.html alongside dist/index.html, so it is served by the same
+ * static path, works from file://, and does not go blank when the admin
+ * server is restarted.
+ */
+export function renderAnalyticsPage({
+  servers, projects, workflows, issues, analytics, glossary, css, builtAt,
+}) {
+  ON_WORKFLOWS_PAGE = true;
+  const wfa = analytics;
+  const openIssues = issues.filter((i) => !i.resolved);
+  const monitored = new Map(wfa.analysed.map((a) => [a.workflow.id, a]));
+
+  // EVERY workflow gets its page here, monitored or not — this is the page
+  // that owns workflows now. A monitored one carries its telemetry board; an
+  // unmonitored one carries its identity and an invitation to connect it.
+  //
+  // A registered workflow with no inventory entry still gets one: the dump is
+  // 6-hourly and a registration is immediate, so telemetry routinely arrives
+  // before the inventory does.
+  const extra = wfa.analysed
+    .filter((a) => !workflows[a.workflow.id])
+    .map((a) => [a.workflow.id, { name: a.workflow.name ?? a.workflow.id, active: true, group: 'Ungrouped' }]);
+
+  const panels = [...Object.entries(workflows).filter(([, wf]) => !wf.noise), ...extra]
+    .map(([id, wf]) => renderWorkflowPanel(id, wf, {
+      projects, workflows, servers, issues: openIssues,
+      analysis: monitored.get(id) ?? null,
+      monitored: monitored.has(id),
+      instances: wfa.instances,
+    })).join('');
+
+  return pageShell({
+    title: 'KW Estate — workflows',
+    description: 'Every n8n workflow KW Group runs, and what the monitored ones actually did: executions, data '
+      + 'volume, runtime, failures and health.',
+    css,
+    builtAt,
+    brandSuffix: 'workflows',
+    nav: '<a class="chip" href="/">Estate</a><a class="chip" href="/admin">Admin</a>',
+    main: `<main class="wrap" id="dashboard">
+      ${renderAnalytics(wfa, { projects, workflows, standalone: true })}
+
+      ${section('Every workflow on the estate',
+    'The full inventory, from <code>n8n list:workflow</code> in the collector dump rather than from the executions '
+    + 'API — so it lists workflows whether or not anything is watching them. Roughly a hundred are demo templates '
+    + 'that were imported and never removed; they are grouped separately and collapsed. Open any one for its page.',
+    `${Object.values(workflows).filter((w) => w.active).length} active of ${Object.keys(workflows).length}`)}
+      <div class="wf-groups">${renderWorkflows(workflows, projects, monitored)}</div>
+    </main>`,
+    drawers: panels,
+    searchIndex: buildSearchIndex({ servers: {}, projects: [], workflows: {}, issues: [], analytics: wfa }),
+    series: seriesPayload(wfa.analysed, { hourly: wfa.hourly, daily: wfa.daily }),
+    executions: execPayload(wfa.analysed),
+    extraScript: analyticsScript(),
+  });
+}
+
+/* --------------------------------------------------------------- page */
+
+export function renderPage({
+  servers, projects, workflows, issues, events, history, staleness, analysis, costs, checks,
+  analytics, glossary, css, builtAt,
+}) {
+  const wfa = analytics ?? {
+    analysed: [], hourly: new Map(), daily: new Map(), totals: null, projects: [], instances: {}, sync: null, registered: 0,
+  };
+  const openIssues = issues.filter((i) => !i.resolved);
+  const globalIssues = openIssues.filter((i) => !i.project).sort(bySeverity);
+  const reconciled = issues.filter((i) => i.claimStatus === 'reconciled');
+
+  const wfGroups = (() => {
+    const map = new Map();
+    for (const wf of Object.values(workflows)) {
+      if (wf.noise) continue;
+      const key = wf.group ?? 'Ungrouped';
+      const row = map.get(key) ?? { group: key, active: 0, inactive: 0 };
+      if (wf.active) row.active += 1; else row.inactive += 1;
+      map.set(key, row);
+    }
+    return [...map.values()].sort((a, b) => (b.active - a.active) || (b.inactive - a.inactive));
+  })();
+
+  const serverIds = Object.keys(servers);
+  // Workflow pages live on /workflows/analytics now, so links from here cross
+  // to that page rather than opening a drawer this document does not contain.
+  ON_WORKFLOWS_PAGE = false;
+
+  return pageShell({
+    title: 'KW Estate',
+    description: 'Every server, project and workflow KW Group runs, read out of diagnostic dumps taken off the machines themselves.',
+    css,
+    builtAt,
+    brandSuffix: 'infrastructure knowledge',
+    nav: `<a class="chip" href="${ANALYTICS_PAGE}">Workflows</a>`,
+    searchIndex: buildSearchIndex({ servers, projects, workflows, issues, analytics: wfa }),
+    // No workflow panels, no series island and no analytics script here. Every
+    // workflow page lives on /workflows/analytics; carrying 138 of them twice
+    // would double the file nginx serves most often to duplicate a page that
+    // already has a home.
+    drawers: `
+    ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects, glossary })).join('')}
+    ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues, glossary })).join('')}`,
+    main: `<main class="wrap" id="dashboard">
   ${renderIntro({ servers, projects, workflows, builtAt })}
   ${renderTiles({ servers, projects, workflows, issues, history })}
 
@@ -1561,40 +2131,9 @@ ${css}
   ${section('Issues', 'Findings written by hand plus findings detected automatically on every collection. A hand-written finding is re-tested against the newest data, so one that has since been fixed shows struck through rather than being repeated as fact.', `${openIssues.filter((i) => i.claimStatus !== 'reconciled').length} open${reconciled.length ? ` · ${reconciled.length} reconciled` : ''}`)}
   ${globalIssues.length ? globalIssues.map(renderIssue).join('') : '<div class="changes"><div class="empty">No estate-wide issues.</div></div>'}
 
-  ${section('Workflow inventory', 'Every n8n workflow on every server, grouped by what it does. Roughly a hundred are demo templates that were imported and never removed; they are grouped separately and collapsed.', `${Object.values(workflows).filter((w) => w.active).length} active of ${Object.keys(workflows).length}`)}
-  <div class="wf-groups">${renderWorkflows(workflows, projects)}</div>
-</main>
-
-<section class="detail" id="detail" aria-hidden="true" tabindex="-1" aria-labelledby="detail-title">
-  <div class="detail-head">
-    <button class="back" id="detail-close" type="button">
-      <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
-      Estate
-    </button>
-    <span class="dot" id="detail-dot"></span>
-    <div class="detail-heading">
-      <h1 class="detail-title" id="detail-title">—</h1>
-      <div class="detail-sub" id="detail-sub"></div>
-    </div>
-  </div>
-  <div class="detail-body" id="detail-body">
-    ${projects.map((p) => renderProjectPanel(p, { issues, workflows, servers, allProjects: projects, glossary })).join('')}
-    ${serverIds.map((id) => renderServerPanel(id, servers[id], { projects, workflows, issues: openIssues, glossary })).join('')}
-    ${Object.entries(workflows)
-    .filter(([, wf]) => !wf.noise)
-    .map(([id, wf]) => renderWorkflowPanel(id, wf, { projects, workflows, servers, issues })).join('')}
-  </div>
-</section>
-
-<script type="application/json" id="search-index">${
-  JSON.stringify(buildSearchIndex({ servers, projects, workflows, issues }))
-    .replace(/</g, '\\u003c')
-}</script>
-<script>
-${clientScript()}
-</script>
-</body>
-</html>`;
+  ${analyticsTeaser(wfa, { workflows, wfGroups })}
+</main>`,
+  });
 }
 
 /* ------------------------------------------------------ client script */
@@ -1799,13 +2338,19 @@ function clientScript() {
     var html = '';
     for (var h = 0; h < Math.min(hits.length, 60); h++) {
       var e = hits[h].entry;
-      html += '<' + (e.open ? 'a href="#' + e.open.replace(':', '=') + '" data-open="' + e.open + '"' : 'div')
-        + ' class="result">'
+      /* Three shapes, in order: a drawer on this page, a link to another page,
+         or plain text. Workflow pages moved to /workflows/analytics, so a
+         result found from the estate page has to cross rather than open a
+         drawer this document does not contain — a result that looks clickable
+         and does nothing is worse than one that is not a link. */
+      var tag = e.open ? 'a href="#' + e.open.replace(':', '=') + '" data-open="' + e.open + '"'
+        : (e.href ? 'a href="' + e.href + '"' : 'div');
+      html += '<' + tag + ' class="result">'
         + '<span class="result-kind result-kind--' + e.kind + '">' + e.kind + '</span>'
         + (e.state ? '<span class="dot dot--' + e.state + '"></span>' : '<span class="dot" style="opacity:0"></span>')
         + '<span class="result-label">' + e.label.replace(/[<>&]/g, '') + '</span>'
         + '<span class="result-sub">' + (e.sub || '').replace(/[<>&]/g, '') + '</span>'
-        + '</' + (e.open ? 'a' : 'div') + '>';
+        + '</' + (e.open || e.href ? 'a' : 'div') + '>';
     }
     if (hits.length > 60) html += '<p class="empty">' + (hits.length - 60) + ' more not shown. Narrow the search.</p>';
     resultsList.innerHTML = html;
@@ -1842,10 +2387,17 @@ function clientScript() {
   });
 
   // --- project filters ------------------------------------------------
+  //
+  // Guarded because this script is now shared by two pages and the analytics
+  // page has no project grid. Unguarded, the missing element threw here and
+  // took out everything BELOW it in the same script — the keyboard handling,
+  // and the chart painter appended after it. A page that silently loses half
+  // its behaviour to one missing element is the failure worth guarding; the
+  // same applies to any element only one of the two pages carries.
   var filterRow = document.getElementById('project-filters');
   var cards = [].slice.call(document.querySelectorAll('#projects .project'));
 
-  filterRow.addEventListener('click', function (e) {
+  if (filterRow) filterRow.addEventListener('click', function (e) {
     var chip = e.target.closest('.chip');
     if (!chip) return;
     var value = chip.getAttribute('data-filter');

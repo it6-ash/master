@@ -260,7 +260,9 @@ test('the added detail does not reintroduce overflow', async ({ page }) => {
 
 test('template imports get no page, so nothing links to one', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await load(page, '', 'dark');
+  // Workflow panels live on the workflows page now; the estate page carries a
+  // summary and links across.
+  await page.goto(pathToFileURL(path.resolve('dist/workflows.html')).href);
 
   // 106 of 138 workflows are n8n demo templates. Rendering a page for each was
   // a third of the output; they are listed but not linked.

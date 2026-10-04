@@ -20,6 +20,9 @@ import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const PAGE = pathToFileURL(path.resolve('dist/index.html')).href;
+// Workflow pages moved off the estate page onto their own, so the estate file
+// no longer carries 138 drawer panels it was duplicating.
+const WORKFLOWS_PAGE = pathToFileURL(path.resolve('dist/workflows.html')).href;
 
 const WIDTHS = [320, 360, 390, 768, 1024, 1280, 1920, 2560];
 const THEMES = ['dark', 'light'];
@@ -238,31 +241,43 @@ test('every interactive control clears a 44px touch target on a phone', async ({
 
 test('a workflow has its own page, reachable from the inventory', async ({ page }) => {
   await openAt(page, 1280, 'dark');
-  await page.goto(`${PAGE}#workflow=zNyAPupAI9GE1UYX`);
+  await page.goto(`${WORKFLOWS_PAGE}#workflow=zNyAPupAI9GE1UYX`);
   await expect(page.locator('#detail-title')).toHaveText('KW Group – YAMINI WhatsApp AI Support');
   await expect(page.locator('main.wrap')).toBeHidden();
 });
 
 test('a workflow page links back to its project and server', async ({ page }) => {
   await openAt(page, 1280, 'dark');
-  await page.goto(`${PAGE}#workflow=zNyAPupAI9GE1UYX`);
+  await page.goto(`${WORKFLOWS_PAGE}#workflow=zNyAPupAI9GE1UYX`);
 
+  // Project and server pages live on the estate page, so these cross back
+  // rather than opening a drawer this document does not contain.
   const panel = page.locator('[data-panel="workflow:zNyAPupAI9GE1UYX"]');
-  await expect(panel.locator('[data-open="project:yamini"]').first()).toBeVisible();
-  await expect(panel.locator('[data-open="server:srv1340120"]').first()).toBeVisible();
-
-  await panel.locator('[data-open="project:yamini"]').first().click();
-  await expect(page.locator('#detail-title')).toHaveText('Yamini');
+  const project = panel.locator('a[href="/#project=yamini"]').first();
+  const server = panel.locator('a[href="/#server=srv1340120"]').first();
+  await expect(project).toBeVisible();
+  await expect(server).toBeVisible();
+  // And never as a dead drawer link.
+  expect(await panel.locator('[data-open^="project:"]').count()).toBe(0);
+  expect(await panel.locator('[data-open^="server:"]').count()).toBe(0);
 });
 
 test('project and workflow reference each other both ways', async ({ page }) => {
   await openAt(page, 1280, 'dark');
+  // Both directions still resolve, they just resolve to different documents
+  // now. Estate page: project drawer opens, its workflow links cross over.
   await page.goto(`${PAGE}#project=yamini`);
-  const link = page.locator('[data-panel="project:yamini"] [data-open^="workflow:"]').first();
-  await expect(link).toBeVisible();
-  await link.click();
+  await expect(page.locator('#detail-title')).toHaveText('Yamini');
+  const across = page.locator('[data-panel="project:yamini"] a[href*="/workflows/analytics#workflow="]').first();
+  await expect(across).toBeVisible();
+
+  // Workflows page: the workflow drawer opens, and names the project back.
+  await page.goto(`${WORKFLOWS_PAGE}#workflow=zNyAPupAI9GE1UYX`);
   await expect(page.locator('#detail')).toBeVisible();
   await expect(page.locator('#detail-title')).not.toHaveText('Yamini');
+  await expect(
+    page.locator('[data-panel="workflow:zNyAPupAI9GE1UYX"] a[href="/#project=yamini"]').first(),
+  ).toBeVisible();
 });
 
 test('topology nodes that map to a project are clickable', async ({ page }) => {
@@ -371,10 +386,30 @@ test('a server page says what the server is for', async ({ page }) => {
 
 test('a workflow page says what a workflow even is', async ({ page }) => {
   await openAt(page, 1280, 'dark');
-  await page.goto(`${PAGE}#workflow=zNyAPupAI9GE1UYX`);
+  await page.goto(`${WORKFLOWS_PAGE}#workflow=zNyAPupAI9GE1UYX`);
   const note = page.locator('[data-panel="workflow:zNyAPupAI9GE1UYX"] .section-note');
   await expect(note).toContainText('An automation running inside n8n');
   await expect(note).toContainText('switched off');
+});
+
+test('the estate page sends a workflow link across rather than opening a dead drawer', async ({ page }) => {
+  // Workflow panels live on the workflows page now. A data-open link here
+  // would target a panel this document does not contain — a link that looks
+  // clickable and silently does nothing.
+  await openAt(page, 1280, 'dark');
+  await page.goto(PAGE);
+  expect(await page.locator('a[data-open^="workflow:"]').count()).toBe(0);
+  expect(await page.locator('.drawer-panel[data-panel^="workflow:"]').count()).toBe(0);
+  expect(await page.locator('a[href*="/workflows/analytics#workflow="]').count()).toBeGreaterThan(0);
+});
+
+test('the estate page summarises workflows instead of listing all of them', async ({ page }) => {
+  await openAt(page, 1280, 'dark');
+  await page.goto(PAGE);
+  // The grouped 138-row explorer belongs on the workflows page.
+  expect(await page.locator('#dashboard .wf-groups').count()).toBe(0);
+  await expect(page.locator('h2.section', { hasText: 'Workflows' }).first()).toBeVisible();
+  await expect(page.locator('.wf-summary .wf-sum').first()).toBeVisible();
 });
 
 test('wide viewports use the width instead of leaving half the row empty', async ({ page }) => {
@@ -507,8 +542,9 @@ test('the n8n page lists every workflow it hosts, Yamini being one of them', asy
   // table rows, not links: template imports get no page and so no link.
   const rows = panel.locator('td[data-label="Workflow"]');
   expect(await rows.count()).toBeGreaterThan(100);
-  // The ones somebody actually built are still reachable.
-  expect(await panel.locator('[data-open^="workflow:"]').count()).toBeGreaterThan(10);
+  // The ones somebody actually built are still reachable — as links to the
+  // workflows page, which is where their pages live now.
+  expect(await panel.locator('a[href*="/workflows/analytics#workflow="]').count()).toBeGreaterThan(10);
 
   // And it names Yamini as a tenant rather than being Yamini.
   await expect(panel.locator('[data-open="project:yamini"]').first()).toBeVisible();
