@@ -13,10 +13,13 @@
 #   data/costs.json, glossary.json and analysis.json are written by hand, so
 #     they belong to the repo too.
 #   Everything else under data/ — servers, workflows, issues, projects,
-#     snapshots — is written by ingest ON THIS BOX and is newer than anything
-#     in git. dist/ is built here. Merging over either loses the estate's
-#     current state, so this never does a pull or a merge: it checks out
-#     named paths and leaves the rest alone.
+#     snapshots, runs/, n8n-sync.json, n8n-alerts.json — is written by ingest
+#     or the n8n collector ON THIS BOX and is newer than anything in git.
+#     data/runs/ in particular is months of execution telemetry that exists
+#     nowhere else: n8n prunes its own executions after fourteen days, so a
+#     merge over it destroys history that cannot be re-fetched. dist/ is built
+#     here. So this never does a pull or a merge: it checks out named paths and
+#     leaves the rest alone.
 #
 # Unit files are deliberately NOT applied here. A timer that can rewrite its
 # own systemd unit and restart itself is a bad thing to debug at 3am; run
@@ -57,6 +60,14 @@ git -C "$DIR" reset --soft "origin/$BRANCH" 2>/dev/null || true
 echo "code updated $BEFORE -> $AFTER"
 git -C "$DIR" log --oneline "$BEFORE..$AFTER" 2>/dev/null | head -10 || true
 
-if ! git -C "$DIR" diff --quiet "$BEFORE" "$AFTER" -- deploy/kw-estate.service deploy/kw-estate.timer 2>/dev/null; then
+if ! git -C "$DIR" diff --quiet "$BEFORE" "$AFTER" -- deploy/kw-estate.service deploy/kw-estate.timer deploy/kw-estate-admin.service deploy/kw-estate-tunnel.service 2>/dev/null; then
   echo "NOTE: the systemd units changed upstream. Run deploy/install.sh to apply them."
+fi
+
+# src/ just changed under a long-running process. The collector and the build
+# are oneshots and pick up new code on their next run; the admin server does
+# not, and would keep serving the old sign-in and the old panel until somebody
+# noticed. Restarting it is the cheap half of that.
+if systemctl is-active --quiet kw-estate-admin 2>/dev/null; then
+  systemctl restart kw-estate-admin && echo "restarted kw-estate-admin on the new code"
 fi

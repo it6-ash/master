@@ -73,24 +73,99 @@ to enable the timer until all three answer.
 ### Who can read it
 
 Live at **https://estate.leadq.co.in**, nginx on srv1340120, Let's Encrypt via
-`certbot --nginx`. Deployed with `AUTH=none` at the owner's instruction, so it
-is readable by anyone who resolves the hostname.
+`certbot --nginx`.
 
-Know what that means. The page lists every server's IP and open ports, which
-units are failing, which hostnames have no certificate, where credentials sit
-in crontabs, and the text of every open security finding. It is a map of how to
-attack this estate.
+**Sign-in is by Google, against a named list of addresses.** Google supplies
+the identity — an OAuth 2.0 Web client from the Google Cloud console — and
+`config/n8n.example.json#/admin` is the authorisation. Estate never sees a
+password. The list is re-checked on *every request*, not just at login, so
+removing somebody takes effect immediately rather than in eight hours when
+their cookie happens to expire. An empty list denies everyone: a config that
+failed to load must never be the thing that opens the door.
+
+Create the OAuth client once, in the Google Cloud console: **APIs & Services →
+Credentials → Create credentials → OAuth client ID → Web application**.
+
+- **Authorized JavaScript origins:** leave empty. This is the server-side
+  authorization-code flow; no browser JavaScript ever calls Google.
+- **Authorized redirect URIs:** `ADMIN_BASE_URL` + `/auth/callback`, matched
+  exactly — scheme, host, port, path, no trailing slash.
+
+Give it its **own** client. n8n already has one for its Gmail and Google Ads
+credentials, and reusing that would put the same client secret in two systems
+and make an ID token minted for n8n satisfy Estate's audience check.
+
+Then the secrets, in one of two places depending on where it runs:
 
 ```bash
-AUTH=basic bash deploy/install.sh   # htpasswd prompt; needs /etc/nginx/.kw-estate-htpasswd
-AUTH=none  bash deploy/install.sh   # no auth at all
+# On srv1340120 — /etc/kw-estate.env, mode 0600, created by install.sh,
+# read by both systemd units:
+GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+ADMIN_BASE_URL=https://estate.leadq.co.in
+SESSION_SECRET=...                    # install.sh generates this
+
+# Anywhere else — a git-ignored .env in the repo root:
+cp config/env.example .env            # then fill it in
+npm run admin
 ```
 
-For no prompt without publishing it, keep `AUTH=basic` and swap the two
-`auth_basic` lines in the vhost for `allow <your.ip>; deny all;`. Better still,
-`MODE=tunnel` puts it behind the cloudflared already serving kwatch.leadq.co.in,
-where Cloudflare Access gives named identities and no public port — that needs
-an ingress rule and an Access policy, and is worthless without both.
+`.env` is loaded by node's own `--env-file-if-exists`, so there is nothing to
+install and nothing happens when the file is absent. Two locations because a
+secret belonging to a machine should be owned by that machine, not carried
+around in a checkout.
+
+`localhost` and `127.0.0.1` are **different redirect URIs** to Google. Register
+one and browse to that one; the other fails with `redirect_uri_mismatch`, which
+does not tell you which half is wrong. The login page prints the exact URI it
+is going to send, so paste from there.
+
+Nothing is served until the client id and secret are set — the login page says
+which variable is missing rather than failing blankly.
+
+That matters because of what the page carries: every server's IP and open
+ports, which units are failing, which hostnames have no certificate, where
+credentials sit in crontabs, and the text of every open security finding. It
+was deployed `AUTH=none` for a while at the owner's instruction, which made all
+of that readable by anyone who resolved the hostname.
+
+`src/admin.js` serves it, bound to `127.0.0.1:4179` with nginx in front. What
+covers what:
+
+| Threat | What stops it |
+|---|---|
+| Forged session cookie | HMAC-SHA256 over the payload, compared in constant time |
+| Stolen session cookie | `HttpOnly` + `Secure` + `SameSite=Lax`, 8-hour expiry |
+| Login CSRF | signed `state`, bound to a single-use cookie |
+| Forged Google ID token | RS256 verified against Google's published JWKS, then `iss`/`aud`/`exp`/`email_verified` |
+| Somebody else's Google account | the allowlist — a valid login by an unlisted address is refused |
+| Form CSRF on writes | per-session token, required on every POST |
+| Header spoofing | nothing is trusted from a header; the session is cryptographic |
+
+The old static-file-behind-htpasswd deployment is the **rollback**, not a
+deleted path: the `auth_basic` lines and the `root` directive are commented out
+in `deploy/kw-estate.nginx.conf` rather than removed, so stopping
+`kw-estate-admin` and uncommenting four lines puts it back.
+
+```bash
+AUTH=basic bash deploy/install.sh   # htpasswd backstop instead of Google
+AUTH=none  bash deploy/install.sh   # no auth at all — do not
+```
+
+`MODE=tunnel` still puts it behind the cloudflared already serving
+kwatch.leadq.co.in, which removes the public port; Cloudflare Access would then
+be a second identity layer in front of this one.
+
+### Two services, two privilege levels
+
+`kw-estate.service` is the oneshot the timer fires four times a day. It runs as
+**root**, because it needs root's SSH key to reach the other two boxes and the
+collector needs root at the far end.
+
+`kw-estate-admin.service` is the long-running web process. It runs as an
+unprivileged **kw-estate** user under `ProtectSystem=strict`, with write access
+to the checkout and nothing else. The web-facing process must not inherit the
+reach that SSH key represents, which is the whole reason they are two units.
 
 `install.sh` never overwrites a vhost carrying certbot's `ssl_certificate`; it
 edits it. Re-running the installer must not silently undo TLS.
@@ -241,6 +316,163 @@ Note what hosting the alerts inside the estate means: n8n is both the thing
 delivering them and one of the things being watched, so it cannot tell you it is
 down. `config/checks.json` is git-ignored; copy `config/checks.example.json`.
 
+## Workflow analytics
+
+The dashboard above is an **inventory**: it reads `n8n list:workflow` out of a
+diagnostic dump and can say a workflow exists and is switched on. It cannot say
+whether it has run this week, how much data went through it, or whether that
+number is normal. Those are different questions against a different dataset,
+and they live on their own page at **`/workflows/analytics`**.
+
+```bash
+npm run wf-add -- <n8n workflow URL>   register one for monitoring
+npm run wf-sync                        collect new executions from n8n
+npm run wf-report                      mail the digest, send any alerts
+npm run admin                          the panel, at /admin
+```
+
+Or do all of it in the admin panel, which is the point of the panel.
+
+### How the data gets here
+
+```
+n8n's SQLite  ->  ssh + sqlite3 -readonly  ->  collect.js  ->  data/runs/<instance>__<id>.json  ->  build  ->  dist/workflows.html
+```
+
+**There is no n8n API here, and none is needed.** The collector reads n8n's own
+database with a read-only `SELECT`, which is the same idiom every other fact on
+this dashboard already arrives by — `kw-collect.sh` is SSH plus a read-only
+shell command, and so is this. No API key to create, store or rotate, no public
+port, no n8n configuration at all.
+
+Reading a live SQLite is safe here because n8n runs it in WAL mode: readers
+never block writers and writers never block readers, and `-readonly` makes
+"this does not write" a guarantee rather than an intention. The file is read
+from the **host**, at the path `docker inspect` reports for the container's
+volume — asked rather than assumed, because a named volume and a bind mount
+land in different places.
+
+It needs `sqlite3` on the box (`apt install -y sqlite3`). That is a read-only
+client; it does not touch the database n8n is using except to read it.
+
+`source: "api"` is still supported for an n8n Cloud instance that has no
+database to reach. Both drivers return the same shapes, so nothing downstream
+knows which one answered.
+
+One thing the database gives that the API hides: `execution_data.data` is
+stored in n8n's **flatted** encoding — a flat array where index 0 is the root
+and every string in a value position is the index of its real value, which is
+how n8n stores the shared and circular references a run produces. The public
+API decodes it before answering; reading the table means meeting it, so
+`src/n8n/volume.js` carries a twenty-line decoder. Without it there are no item
+counts at all.
+
+Incremental. Each workflow stores the timestamp and id of the newest execution
+it has seen, and the next pass asks n8n for executions `startedAfter` that,
+stopping the moment a known id comes back. A quiet pass transfers nothing — the
+difference measured here was 1,409 ms for the first pass against 5 ms for the
+second.
+
+Two storage tiers, because raw rows and aggregates have different lifetimes:
+
+- **rows** — one per execution. Bounded by `rawDays` (30) and `maxRows` (5,000),
+  because a workflow running every minute is 43,000 rows a month.
+- **buckets** — hourly counters, kept 400 days. These outlive the rows and are
+  what the long-range charts and the anomaly baselines read.
+
+**n8n prunes its own executions after 14 days** (`EXECUTIONS_DATA_MAX_AGE`,
+default 336 h) and past 10,000 records. It prunes the DATABASE, so reading the
+database does not get round it. That is why Estate keeps its own copy, and why
+`deploy/pull.sh` must never merge over `data/runs/` — the history there cannot
+be re-fetched from anywhere.
+
+### What "data volume" actually means
+
+There is no `data_volume` field in the n8n API. Every item count is derived
+from `data.resultData.runData`, and **every row records where its numbers came
+from**, so the page can never imply precision it does not have:
+
+| `volumeSource` | Meaning |
+|---|---|
+| `node-data` | counted from the node run data. Exact. |
+| `bytes` | n8n withheld the node data (too large, or already pruned). `jsonSizeBytes` is real; items are **absent**, never estimated. |
+| `none` | neither available. Both absent. |
+
+The headline figure per execution is the **largest number of items any single
+node emitted**. Neither end of the chain is a fair answer: a webhook trigger
+emits one item while the fetch behind it emits five thousand, and a mailer at
+the end emits one again. The widest point is how much data went through.
+
+Where coverage is partial the page says so — "items on 412 of 418 executions"
+rather than a total that looks complete.
+
+### Where did my data go, and when
+
+`checkpoints` are n8n **node names**, spelled as they appear in the editor.
+Each one is counted separately and bucketed by hour, which is what answers the
+question the funnel cannot:
+
+```
+15:00   Fetch Leads  9,313  ->  CRM Insert  4,149
+16:00   Fetch Leads  5,364  ->  CRM Insert  4,821
+```
+
+The funnel sums over executions and tells you *where* data disappears. This
+tells you *when* — so a drop that only happens between 02:00 and 04:00 shows as
+a shape instead of averaging into a healthy daily total.
+
+### Health is not "switched on"
+
+A workflow can be active and never execute, execute and produce nothing,
+produce a tenth of normal, or take four times as long. All four look identical
+to an inventory. States: `HEALTHY`, `WARNING`, `STALE`, `NO DATA`, `CRITICAL`,
+`UNKNOWN` — every threshold configurable per workflow, and `UNKNOWN` rather
+than a reassuring green when there is not enough history to judge.
+
+A workflow with no declared `expectedIntervalMin` is **never** called stale:
+a webhook-driven workflow has not failed because nobody filled the form.
+
+### Anomalies
+
+Median and median-absolute-deviation over the last 28 complete days, excluding
+today, with the modified z-score (Iglewicz & Hoaglin, |z| > 3.5 as published
+rather than tuned). MAD rather than standard deviation because one catastrophic
+day must not widen the band enough to hide the next one.
+
+Three guards against crying wolf, all of which this repo has been bitten by
+elsewhere: a percentage floor as well as a statistical one, no judgement at all
+on a workflow whose normal day is under 20 items, and the baseline scaled to
+how much of today has actually elapsed — otherwise every morning reports a
+collapse.
+
+Seven complete days minimum. Below that there is no baseline, and saying so is
+better than inventing a band from two numbers.
+
+### Mail
+
+Reuses the mailer the outside-in check already posts to — same webhook, same
+recipients, same loopback fallback for when the public route to n8n is the
+thing that broke. One mailer to keep working, not two. The `Format report` node
+in `deploy/n8n-kw-estate.json` passes a pre-rendered `html` through when the
+payload carries one.
+
+A **digest** goes once a day at `reportAt` in the configured zone (the box runs
+`Etc/UTC`, where a bare `09:40` would mail at 15:10 in Delhi). **Alerts** are
+separate and go the moment something breaks — held per workflow per problem for
+`cooldownMin`, so one broken workflow cannot send twenty mails, the
+twenty-first of which is the one nobody reads.
+
+### Collecting the collector
+
+`data/n8n-sync.json` records when the last pass ran, which instances answered,
+how slow they were, and what failed — and the page renders it. Every number in
+this module is only as true as the last successful collection, so a dead
+collector must not be able to keep showing yesterday's healthy figures with
+nothing admitting they are yesterday's.
+
+A workflow that fails to sync keeps the rows and buckets it already had. One
+unreachable instance is reported once, not once per workflow on it.
+
 ## The collector
 
 `kw-collect.sh` is the read-only estate collector. It emits the
@@ -265,6 +497,16 @@ npm run watch               # rebuild whenever data/ or content/ changes
 npm run watch -- --serve    # ... and serve dist/ at the same time
 npm run serve               # serve dist/ on http://localhost:4178
 
+npm run admin               # dashboard + admin panel behind Google sign-in
+npm run wf-add -- <url>     # register an n8n workflow for monitoring
+npm run wf-add -- --discover # register every ACTIVE workflow the inventory knows
+npm run wf-fields -- <id>   # which fields a workflow emits (names and shape only)
+npm run wf-add -- --list    # what is registered
+npm run wf-sync             # collect new executions (reads n8n's SQLite over SSH)
+npm run wf-sync -- --full   # ignore the cursor and re-walk the history
+npm run wf-report           # mail the digest and any due alerts
+npm run wf-report -- --dry-run   # print the decision and the HTML, send nothing
+
 npm run validate            # schema-check everything, exit non-zero on error
 npm run validate -- --json  # same, machine-readable
 npm test                    # unit tests (node:test, no runner dependency)
@@ -281,17 +523,29 @@ npm run new-project <slug>  # scaffold content/projects/<slug>.md               
 
 ```
 data/       canonical state, machine-written. servers, workflows, issues, snapshots
+data/runs/  execution TELEMETRY per monitored workflow. Rows + hourly buckets
 content/    project docs — frontmatter contract + prose + flow blocks. Hand-written
 raw/        paste drop-zone. Git-ignored, see Secrets
 schema/     JSON Schema for every file in data/ and for project frontmatter
 src/        ingest parsers, DSL parsers, diff, renderers, build
+src/n8n/    registry, API client, collector, analytics, email report
+src/auth.js Google sign-in, sessions, the email allowlist
+src/admin.js the one server: authenticated dashboard + admin panel
 test/       unit tests; test/fixtures/ holds REDACTED copies of real dumps
-dist/       the single-file output
+dist/       index.html (the estate) and workflows.html (the analytics page)
 ```
+
+Note the separation `data/workflows.json` vs `data/runs/`. The first is
+**inventory** — a workflow exists and is switched on, read out of a dump. The
+second is **telemetry** — it actually ran, succeeded, and moved this many
+items, read from the n8n API. Those are different datasets with different
+refresh cadences, and conflating them is how you get a dashboard that reports a
+workflow as healthy because somebody left it switched on.
 
 ## Dependencies
 
-None. Not runtime, not build-time.
+None. Not runtime, not build-time. That includes the sign-in: the OAuth flow,
+the JWKS verification and the session signing are `node:crypto` and `fetch`.
 
 The brief permitted `gray-matter` and `marked`. Neither is installed: the
 frontmatter subset is small enough to own (`src/lib/yaml-lite.js`), and owning it

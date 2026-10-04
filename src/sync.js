@@ -232,7 +232,20 @@ async function once() {
   // pass — check.js exits 0 either way and the build must still happen.
   await run(process.execPath, [abs('src', 'check.js'), ...(dryRun ? ['--dry-run'] : [])]);
 
+  // Then the n8n execution telemetry, for the same reason and with the same
+  // contract: an unreachable n8n is a finding the page shows, not a broken
+  // pass, so wf-sync exits 0 either way. It needs $N8N_API_KEY_* in the
+  // environment; with none set it reports that and writes nothing, which is
+  // the correct behaviour on a laptop.
+  await run(process.execPath, [abs('src', 'n8n', 'collect.js'), ...(dryRun ? ['--dry-run'] : [])]);
+
   const build = await run(process.execPath, [abs('src', 'build.js')]);
+
+  // Last, because the digest and the alerts describe what the pass just
+  // collected. After the build, so a recipient clicking through to the
+  // dashboard finds the figures the mail quoted rather than the previous set.
+  await run(process.execPath, [abs('src', 'n8n', 'report.js'), ...(dryRun ? ['--dry-run'] : [])]);
+
   return build.code;
 }
 

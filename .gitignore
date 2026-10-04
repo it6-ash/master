@@ -22,3 +22,18 @@ config/hosts.json
 
 # Webhook URL and the forms it is allowed to submit to. Never committed.
 config/checks.json
+
+# Secrets for a LOCAL run: the Google OAuth client, the session secret, the
+# n8n API keys. Loaded by node's own --env-file-if-exists, so there is nothing
+# to install. On srv1340120 the same variables live in /etc/kw-estate.env
+# instead, owned by the machine rather than carried in a checkout.
+.env
+
+# Local override for the n8n registry. The real registry is the TRACKED
+# config/n8n.example.json, so a workflow registered here reaches srv1340120 by
+# itself; this file is for anything genuinely secret, such as a webhook token.
+# No API key belongs in either: those come from $N8N_API_KEY_* at run time.
+config/n8n.json
+
+# oh-my-claudecode session state. Per-machine, per-session; not project state.
+.omc/

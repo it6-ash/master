@@ -23,7 +23,12 @@ import { deriveProjects, mergeProjects, attachWorkflows } from './derive-project
 import { reconcileIssues } from './claims.js';
 import { buildCosts } from './costs.js';
 import { checkIssues } from './check.js';
-import { renderPage } from './render/html.js';
+import { resolveRegistry } from './n8n/registry.js';
+import { loadStore, bucketKey } from './n8n/collect.js';
+import { analyse, series, stageSeries, overview, byProject } from './n8n/analytics.js';
+import { nodeFunnel } from './n8n/volume.js';
+import { rollup } from './n8n/dimensions.js';
+import { renderPage, renderAnalyticsPage } from './render/html.js';
 
 /* ---------------------------------------------------- stat references */
 
@@ -147,6 +152,87 @@ function collectEvents(servers, workflows, today) {
     || (rank[a.severity] ?? 9) - (rank[b.severity] ?? 9));
 }
 
+/* ------------------------------------------------- workflow analytics */
+
+/** How much series the page carries. See seriesPayload() for why these two. */
+const HOURLY_DAYS = 7;
+const DAILY_DAYS = 90;
+
+/**
+ * Execution telemetry, aggregated for the page.
+ *
+ * All of it happens HERE, at build time, and only the aggregates are inlined.
+ * The browser never receives an execution list for the sake of drawing a
+ * chart — a workflow with 5,000 held rows contributes 258 numbers.
+ *
+ * Nothing in this function reaches the network. The collector
+ * (`npm run wf-sync`) is the only thing that talks to n8n, so a build works
+ * offline, on a laptop, with no API key, and simply has nothing to show.
+ */
+function buildWorkflowAnalytics({ workflows: inventory, projects, now, warnings }) {
+  const registry = resolveRegistry();
+  for (const e of registry.errors) warnings.push(`n8n registry: ${e}`);
+
+  const tz = registry.report?.timezone ?? 'Asia/Kolkata';
+  const monitored = registry.workflows.filter((w) => w.monitoring);
+
+  const analysed = [];
+  const hourly = new Map();
+  const daily = new Map();
+
+  for (const workflow of monitored) {
+    const store = loadStore(workflow);
+    // The name n8n reports beats the one somebody typed into the config, and
+    // the inventory already holds it.
+    const name = workflow.name ?? inventory[workflow.id]?.name ?? store.name ?? workflow.id;
+    const a = analyse({ ...workflow, name }, store, { now, range: '24h', tz, bucketKey });
+
+    if (!a.stats.executions && !(store.rows ?? []).length && !Object.keys(store.buckets ?? {}).length) {
+      warnings.push(`n8n: no executions collected for ${name} (${workflow.id}) — run \`npm run wf-sync\``);
+    }
+    // A project id that does not exist would put a dead link in the table.
+    if (workflow.project && !projects.some((p) => p.id === workflow.project)) {
+      warnings.push(`n8n: ${workflow.id} claims project "${workflow.project}", which has no content/projects/ entry`);
+    }
+
+    a.funnel = nodeFunnel(store.rows ?? []);
+    // What was IN the items, summed over the window the page is showing.
+    a.dimensions = rollup((a.stats.rows ?? []).map((r) => r.dimensions).filter(Boolean));
+    // Per-stage volume against the clock. 48 hours at hourly, which is the
+    // window in which "it stopped reaching Meta at 02:00" is still actionable.
+    a.stages = stageSeries(store.buckets ?? {}, {
+      from: new Date(new Date(now).getTime() - 48 * 3600000),
+      to: new Date(now),
+      grain: 'hour',
+      tz,
+      bucketKey,
+      stages: workflow.checkpoints?.length ? workflow.checkpoints : null,
+    });
+    analysed.push(a);
+
+    const to = new Date(now);
+    hourly.set(workflow.key, series(store.buckets ?? {}, {
+      from: new Date(to.getTime() - HOURLY_DAYS * 86400000), to, grain: 'hour', tz, bucketKey,
+    }));
+    daily.set(workflow.key, series(store.buckets ?? {}, {
+      from: new Date(to.getTime() - DAILY_DAYS * 86400000), to, grain: 'day', tz, bucketKey,
+    }));
+  }
+
+  const syncFile = readJson(abs('data', 'n8n-sync.json'));
+  return {
+    analysed,
+    hourly,
+    daily,
+    tz,
+    totals: overview(analysed),
+    projects: byProject(analysed),
+    instances: registry.instances,
+    sync: syncFile.ok ? syncFile.value : null,
+    registered: registry.workflows.length,
+  };
+}
+
 /* --------------------------------------------------------------- main */
 
 function main() {
@@ -262,6 +348,12 @@ function main() {
     }
   }
 
+  /* execution telemetry — what the workflows actually DID, as opposed to
+     data/workflows.json, which only says they exist and are switched on */
+  const analytics = buildWorkflowAnalytics({
+    workflows, projects, now: new Date(), warnings,
+  });
+
   /* what it costs to keep the lights on, and when each line renews */
   const costs = buildCosts(serverData, { today });
 
@@ -293,6 +385,7 @@ function main() {
     analysis,
     costs,
     checks,
+    analytics,
     glossary,
     css: readText(abs('src', 'render', 'styles.css')),
     builtAt: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC',
@@ -301,11 +394,32 @@ function main() {
   const out = abs('dist', 'index.html');
   writeTextIfChanged(out, `<!doctype html>\n${html}\n`);
 
+  /* Workflow analytics is its own page: a different dataset answering a
+     different question, and two thirds of the old single page's bytes were
+     telemetry nobody had scrolled to. Still a built artifact rather than a
+     server-rendered view, so it is served from the same static path, opens
+     from file://, and does not go blank when the admin server restarts. */
+  const analyticsHtml = renderAnalyticsPage({
+    servers: serverData,
+    projects,
+    workflows,
+    issues: reconciled,
+    analytics,
+    glossary,
+    css: readText(abs('src', 'render', 'styles.css')),
+    builtAt: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC',
+  });
+  const analyticsOut = abs('dist', 'workflows.html');
+  writeTextIfChanged(analyticsOut, `<!doctype html>\n${analyticsHtml}\n`);
+
   const bytes = Buffer.byteLength(html, 'utf8');
   process.stdout.write(
-    `built ${rel(out)}  ${(bytes / 1024).toFixed(0)} KB\n`
+    `built ${rel(out)}  ${(bytes / 1024).toFixed(0)} KB`
+    + `  ·  ${rel(analyticsOut)}  ${(Buffer.byteLength(analyticsHtml, 'utf8') / 1024).toFixed(0)} KB\n`
     + `  ${Object.keys(serverData).length} servers · ${projects.length} projects · `
-    + `${Object.keys(workflows).length} workflows · ${reconciled.filter((i) => !i.resolved).length} open issues · ${events.length} change events\n`,
+    + `${Object.keys(workflows).length} workflows · ${reconciled.filter((i) => !i.resolved).length} open issues · ${events.length} change events\n`
+    + `  ${analytics.analysed.length} monitored · ${analytics.totals.executions.toLocaleString('en-US')} executions `
+    + `· ${analytics.totals.items.toLocaleString('en-US')} items in the last 24h\n`,
   );
   for (const w of warnings) process.stdout.write(`  warn  ${w}\n`);
 }

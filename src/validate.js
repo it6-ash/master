@@ -92,6 +92,8 @@ const issues = loadDataFile('issues.json', 'issues.schema.json', { fallback: [] 
 const projectsJson = loadDataFile('projects.json', 'projects.schema.json', { required: false, fallback: null });
 loadDataFile('costs.json', 'costs.schema.json', { required: false, fallback: null });
 loadDataFile('checks.json', 'checks.schema.json', { required: false, fallback: null });
+const syncState = loadDataFile('n8n-sync.json', 'n8n-sync.schema.json', { required: false, fallback: null });
+loadDataFile('n8n-alerts.json', 'n8n-alerts.schema.json', { required: false, fallback: null });
 
 const serverIds = new Set(Object.keys(servers));
 const workflowIds = new Set(Object.keys(workflows));
@@ -123,6 +125,76 @@ for (const dir of listDirs(snapshotRoot)) {
     }
     if (!/^\d{4}-\d{2}-\d{2}T\d{4,6}\.json$/.test(path.basename(file))) {
       warn(rel(file), 'filename should be <ISO-date>T<HHMM>.json so snapshots sort chronologically');
+    }
+  }
+}
+
+/* --------------------------------------------------- execution telemetry */
+
+/**
+ * data/runs/ is the one place in data/ holding text that came out of a remote
+ * system's error messages, so the credential scan matters here more than
+ * anywhere else — and the page it feeds is served publicly.
+ */
+const runsRoot = abs('data', 'runs');
+let runFiles = 0;
+let runRows = 0;
+
+for (const file of listFiles(runsRoot, isJson)) {
+  runFiles += 1;
+  const result = readJson(file);
+  if (!result.ok) {
+    fail(rel(file), result.error);
+    continue;
+  }
+  checkSchema(file, 'workflow-runs.schema.json', result.value);
+  for (const hit of scanDeep(result.value)) {
+    fail(rel(file), `credential-shaped string (${hit.kind}) at ${hit.path} — collect.js must redact this: ${hit.preview}`);
+  }
+
+  const store = result.value;
+  runRows += (store.rows ?? []).length;
+
+  const expected = `${store.instance}__${store.workflowId}.json`;
+  if (path.basename(file) !== expected) {
+    fail(rel(file), `names ${store.instance}/${store.workflowId} but the file is called ${path.basename(file)} —`
+      + ` collect.js derives the filename from both, so these cannot disagree`);
+  }
+  // Telemetry for a workflow the inventory has never seen is not an error —
+  // a workflow can be registered before the next collection runs — but it is
+  // worth saying, because the other cause is a mistyped id.
+  if (!workflowIds.has(store.workflowId)) {
+    warn(rel(file), `workflow ${store.workflowId} is not in data/workflows.json — registered but not yet collected by ingest, or a typo`);
+  }
+  const ids = new Set();
+  for (const row of store.rows ?? []) {
+    if (ids.has(row.id)) fail(rel(file), `execution ${row.id} appears twice`);
+    ids.add(row.id);
+    if (row.volumeSource !== 'node-data' && Number.isFinite(row.items)) {
+      fail(rel(file), `execution ${row.id} carries an item count but volumeSource is "${row.volumeSource}"`
+        + ' — an item count may only come from node data, never from an estimate');
+    }
+  }
+  for (const [key, bucket] of Object.entries(store.buckets ?? {})) {
+    if ((bucket.ok ?? 0) + (bucket.fail ?? 0) > bucket.n) {
+      fail(rel(file), `bucket ${key} counts ${bucket.ok + bucket.fail} outcomes across ${bucket.n} executions`);
+    }
+    if ((bucket.covered ?? 0) > bucket.n) {
+      fail(rel(file), `bucket ${key} claims item coverage on ${bucket.covered} of ${bucket.n} executions`);
+    }
+  }
+}
+
+if (syncState) {
+  for (const e of syncState.registryErrors ?? []) {
+    warn('data/n8n-sync.json', `registry rejected an entry: ${e}`);
+  }
+  for (const [id, instance] of Object.entries(syncState.instances ?? {})) {
+    if (instance.server != null && !serverIds.has(instance.server)) {
+      fail('data/n8n-sync.json', `n8n instance "${id}" references unknown server "${instance.server}"`);
+    }
+    if (instance.ok === false) {
+      warn('data/n8n-sync.json', `n8n instance "${id}" was unreachable at ${instance.checkedAt}: ${instance.error}`);
     }
   }
 }
@@ -289,6 +361,8 @@ if (asJson) {
       projects: seenProjectIds.size,
       issues: issues.length,
       snapshots: snapshotCount,
+      monitoredWorkflows: runFiles,
+      executionRows: runRows,
     },
     findings,
   }, null, 2)}\n`);
@@ -319,7 +393,8 @@ if (!quiet) {
     }
   }
 
-  process.stdout.write(`\n${dim('checked')} ${serverIds.size} servers · ${workflowIds.size} workflows · ${seenProjectIds.size} projects · ${issues.length} issues · ${snapshotCount} snapshots\n`);
+  process.stdout.write(`\n${dim('checked')} ${serverIds.size} servers · ${workflowIds.size} workflows · ${seenProjectIds.size} projects · ${issues.length} issues · ${snapshotCount} snapshots`
+    + `${runFiles ? ` · ${runFiles} monitored (${runRows.toLocaleString('en-US')} execution rows)` : ''}\n`);
 }
 
 if (errors.length === 0 && warnings.length === 0) {

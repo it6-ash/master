@@ -178,6 +178,114 @@ else
   ok "config/checks.json has a webhook; mail is armed"
 fi
 
+# The n8n API keys for the execution collector. A separate file from the unit
+# because the unit is in git; mode 0600 because this is the one secret this
+# deployment holds. Created empty, with the variable names the registry expects
+# commented in, so the only remaining step is pasting values.
+ENVFILE=/etc/kw-estate.env
+if [ ! -f "$ENVFILE" ]; then
+  umask 077
+  {
+    echo "# Secrets for KW Estate. Read by kw-estate.service and"
+    echo "# kw-estate-admin.service. Never commit these anywhere."
+    echo ""
+    echo "# --- sign-in -------------------------------------------------------"
+    echo "# An OAuth 2.0 Web client from the Google Cloud console."
+    echo "# Authorised redirect URI must be exactly:"
+    echo "#   https://estate.leadq.co.in/auth/callback"
+    echo "# Google supplies the identity; config/n8n.example.json#/admin holds"
+    echo "# the list of addresses allowed in."
+    echo "#GOOGLE_CLIENT_ID="
+    echo "#GOOGLE_CLIENT_SECRET="
+    echo "ADMIN_BASE_URL=https://estate.leadq.co.in"
+    # Generated, not left for somebody to invent. A weak session secret is a
+    # forgeable session, and "changeme" is what gets typed at 2am otherwise.
+    echo "SESSION_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '\n=/+')"
+    echo ""
+    echo "# --- n8n -----------------------------------------------------------"
+    echo "# One API key per instance in config/n8n.example.json."
+    echo "# Create each in n8n: Settings -> n8n API -> Create an API key."
+    # Derive the names from the registry rather than hardcoding them, so an
+    # instance added upstream shows up here on the next install.
+    node -e '
+      const fs = require("fs");
+      try {
+        const c = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+        for (const [id, i] of Object.entries(c.instances ?? {})) {
+          if (i.apiKeyEnv) console.log(`#${i.apiKeyEnv}=        # ${id} — ${i.baseUrl}`);
+        }
+      } catch { console.log("#N8N_API_KEY_MAIN="); }
+    ' "$DIR/config/n8n.example.json" 2>/dev/null || echo "#N8N_API_KEY_MAIN="
+  } > "$ENVFILE"
+  chmod 600 "$ENVFILE"
+  warn "created $ENVFILE with a generated SESSION_SECRET. Two things still need pasting in:"
+  warn "  GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET — nobody can sign in until these are set"
+  warn "  N8N_API_KEY_* — workflow analytics collects nothing until these are set"
+else
+  grep -qE '^SESSION_SECRET=.+' "$ENVFILE" \
+    || { echo "SESSION_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '\n=/+')" >> "$ENVFILE"; ok "added a generated SESSION_SECRET"; }
+
+  if grep -qE '^GOOGLE_CLIENT_ID=.+' "$ENVFILE" && grep -qE '^GOOGLE_CLIENT_SECRET=.+' "$ENVFILE"; then
+    ok "$ENVFILE has a Google OAuth client; sign-in armed"
+  else
+    warn "$ENVFILE has no GOOGLE_CLIENT_ID/SECRET — NOBODY can sign in to the dashboard."
+    warn "  Google Cloud console -> APIs & Services -> Credentials -> OAuth client ID -> Web application"
+    warn "  Authorised redirect URI: https://estate.leadq.co.in/auth/callback"
+  fi
+
+  if grep -qE '^N8N_API_KEY_[A-Z0-9_]+=.+' "$ENVFILE"; then
+    ok "$ENVFILE has $(grep -cE '^N8N_API_KEY_[A-Z0-9_]+=.+' "$ENVFILE") n8n API key(s); workflow analytics armed"
+  else
+    warn "$ENVFILE has no n8n API key set — the workflow analytics page will stay empty."
+  fi
+fi
+
+# A dashboard nobody can sign in to is worse than one behind a password, so the
+# allowlist is checked here rather than discovered at the login screen.
+if ! node -e '
+  process.chdir(process.argv[1]);
+  const { resolveRegistry } = await import("file://" + process.argv[1] + "/src/n8n/registry.js");
+  const a = resolveRegistry().admin;
+  process.exit(a.allowedEmails.length || a.allowedDomain ? 0 : 1);
+' "$DIR" 2>/dev/null; then
+  warn "config/n8n.example.json#/admin lists nobody — an empty allowlist denies everyone."
+  warn "  Add your address there, or to config/n8n.json, before reloading nginx."
+fi
+
+# The long-running half: sign-in, sessions, the admin panel. Unprivileged, and
+# deliberately NOT the user the collector runs as — that one needs root's SSH
+# key to reach the other two boxes, and the web-facing process must not.
+if ! id -u kw-estate >/dev/null 2>&1; then
+  useradd --system --no-create-home --shell /usr/sbin/nologin kw-estate
+  ok "created the kw-estate system user"
+fi
+chown -R kw-estate:kw-estate "$DIR/dist" "$DIR/config" 2>/dev/null || true
+install -m 644 "$DIR/deploy/kw-estate-admin.service" /etc/systemd/system/kw-estate-admin.service
+
+# The tunnel to the second n8n. Installed always, enabled only when an
+# instance actually asks for a loopback port this box does not serve itself —
+# otherwise it is a unit that fails every ten seconds against a host nobody
+# configured, which is noise in the journal and a red systemctl for no reason.
+install -m 644 "$DIR/deploy/kw-estate-tunnel.service" /etc/systemd/system/kw-estate-tunnel.service
+systemctl daemon-reload
+
+if node -e '
+  process.chdir(process.argv[1]);
+  const { resolveRegistry } = await import("file://" + process.argv[1] + "/src/n8n/registry.js");
+  const needs = Object.values(resolveRegistry().instances)
+    .some((i) => /127\.0\.0\.1:15678/.test(i.baseUrl || ""));
+  process.exit(needs ? 0 : 1);
+' "$DIR" 2>/dev/null; then
+  systemctl enable --now kw-estate-tunnel >/dev/null 2>&1 \
+    && ok "kw-estate-tunnel up — the second n8n is reachable on 127.0.0.1:15678" \
+    || warn "kw-estate-tunnel failed — journalctl -u kw-estate-tunnel -n 20"
+else
+  systemctl disable --now kw-estate-tunnel >/dev/null 2>&1 || true
+fi
+systemctl enable --now kw-estate-admin >/dev/null 2>&1 \
+  && ok "kw-estate-admin running on 127.0.0.1:4179" \
+  || warn "kw-estate-admin failed to start — journalctl -u kw-estate-admin -n 30"
+
 if [ "$REACHABLE" -eq 3 ]; then
   systemctl enable --now kw-estate.timer >/dev/null
   ok "timer enabled — four passes a day"
