@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "n8n-sync.schema.json",
+  "title": "data/n8n-sync.json",
+  "description": "The collector watching itself. Written by src/n8n/collect.js on every pass and rendered as its own panel, because a monitoring system that quietly stops monitoring is worse than not having one — the page would keep showing yesterday's healthy numbers with nothing saying they were yesterday's.",
+  "type": "object",
+  "required": ["lastRunAt"],
+  "additionalProperties": false,
+  "properties": {
+    "lastRunAt": { "type": "string" },
+    "tz": { "type": "string", "description": "The zone bucket keys are gridded in" },
+    "workflows": { "type": "integer", "minimum": 0, "description": "How many were monitored this pass" },
+    "synced": { "type": "integer", "minimum": 0 },
+    "failed": { "type": "integer", "minimum": 0 },
+    "added": { "type": "integer", "minimum": 0, "description": "New executions collected across every workflow" },
+    "detailed": { "type": "integer", "minimum": 0, "description": "How many got node-level item counts" },
+    "apiMs": { "type": "integer", "minimum": 0, "description": "Total time spent inside n8n this pass" },
+    "slowestMs": { "type": "integer", "minimum": 0 },
+    "lastError": { "type": ["string", "null"] },
+    "registryErrors": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Rejected registry entries. A workflow silently dropped for a typo looks exactly like a workflow that never runs, so these are surfaced rather than skipped."
+    },
+
+    "instances": {
+      "type": "object",
+      "description": "One reachability check per instance per pass, not per workflow: thirteen workflows on a dead n8n are one outage, not thirteen.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": { "type": "string", "enum": ["api", "sqlite"], "description": "Which driver read it. sqlite reads n8n's database with a read-only SELECT over SSH and needs no API key at all; api is the public REST API." },
+          "baseUrl": { "type": "string", "description": "For api: the loopback URL. For sqlite: a human description of the container and host. No API key or SSH key is ever stored here" },
+          "publicUrl": { "type": ["string", "null"] },
+          "server": { "type": ["string", "null"], "description": "Key in data/servers.json" },
+          "ok": { "type": "boolean" },
+          "apiMs": { "type": "integer", "minimum": 0 },
+          "error": { "type": ["string", "null"] },
+          "checkedAt": { "type": "string" }
+        }
+      }
+    },
+
+    "perWorkflow": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string", "description": "<instance>__<workflowId>, the data/runs filename" },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "instance": { "type": "string" },
+          "status": { "type": "string", "enum": ["ok", "failed"] },
+          "added": { "type": "integer", "minimum": 0 },
+          "rows": { "type": "integer", "minimum": 0 },
+          "apiMs": { "type": "integer", "minimum": 0 },
+          "error": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

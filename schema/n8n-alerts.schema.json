@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "n8n-alerts.schema.json",
+  "title": "data/n8n-alerts.json",
+  "description": "What has already been said, so it is not said again. Written by src/n8n/report.js. Without this, one workflow failing on a 6-hourly timer mails everybody four times a day until it is fixed, and the twenty-first mail is the one nobody reads — including the one that matters.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lastReportedOn": { "type": ["string", "null"], "description": "ISO date of the last scheduled digest. One a day, not one per pass" },
+    "lastReportKind": { "type": ["string", "null"], "enum": ["daily", "weekly", null] },
+    "sent": {
+      "type": "object",
+      "description": "Keyed <workflowKey>:<alertKind>. Value is when it last went out; the cooldown is measured from there.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "at": { "type": "string" },
+          "detail": { "type": "string" },
+          "count": { "type": "integer", "minimum": 1, "description": "How many times this alert has been suppressed-or-sent since it first fired, so the mail can say \"still failing, 4th report\"" }
+        }
+      }
+    }
+  }
+}

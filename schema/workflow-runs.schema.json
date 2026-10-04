@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workflow-runs.schema.json",
+  "title": "data/runs/<instance>__<workflowId>.json",
+  "description": "Execution TELEMETRY for one monitored n8n workflow. Machine-written by src/n8n/collect.js. Deliberately separate from data/workflows.json, which is INVENTORY — that file says a workflow exists and whether it is switched on; this one says what it actually did. Two tiers: `rows` is one record per execution, bounded by retention.rawDays and retention.maxRows; `buckets` is hourly counters that outlive the rows and carry the long-range charts and the anomaly baselines.",
+  "type": "object",
+  "required": ["instance", "workflowId", "rows", "buckets"],
+  "additionalProperties": false,
+  "properties": {
+    "instance": { "type": "string", "description": "Key in config/n8n.example.json#/instances" },
+    "workflowId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{8,36}$" },
+    "name": { "type": "string" },
+    "project": { "type": ["string", "null"], "description": "An id under content/projects/, or null" },
+    "tz": {
+      "type": ["string", "null"],
+      "description": "The IANA zone the bucket keys are gridded in. Bucketing in the reporting zone rather than UTC is what lets the dashboard answer \"what happened between 2 and 3pm\" exactly, since IST is a half-hour offset. A change here invalidates every stored key, and the collector rebuilds from rows when it sees one."
+    },
+
+    "rows": {
+      "type": "array",
+      "description": "Newest first. One per execution.",
+      "items": { "$ref": "#/$defs/row" }
+    },
+
+    "buckets": {
+      "type": "object",
+      "description": "Hourly counters keyed YYYY-MM-DDTHH in `tz`. Every counter is monotonic, which is what makes the merge in collect.js safe when rows age out from under a bucket.",
+      "propertyNames": { "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}$" },
+      "additionalProperties": { "$ref": "#/$defs/bucket" }
+    },
+
+    "sync": { "$ref": "#/$defs/sync" }
+  },
+
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": ["id", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "n8n execution id, as a string so it stays usable past 2^53" },
+        "status": {
+          "type": "string",
+          "enum": ["success", "error", "canceled", "running"],
+          "description": "Normalised from n8n's status, falling back to `finished` plus the presence of an error for instances older than ~1.116 which did not send one."
+        },
+        "startedAt": { "type": ["string", "null"] },
+        "stoppedAt": { "type": ["string", "null"] },
+        "ms": { "type": ["integer", "null"], "minimum": 0, "description": "stoppedAt - startedAt" },
+        "mode": { "type": ["string", "null"], "description": "trigger, webhook, manual, retry, …" },
+        "retryOf": { "type": "string" },
+        "retrySuccessId": { "type": "string" },
+
+        "volumeSource": {
+          "type": "string",
+          "enum": ["node-data", "bytes", "none"],
+          "description": "WHERE the volume figures came from. node-data: counted from data.resultData.runData, exact. bytes: n8n reported jsonSizeBytes but withheld the node data, so bytes are real and items are absent. none: neither. An item count is never estimated for a row that is not node-data."
+        },
+        "items": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The primary volume metric: the LARGEST number of items any single node emitted in this execution. Neither end of the chain is a fair answer — a webhook trigger emits one item while the fetch behind it emits five thousand, and a mailer at the end emits one again."
+        },
+        "inputItems": { "type": "integer", "minimum": 0, "description": "Items out of the first node to run, i.e. what arrived from outside" },
+        "outputItems": { "type": "integer", "minimum": 0, "description": "Items out of data.resultData.lastNodeExecuted" },
+        "nodeItems": { "type": "integer", "minimum": 0, "description": "Sum across every node run. Item-steps, not items" },
+        "nodeCount": { "type": "integer", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 0, "description": "n8n jsonSizeBytes. Present on every execution, needing no node data, so the bytes series is complete even where the item series is sampled" },
+        "binaryBytes": { "type": "integer", "minimum": 0 },
+
+        "nodes": {
+          "type": "object",
+          "description": "Per-node output items and execution time, in run order. Dropped from older rows by retention.keepNodeDetail — this is the bulk of a row.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "items": { "type": "integer", "minimum": 0 },
+              "ms": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "nodesDropped": { "type": "boolean", "description": "Node detail was collected and has since been pruned off this row" },
+        "checkpoints": {
+          "type": "object",
+          "description": "Item counts for the nodes named in the workflow's `checkpoints`. null means the node did not run in this execution, which is a different finding from 0.",
+          "additionalProperties": { "type": ["integer", "null"], "minimum": 0 }
+        },
+
+        "dimensions": {
+          "type": "object",
+          "description": "What was IN the items, where a dimension is configured — counts and pseudonyms only. There is deliberately NO mode that stores message text or free-form content, so there is no flag to get wrong. See src/n8n/dimensions.js.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "values": {
+                "type": "object",
+                "description": "group mode: raw value to count, for LOW-CARDINALITY IMPERSONAL labels only — a bucket id, a status, an intent. Capped at 40 values with the tail folded into \"(other)\", so a misconfiguration cannot become an unbounded dump. Values that look like a phone number or an email are refused outright.",
+                "additionalProperties": { "type": "integer", "minimum": 0 }
+              },
+              "distinct": { "type": "integer", "minimum": 0, "description": "How many distinct identifiers, counted via salted pseudonyms" },
+              "tokens": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{12}$" },
+                "description": "Salted SHA-256 truncated to 12 hex characters. Enough to tell a returning contact from a new one across executions; not enough to recover the number. The salt is $KW_DIMENSION_SALT and never reaches data/."
+              },
+              "repeat": { "type": "integer", "minimum": 0, "description": "Identifiers seen more than once within this execution" },
+              "tooManyToUnion": { "type": "boolean", "description": "More distinct identifiers than it is worth holding pseudonyms for, so no cross-execution unique count is possible for this window. The per-execution `distinct` stays exact; the rollup reports the busiest single run rather than a truncated union presented as a total." },
+              "missing": { "type": "integer", "minimum": 0, "description": "Items where the field was absent, empty, an object, or too long to be a label" },
+              "total": { "type": "integer", "minimum": 0 },
+              "refused": {
+                "type": "string",
+                "description": "Why nothing was tallied — no salt for an identifier dimension, or a group dimension pointed at personal-looking values. Recorded rather than silently skipped, because a dimension that quietly stops counting looks exactly like one with nothing to count."
+              }
+            }
+          }
+        },
+
+        "failedNode": { "type": ["string", "null"] },
+        "error": { "type": ["string", "null"], "description": "One sentence, redacted through src/lib/redact.js. n8n error text quotes the request that failed and that request carries keys" },
+        "detailTried": { "type": "boolean", "description": "A detail fetch was spent on this row and produced no node data. Never retried: for an execution n8n has already pruned the answer will not change" },
+        "dataWithheld": { "type": "string", "description": "Why there is no node data: \"too large\", \"pruned by n8n\"" }
+      }
+    },
+
+    "bucket": {
+      "type": "object",
+      "required": ["n"],
+      "additionalProperties": false,
+      "properties": {
+        "n": { "type": "integer", "minimum": 0, "description": "executions started in this hour" },
+        "ok": { "type": "integer", "minimum": 0 },
+        "fail": { "type": "integer", "minimum": 0 },
+        "items": { "type": "integer", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "msSum": { "type": "integer", "minimum": 0, "description": "Total duration. Divided by n for the mean; percentiles need the rows and are reported as unavailable once those have gone" },
+        "msMax": { "type": "integer", "minimum": 0 },
+        "covered": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many of this hour's executions contributed an item count. covered < n means the item total is a floor, and the dashboard says so rather than implying full coverage."
+        },
+        "cp": {
+          "type": "object",
+          "description": "Items through each named checkpoint in this hour, keyed by n8n node name. This is what answers \"how much went from Cratio to Meta, and in which hour\" — the funnel sums over executions and cannot say when. A checkpoint that did not run contributes nothing rather than a zero, so \"the stage never fired\" stays distinguishable from \"the stage produced nothing\".",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+
+    "sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["ok", "failed"] },
+        "lastSyncedAt": { "type": "string" },
+        "lastAttemptAt": { "type": "string", "description": "Set on a failed pass. Kept apart from lastSyncedAt so the page can say \"last good sync 06:07, failing since 12:07\"" },
+        "cursorStartedAt": { "type": ["string", "null"], "description": "The incremental cursor, passed to n8n as startedAfter. Newest execution's start minus a minute of slack" },
+        "lastExecutionId": { "type": ["string", "null"] },
+        "lastExecutionAt": { "type": ["string", "null"] },
+        "fetched": { "type": "integer", "minimum": 0 },
+        "added": { "type": "integer", "minimum": 0 },
+        "detailed": { "type": "integer", "minimum": 0 },
+        "pages": { "type": "integer", "minimum": 0 },
+        "apiMs": { "type": "integer", "minimum": 0 },
+        "truncated": { "type": "boolean", "description": "Hit the pagination cap; there is more history to backfill" },
+        "error": { "type": ["string", "null"] },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
