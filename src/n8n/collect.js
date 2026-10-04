@@ -278,9 +278,28 @@ export function detailCandidates(rows, budget, {
 } = {}) {
   const want = rows.filter((r) => r.volumeSource !== 'node-data' && !r.detailTried);
 
-  // Enough successes already carry node data, so stop paying to backfill more.
-  const covered = rows.filter((r) => r.volumeSource === 'node-data' && r.status !== 'error').length;
-  const sample = covered >= ENOUGH_COVERAGE ? 0 : successSample;
+  /* NEW executions always get read. BACKFILL stops once there is enough.
+   *
+   * Those are different jobs and conflating them broke the product. Capping
+   * both meant a workflow past the threshold stopped fetching detail for
+   * executions that had only just happened — and item counts come from node
+   * data, so "items processed" would have frozen at whatever it was and never
+   * moved again. A volume dashboard that stops counting volume is worse than
+   * a slow one.
+   *
+   * The frontier is the newest execution that already has node data. Anything
+   * newer than it arrived since the last pass and is the whole point; anything
+   * older is history we are filling in, and there is a limit to how much of
+   * that is worth paying for.
+   */
+  const withData = rows.filter((r) => r.volumeSource === 'node-data' && r.status !== 'error');
+  const covered = withData.length;
+  const frontier = withData.reduce(
+    (newest, r) => (String(r.startedAt ?? '') > newest ? String(r.startedAt ?? '') : newest),
+    '',
+  );
+  const isNew = (r) => !frontier || String(r.startedAt ?? '') > frontier;
+  const backfillSample = covered >= ENOUGH_COVERAGE ? 0 : successSample;
 
   const failures = want.filter((r) => r.status === 'error')
     .sort((a, b) => String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
@@ -360,9 +379,14 @@ export function detailCandidates(rows, budget, {
   //
   // The sample is the NEWEST successes, because a funnel describes the
   // current shape of a workflow rather than its history.
+  const room = Math.max(0, budget - Math.min(failures.length, budget));
+  const fresh = successes.filter(isNew);
+  const older = successes.filter((r) => !isNew(r));
+
   return withinBudget(
     failures.slice(0, Math.max(0, budget)),
-    successes.slice(0, Math.max(0, Math.min(sample, budget - Math.min(failures.length, budget)))),
+    // Everything new, then as much history as the backfill allowance permits.
+    [...fresh.slice(0, room), ...older.slice(0, Math.max(0, Math.min(backfillSample, room - fresh.length)))],
   );
 }
 
@@ -524,6 +548,9 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
       pages,
       apiMs: ms + detailMs,
     detailBytes,
+    // How many were ASKED for, so the output can tell "nothing needed" from
+    // "asked and got nothing back".
+    asked: candidates.length,
       truncated: truncated || undefined,
       error: null,
       warnings: failures.length ? failures.slice(0, 3) : undefined,
@@ -647,7 +674,12 @@ export async function runSync({ now = new Date() } = {}) {
       });
       results.push(result);
       process.stdout.write(`${green('  ✓')} ${String(workflow.name ?? workflow.id).slice(0, 44).padEnd(46)}`
-        + `${dim(`+${result.added} new · ${result.detailed} with node data${result.detailBytes ? ` (${(result.detailBytes/1048576).toFixed(1)} MB)` : ''} · ${result.rows} rows · ${result.apiMs}ms`)}\n`);
+        // "0 with node data" reads like a failure when it usually means
+        // nothing needed fetching. Say which.
+        + `${dim(`+${result.added} new · ${result.detailed > 0
+          ? `${result.detailed} with node data${result.detailBytes ? ` (${(result.detailBytes / 1048576).toFixed(1)} MB)` : ''}`
+          : (result.asked > 0 ? 'no node data returned' : 'node data already complete')
+        } · ${result.rows} rows · ${result.apiMs}ms`)}\n`);
       if (result.truncated) process.stdout.write(`${yellow('    !')} hit the page cap; run again to continue the backfill\n`);
       for (const w of result.warnings.slice(0, 2)) process.stdout.write(`${dim(`    · ${w}`)}\n`);
     } catch (e) {

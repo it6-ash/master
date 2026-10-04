@@ -670,31 +670,47 @@ test('oversized successes are skipped when cheap ones are available', () => {
     ...Array.from({ length: 12 }, (_, i) => exec(`ok${i}`, 'success', 80 * 1024, i + 1)),
   ], 60);
   assert.equal(picked.some((r) => r.id === 'huge'), false);
-  // Nine, not ten: the sample is capped at ten CANDIDATES before the size
-  // filter runs, so dropping the oversized one leaves nine. Reaching further
-  // back to top the sample up would buy a tenth funnel sample nobody needs.
-  assert.equal(picked.length, 9);
+  // All twelve cheap ones: with nothing yet covered these are all NEW, and a
+  // new execution is where an item count comes from. The byte budget is what
+  // bounds this, not an arbitrary count — a workflow with cheap payloads can
+  // afford them all, one with expensive payloads is stopped by bytes.
+  assert.equal(picked.length, 12);
 });
 
-test('once there is enough node data, stop paying to backfill more', () => {
+test('backfill stops once there is enough; NEW executions never do', () => {
+  // Two different jobs, and conflating them broke the product twice over.
+  //
   // Lead Qualification Agent spent 21 seconds on EVERY pass fetching ten more
-  // historical successes it already had plenty of. Past enough coverage the
-  // funnel averages over them, the item series already has its shape, and
-  // each one costs a couple of seconds of n8n's time forever.
-  const old = (n) => Array.from({ length: n }, (_, i) => ({
+  // historical successes it already had plenty of — so backfill has to stop.
+  // But capping new executions too meant item counts stopped being collected
+  // the moment a workflow passed the threshold, and "items processed" would
+  // have frozen forever. A volume dashboard that stops counting volume is
+  // worse than a slow one.
+  const covered = (n) => Array.from({ length: n }, (_, i) => ({
     id: `c${i}`, status: 'success', volumeSource: 'node-data', items: 5,
     startedAt: new Date(Date.parse('2026-10-01T00:00:00Z') + i * 60000).toISOString(),
   }));
+  // Older than everything covered: history being filled in.
+  const older = (n) => Array.from({ length: n }, (_, i) => ({
+    id: `o${i}`, status: 'success', bytes: 200 * 1024,
+    startedAt: new Date(Date.parse('2026-09-20T00:00:00Z') + i * 60000).toISOString(),
+  }));
+  // Newer than everything covered: arrived since the last pass.
   const fresh = (n) => Array.from({ length: n }, (_, i) => exec(`n${i}`, 'success', 200 * 1024, i));
 
-  assert.equal(detailCandidates(fresh(4), 60).length, 4, 'building up: take them');
-  assert.equal(detailCandidates([...old(24), ...fresh(4)], 60).length, 4, 'not there yet: still take them');
-  assert.equal(detailCandidates([...old(30), ...fresh(4)], 60).length, 0, 'enough: stop');
+  assert.equal(detailCandidates([...covered(10), ...older(40)], 60).length, 10,
+    'still building the funnel: backfill');
+  assert.equal(detailCandidates([...covered(30), ...older(40)], 60).length, 0,
+    'enough history: stop paying for more of it');
+  assert.equal(detailCandidates([...covered(30), ...fresh(4)], 60).length, 4,
+    'but a new execution is where an item count comes from, so it is always read');
+  assert.deepEqual(detailCandidates([...covered(30), ...fresh(3), ...older(40)], 60).map((r) => r.id),
+    ['n0', 'n1', 'n2'], 'the new ones and nothing else');
 
-  // A failure is never subject to this. Each one carries its own error and
-  // its own failed node, so "we already have 30 of those" is not a reason.
+  // A failure is never subject to either rule. Each carries its own error and
+  // its own failed node, so "we already have thirty" is not a reason.
   assert.deepEqual(
-    detailCandidates([...old(30), exec('f1', 'error', 200 * 1024, 0)], 60).map((r) => r.id),
+    detailCandidates([...covered(30), exec('f1', 'error', 200 * 1024, 0)], 60).map((r) => r.id),
     ['f1'],
   );
 });
