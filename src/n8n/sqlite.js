@@ -267,6 +267,55 @@ export async function fetchExecutionDetail(instance, executionId) {
   };
 }
 
+/**
+ * Many executions with their payloads, in ONE query.
+ *
+ * This exists because the obvious implementation is unusably slow. Asking for
+ * detail one execution at a time means one `sqlite3` process per execution —
+ * on the first backfill that was ~2,000 process spawns and 8 to 17 seconds per
+ * workflow, which looks exactly like a hang. The API driver pays a round trip
+ * per execution and cannot avoid it; a database can answer in bulk, and not
+ * doing so was throwing away the main advantage of reading one.
+ *
+ * Chunked rather than unbounded: the payload column is the biggest thing in
+ * the database, and `WHERE id IN (...)` over a few hundred of them would move
+ * tens of megabytes through a shell pipe in one go.
+ */
+export const DETAIL_CHUNK = 25;
+
+export async function fetchExecutionDetails(instance, executionIds) {
+  const ids = executionIds.map(Number).filter(Number.isInteger);
+  if (!ids.length) return { executions: [], ms: 0 };
+
+  const started = Date.now();
+  const out = [];
+
+  for (let i = 0; i < ids.length; i += DETAIL_CHUNK) {
+    const chunk = ids.slice(i, i + DETAIL_CHUNK);
+    const got = await query(instance, `SELECT
+        e.id, e.workflowId, e.status, e.finished, e.mode, e.retryOf,
+        ${ISO('e.startedAt')}, ${ISO('e.stoppedAt')},
+        length(d.data) AS jsonSizeBytes, d.data
+      FROM execution_entity e
+      LEFT JOIN execution_data d ON d.executionId = e.id
+      WHERE e.id IN (${chunk.join(',')});`);
+
+    if (!got.ok) throw new Error(got.error);
+    for (const row of got.rows) {
+      out.push({
+        ...row,
+        finished: row.finished === 1 || row.finished === true,
+        data: (() => {
+          if (typeof row.data !== 'string' || !row.data) return undefined;
+          try { return JSON.parse(row.data); } catch { return undefined; }
+        })(),
+      });
+    }
+  }
+
+  return { executions: out, ms: Date.now() - started };
+}
+
 /** Is the database reachable and shaped the way this driver expects? */
 export async function ping(instance) {
   const started = Date.now();

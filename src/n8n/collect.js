@@ -308,27 +308,62 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
   let detailMs = 0;
   const failures = [];
 
+  /** Fold one fetched payload back into the row it belongs to. */
+  const absorb = (row, execution) => {
+    if (!execution) {
+      // Gone between the list and the fetch. n8n prunes on its own schedule,
+      // so this is normal operation; the metadata row stays, because it is
+      // still a real execution that really happened.
+      byId.set(row.id, { ...row, detailTried: true, dataWithheld: row.dataWithheld ?? 'pruned by n8n' });
+      return;
+    }
+    const enriched = toRow(execution, rowOpts);
+    const merged = { ...row, ...enriched };
+    if (enriched.volumeSource !== 'node-data') merged.detailTried = true;
+    else detailed += 1;
+    byId.set(row.id, merged);
+  };
+
+  const driver = driverFor(instance);
+
+  if (typeof driver.fetchExecutionDetails === 'function' && candidates.length > 1) {
+    /* One query for many.
+       Asking a database for detail one execution at a time costs one process
+       spawn per execution — about 2,000 of them on a first backfill, eight to
+       seventeen seconds per workflow, and output that looks exactly like a
+       hang. The API driver pays a round trip each and cannot avoid it; a
+       database can answer in bulk, and not using that was throwing away the
+       main reason to read one. */
+    try {
+      const got = await driver.fetchExecutionDetails(instance, candidates.map((r) => r.id));
+      detailMs += got.ms ?? 0;
+      const byExecutionId = new Map(got.executions.map((e) => [String(e.id), e]));
+      for (const row of candidates) absorb(row, byExecutionId.get(String(row.id)) ?? null);
+    } catch (e) {
+      // A failed bulk read must not cost the workflow its metadata rows.
+      failures.push(`bulk detail: ${e.message}`);
+      for (const row of candidates) byId.set(row.id, { ...row, detailTried: true });
+    }
+    return finish();
+  }
+
   await pool(candidates, 4, async (row) => {
     try {
-      const got = await driverFor(instance).fetchExecutionDetail(instance, row.id);
+      const got = await driver.fetchExecutionDetail(instance, row.id);
       detailMs += got?.ms ?? 0;
-      if (!got?.execution) {
-        // Pruned by n8n, or gone. The metadata row stays; it is still a real
-        // execution that happened.
-        byId.set(row.id, { ...row, detailTried: true, dataWithheld: row.dataWithheld ?? 'pruned by n8n' });
-        return;
-      }
-      const enriched = toRow(got.execution, rowOpts);
-      const merged = { ...row, ...enriched };
-      if (enriched.volumeSource !== 'node-data') merged.detailTried = true;
-      else detailed += 1;
-      byId.set(row.id, merged);
+      absorb(row, got?.execution ?? null);
     } catch (e) {
       // One bad execution must not fail the workflow.
       failures.push(`execution ${row.id}: ${e.message}`);
       byId.set(row.id, { ...row, detailTried: true });
     }
   });
+
+  return finish();
+
+  /* Everything after the detail pass is identical whichever route was taken,
+     so it lives here rather than being written twice. */
+  function finish() {
 
   /* retention, then buckets */
   const rows = pruneRows([...byId.values()], retention, now);
@@ -397,6 +432,7 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
     truncated,
     warnings: failures,
   };
+  }
 }
 
 /** Record a failure against the workflow without losing a byte of history. */

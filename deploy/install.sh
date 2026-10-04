@@ -233,10 +233,30 @@ else
     warn "  Authorised redirect URI: https://estate.leadq.co.in/auth/callback"
   fi
 
-  if grep -qE '^N8N_API_KEY_[A-Z0-9_]+=.+' "$ENVFILE"; then
-    ok "$ENVFILE has $(grep -cE '^N8N_API_KEY_[A-Z0-9_]+=.+' "$ENVFILE") n8n API key(s); workflow analytics armed"
-  else
-    warn "$ENVFILE has no n8n API key set — the workflow analytics page will stay empty."
+  # The telemetry source. `sqlite` needs no key at all — it reads n8n's own
+  # database with a read-only SELECT — so the old "no API key set" warning was
+  # not merely stale, it told you to go and create a credential nothing wanted.
+  if node -e '
+    process.chdir(process.argv[1]);
+    const { resolveRegistry } = await import("file://" + process.argv[1] + "/src/n8n/registry.js");
+    const list = Object.values(resolveRegistry().instances);
+    const api = list.filter((i) => (i.source ?? "api") === "api");
+    console.log(JSON.stringify({ total: list.length, api: api.map((i) => i.apiKeyEnv) }));
+  ' "$DIR" > /tmp/kw-src.json 2>/dev/null; then
+    NEEDS_KEY="$(node -p 'JSON.parse(require("fs").readFileSync("/tmp/kw-src.json","utf8")).api.join(" ")' 2>/dev/null)"
+    if [ -z "$NEEDS_KEY" ]; then
+      ok "workflow analytics reads n8n's database directly; no API key needed"
+      command -v sqlite3 >/dev/null \
+        && ok "sqlite3 $(sqlite3 --version | cut -d' ' -f1) present" \
+        || warn "sqlite3 is NOT installed — the collector cannot read n8n. apt install -y sqlite3"
+    else
+      for v in $NEEDS_KEY; do
+        grep -qE "^$v=.+" "$ENVFILE" \
+          && ok "$ENVFILE has \$$v" \
+          || warn "$ENVFILE has no \$$v — that instance reads the n8n API and will stay empty."
+      done
+    fi
+    rm -f /tmp/kw-src.json
   fi
 fi
 
