@@ -13,17 +13,16 @@
       "_sqlite_fallback": "To go back to reading the database — no API key, no public port — set source:\"sqlite\", container:\"n8n-n8n-1\", dbPath:\"/home/node/.n8n/database.sqlite\" and drop baseUrl/apiKeyEnv. It needs `apt install -y sqlite3` on the box. Both drivers return identical shapes, so nothing downstream knows which answered."
     },
     "n8n-vfa2": {
-      "source": "sqlite",
+      "source": "api",
       "server": "srv1870078",
-      "container": "n8n-vfa2-n8n-1",
-      "dbPath": "/home/node/.n8n/database.sqlite",
-      "sshHost": "200.141.9.83",
-      "sshUser": "root",
-      "sshKey": "/root/.ssh/id_ed25519",
+      "baseUrl": "http://127.0.0.1:15678",
       "publicUrl": null,
+      "apiKeyEnv": "N8N_API_KEY_VFA2",
       "enabled": false,
-      "_comment": "The SECOND n8n. 3 workflows, 1 active (RxfLvmFe4bAvfxEs, KW META Custom Audiences). Deliberately a DIFFERENT source from n8n-main, and the mix is the point: each instance uses whatever is actually appropriate for how it is reachable. n8n-main is on this box, so loopback HTTP is both fastest and private. This one is on another box with no vhost and no TLS, so an API call would either cross the public internet in clear text — which registry.js refuses — or need a tunnel to be kept alive. Reading its database over SSH needs neither: srv1340120 already holds a key for that box, src/sync.js uses it on every pass, and SSH is the encryption. Set enabled:true once `sqlite3` is installed there and the first pass has been watched.",
-      "_exposure": "Still worth fixing, and now unrelated to this module: the collector found n8n-vfa2-n8n-1 published as 0.0.0.0:32769->5678/tcp — port 32769 on every interface, no vhost, no TLS. ufw being active on that box does NOT cover it, because docker writes its own iptables rules and publishes bypass ufw entirely. Change the compose port mapping to \"127.0.0.1:32769:5678\" and the exposure goes away without affecting anything local. Reading the database does not need that port at all."
+      "_comment": "The SECOND n8n: n8n-vfa2-n8n-1 on srv1870078, 3 workflows, 1 active (RxfLvmFe4bAvfxEs, KW META Custom Audiences). Read over its API like n8n-main, but it cannot be reached the same way — this one is on a different box, published as 0.0.0.0:32769->5678/tcp with no vhost and no certificate in front of it.",
+      "_why_15678": "127.0.0.1:15678 is NOT where n8n listens. It is this end of the SSH tunnel in deploy/kw-estate-tunnel.service, which forwards it to 127.0.0.1:32769 on srv1870078. Pointing baseUrl straight at http://200.141.9.83:32769 would work on the first try and send an API key with full read of every execution across the public internet in clear text, four times a day, forever — registry.js refuses that URL outright for exactly this reason. Through the tunnel the URL is genuinely loopback, so the guard is satisfied honestly rather than worked around, and SSH is the encryption. srv1340120 already holds a key for that box; src/sync.js uses it on every pass.",
+      "_to_enable": "1. systemctl enable --now kw-estate-tunnel on srv1340120. 2. Create an API key in THAT n8n (Settings -> n8n API) and put it in /etc/kw-estate.env as N8N_API_KEY_VFA2. 3. Set enabled:true here. Left disabled until all three are done, because a disabled instance is a visible gap and a misconfigured one is a silent failure every six hours.",
+      "_exposure": "Worth fixing regardless, and unrelated to this module: port 32769 is open to the internet over plain HTTP today. ufw being active on that box does NOT cover it — docker writes its own iptables rules and publishes bypass ufw entirely. Change the compose mapping to \"127.0.0.1:32769:5678\" and the exposure goes away without affecting anything local, including this tunnel, which lands on that box's own loopback."
     }
   },
   "_admin_comment": "Who may open the dashboard and the admin panel. Identity comes from Google — an OAuth 2.0 client created in the Google Cloud console — so Estate never sees a password. This list is the authorisation: a valid Google login by an address that is not on it is refused, and the list is re-checked on every request, so removing somebody takes effect immediately rather than when their cookie expires. An EMPTY list denies everyone; a missing config must never be the thing that opens the door. allowedDomain lets anyone at that domain in, which is the convenient option and a much wider one — leave it null unless you mean it. Client id, client secret and session secret are environment variables in /etc/kw-estate.env, never here.",
