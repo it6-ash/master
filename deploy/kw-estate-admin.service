@@ -1,0 +1,67 @@
+# The sign-in, the session and the admin panel. Long-running, unlike
+# kw-estate.service, which is a oneshot the timer fires four times a day.
+#
+#   systemctl status kw-estate-admin
+#   journalctl -u kw-estate-admin -f
+#
+# Installed by deploy/install.sh. nginx proxies estate.leadq.co.in to it.
+
+[Unit]
+Description=KW Estate — authenticated dashboard and admin panel
+Documentation=file:///opt/kw-estate/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/kw-estate
+ExecStart=/usr/bin/env node /opt/kw-estate/src/admin.js
+Environment=NO_COLOR=1
+Environment=ADMIN_PORT=4179
+Environment=ADMIN_HOST=127.0.0.1
+
+# GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET and ADMIN_BASE_URL.
+# The same file the collector reads its n8n API keys from, for the same reason:
+# this unit is in git and none of those belong there. Without it the service
+# still starts and serves the login page, which then says exactly which
+# variable is missing — a server that refuses to boot tells nobody anything.
+EnvironmentFile=-/etc/kw-estate.env
+
+Restart=on-failure
+RestartSec=5s
+# Five restarts in a minute means a configuration problem, not a blip. Stop and
+# leave it stopped so `systemctl status` says so, rather than hiding a crash
+# loop behind a service that looks like it is running.
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# This box serves live traffic. The dashboard is never the important workload.
+Nice=10
+
+# It does not need root. It reads dist/ and config/, writes config/n8n.json,
+# and spawns node for a collection pass — all of which the kw-estate user can
+# do. The collector itself still runs as root under kw-estate.service, because
+# THAT needs root's SSH key; this one must not inherit that reach.
+#
+# install.sh creates the user and chowns the checkout.
+User=kw-estate
+Group=kw-estate
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+# Only the checkout, and only because the panel writes config/n8n.json and a
+# triggered build writes dist/. /etc/kw-estate.env stays read-only, which is
+# what keeps a compromised panel from rewriting its own allowlist source.
+ReadWritePaths=/opt/kw-estate
+
+[Install]
+WantedBy=multi-user.target

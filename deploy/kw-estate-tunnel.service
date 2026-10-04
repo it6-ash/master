@@ -1,0 +1,84 @@
+# An SSH tunnel from srv1340120 to the SECOND n8n, on srv1870078.
+#
+#   systemctl status kw-estate-tunnel
+#   journalctl -u kw-estate-tunnel -f
+#
+# WHY THIS EXISTS. n8n-vfa2-n8n-1 publishes 0.0.0.0:32769->5678/tcp: port
+# 32769 on every interface, no vhost, no TLS. Pointing the collector straight
+# at http://200.141.9.83:32769 works first time and ships an API key with full
+# read of every execution across the public internet, four times a day,
+# forever. src/n8n/registry.js refuses that URL for exactly this reason.
+#
+# So the collector reaches it over SSH instead. srv1340120 already holds a key
+# for that box — src/sync.js uses it to run the collector there — so this adds
+# a route, not a credential. The encryption is SSH's, which is the part that
+# was missing.
+#
+# After this is running, in config/n8n.json (or the tracked example):
+#   "n8n-vfa2": { "enabled": true, "baseUrl": "http://127.0.0.1:15678", ... }
+#
+# This does NOT close the exposure. 32769 is still open to the internet until
+# the container is bound to loopback on srv1870078 — see the README. The two
+# fixes compose: once it is bound to 127.0.0.1:32769, this tunnel still works
+# unchanged, because SSH lands on that box's own loopback.
+
+[Unit]
+Description=KW Estate — SSH tunnel to the n8n on srv1870078
+Documentation=file:///opt/kw-estate/README.md
+After=network-online.target
+Wants=network-online.target
+# The collector is useless without the tunnel, but the tunnel being down must
+# not stop the other twelve workflows being collected. Hence Wants, not
+# Requires, and no BindsTo: wf-sync reports the instance unreachable and
+# carries on, which is the behaviour the dashboard is built around.
+Before=kw-estate.service
+
+[Service]
+# No autossh. systemd restarts a dead process better than autossh does, and
+# this repo has no dependencies by design.
+#
+#   -N              no remote command, just the forward
+#   -T              no pty
+#   ExitOnForwardFailure=yes  fail loudly if 15678 is already taken, rather
+#                             than sitting there forwarding nothing
+#   ServerAlive*    notice a silently dropped connection within ~60s instead
+#                   of holding a half-open socket until the next reboot
+ExecStart=/usr/bin/ssh -N -T \
+  -o ExitOnForwardFailure=yes \
+  -o ServerAliveInterval=20 \
+  -o ServerAliveCountMax=3 \
+  -o BatchMode=yes \
+  -o StrictHostKeyChecking=accept-new \
+  -L 127.0.0.1:15678:127.0.0.1:32769 \
+  root@200.141.9.83
+
+# Bound to loopback on THIS side too — 127.0.0.1:15678, not *:15678. Without
+# the explicit bind address, a forward is still loopback-only by default, but
+# saying it means a future GatewayPorts=yes in sshd_config cannot quietly
+# republish the thing this unit exists to stop being published.
+
+Restart=always
+RestartSec=10s
+# A tunnel that cannot establish is a configuration problem, not a blip, but
+# it must keep trying: srv1870078 rebooting should heal on its own.
+StartLimitBurst=0
+
+User=root
+Group=root
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+# ssh needs to read root's key and append to known_hosts on first contact.
+ReadWritePaths=/root/.ssh
+
+[Install]
+WantedBy=multi-user.target
