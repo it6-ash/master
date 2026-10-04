@@ -187,8 +187,20 @@ function buildWorkflowAnalytics({ workflows: inventory, projects, now, warnings 
     const name = workflow.name ?? inventory[workflow.id]?.name ?? store.name ?? workflow.id;
     const a = analyse({ ...workflow, name }, store, { now, range: '24h', tz, bucketKey });
 
+    // "Nothing collected" has three quite different causes and only one of
+    // them is worth acting on. Telling somebody to run wf-sync when they have
+    // just run it, about a workflow that is switched off, is noise that
+    // teaches them to skim the warnings.
     if (!a.stats.executions && !(store.rows ?? []).length && !Object.keys(store.buckets ?? {}).length) {
-      warnings.push(`n8n: no executions collected for ${name} (${workflow.id}) — run \`npm run wf-sync\``);
+      const inventoryEntry = inventory[workflow.id];
+      const syncedOk = store.sync?.status === 'ok';
+      warnings.push(`n8n: no executions for ${name} (${workflow.id}) — ${
+        inventoryEntry && inventoryEntry.active === false
+          ? 'it is switched off in n8n, so there is nothing to collect'
+          : syncedOk
+            ? 'collected fine, n8n simply has no executions for it. Either it has not run, or n8n pruned them'
+            : 'nothing has collected it yet — run `npm run wf-sync`'
+      }`);
     }
     // A project id that does not exist would put a dead link in the table.
     if (workflow.project && !projects.some((p) => p.id === workflow.project)) {

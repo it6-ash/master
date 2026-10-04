@@ -261,7 +261,7 @@ async function pool(items, width, fn) {
  * collector turns into a load problem.
  */
 export function detailCandidates(rows, budget, {
-  successSample = 10, maxBytes = 8 * 1024 * 1024,
+  successSample = 10, maxBytes = 8 * 1024 * 1024, maxOneBytes = 1024 * 1024,
 } = {}) {
   const want = rows.filter((r) => r.volumeSource !== 'node-data' && !r.detailTried);
 
@@ -283,19 +283,51 @@ export function detailCandidates(rows, budget, {
    * instance that reports no sizes still gets a bounded pass rather than an
    * unbounded one.
    */
-  const withinBudget = (list) => {
+  const sizeOf = (row) => (Number.isFinite(row.bytes) ? row.bytes : 64 * 1024);
+
+  /**
+   * Fill a byte allowance from a list, newest first.
+   *
+   * `skipOver` drops a single oversized row rather than counting it, because
+   * the cost is not the transfer — it is n8n assembling and unflattening a
+   * huge payload, measured at 2.8 seconds each on this estate. A node funnel
+   * drawn from a five-megabyte execution tells you nothing a two-hundred
+   * kilobyte one does not; the shape of the pipeline is the same either way.
+   *
+   * `atLeastOne` is what stops that becoming "no data at all". A workflow
+   * whose every payload is large would otherwise never show a funnel, never
+   * report an item count, and never explain a failure — the saving would have
+   * cost the whole point. One fetch instead of ten is the win; zero is a
+   * regression wearing a performance badge.
+   */
+  const fill = (list, allowance, { skipOver = Infinity, atLeastOne = false } = {}) => {
     const out = [];
     let bytes = 0;
     for (const row of list) {
-      const size = Number.isFinite(row.bytes) ? row.bytes
-        : (out.length ? bytes / out.length : 64 * 1024);
-      // Always take the first, whatever it costs: a workflow whose every
-      // payload is above budget would otherwise never report an error.
-      if (out.length && bytes + size > maxBytes) break;
+      const size = sizeOf(row);
+      if (size > skipOver) continue;
+      if (out.length && bytes + size > allowance) break;
       bytes += size;
       out.push(row);
     }
-    return out;
+    if (!out.length && atLeastOne && list.length) out.push(list[0]);
+    return { picked: out, bytes };
+  };
+
+  /**
+   * Failures and successes get SEPARATE allowances.
+   *
+   * Sharing one meant a single nine-megabyte failure consumed the entire
+   * budget and every small, cheap success behind it was starved — the common
+   * rows dropped to pay for one rare expensive one. Failures are a few
+   * percent of runs and their payload is the only place the error and the
+   * failed node exist, so they are read whatever they cost; successes are
+   * sampled from what is left.
+   */
+  const withinBudget = (failed, ok) => {
+    const f = fill(failed, maxBytes, { atLeastOne: failed.length > 0 });
+    const s = fill(ok, maxBytes, { skipOver: maxOneBytes, atLeastOne: true });
+    return [...f.picked, ...s.picked];
   };
 
   // EVERY failure, then a small sample of successes.
@@ -311,10 +343,10 @@ export function detailCandidates(rows, budget, {
   //
   // The sample is the NEWEST successes, because a funnel describes the
   // current shape of a workflow rather than its history.
-  return withinBudget([
-    ...failures.slice(0, Math.max(0, budget)),
-    ...successes.slice(0, Math.max(0, Math.min(successSample, budget - Math.min(failures.length, budget)))),
-  ]);
+  return withinBudget(
+    failures.slice(0, Math.max(0, budget)),
+    successes.slice(0, Math.max(0, Math.min(successSample, budget - Math.min(failures.length, budget)))),
+  );
 }
 
 async function syncOne(workflow, instance, { retention, tz, now }) {

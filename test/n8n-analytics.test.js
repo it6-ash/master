@@ -625,3 +625,53 @@ test('durations read the way somebody says them out loud', () => {
   assert.equal(formatMins(150), '3h');
   assert.equal(formatMins(4320), '3d');
 });
+
+/* ------------------------------------------- what is worth reading in full */
+
+const exec = (id, status, bytes, minsAgo) => ({
+  id: String(id), status, bytes,
+  startedAt: new Date(Date.parse('2026-10-04T12:00:00Z') - minsAgo * 60000).toISOString(),
+});
+
+test('every failure is read, however large — an error must be explainable', () => {
+  // The payload is the only place the error message and the failed node
+  // exist. "Something broke and we did not look" is not an acceptable saving.
+  const picked = detailCandidates([exec('FAIL', 'error', 9 * 1024 * 1024, 0)], 60);
+  assert.deepEqual(picked.map((r) => r.id), ['FAIL']);
+});
+
+test('one huge failure does not starve the cheap successes behind it', () => {
+  // Sharing a single allowance meant a nine-megabyte failure consumed all of
+  // it and every small, common success was dropped to pay for one rare
+  // expensive row.
+  const picked = detailCandidates([
+    exec('FAIL', 'error', 9 * 1024 * 1024, 0),
+    ...Array.from({ length: 20 }, (_, i) => exec(`ok${i}`, 'success', 150 * 1024, i + 1)),
+  ], 60);
+  assert.ok(picked.some((r) => r.id === 'FAIL'), 'the failure is read');
+  assert.ok(picked.filter((r) => r.status === 'success').length >= 8,
+    `successes survive it, got ${picked.filter((r) => r.status === 'success').length}`);
+});
+
+test('a workflow whose every payload is huge still gets one, not none', () => {
+  // Skipping oversized successes is right — a funnel from a 5 MB execution
+  // says nothing a 200 KB one does not. Skipping ALL of them is a regression
+  // wearing a performance badge: no funnel, no item count, ever.
+  const picked = detailCandidates(
+    Array.from({ length: 40 }, (_, i) => exec(`s${i}`, 'success', 3 * 1024 * 1024, i)), 60,
+  );
+  assert.equal(picked.length, 1, 'one fetch instead of ten is the win; zero is a loss');
+  assert.equal(picked[0].id, 's0', 'and it is the newest, because a funnel describes the current shape');
+});
+
+test('oversized successes are skipped when cheap ones are available', () => {
+  const picked = detailCandidates([
+    exec('huge', 'success', 5 * 1024 * 1024, 0),
+    ...Array.from({ length: 12 }, (_, i) => exec(`ok${i}`, 'success', 80 * 1024, i + 1)),
+  ], 60);
+  assert.equal(picked.some((r) => r.id === 'huge'), false);
+  // Nine, not ten: the sample is capped at ten CANDIDATES before the size
+  // filter runs, so dropping the oversized one leaves nine. Reaching further
+  // back to top the sample up would buy a tenth funnel sample nobody needs.
+  assert.equal(picked.length, 9);
+});
