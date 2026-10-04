@@ -6,7 +6,7 @@ import {
   modifiedZ, anomalies, health, consecutiveFailures, overview, byProject,
   rangeById, analyse, formatMins,
 } from '../src/n8n/analytics.js';
-import { bucketKey, bucketsFrom, mergeBuckets, pruneRows, pruneBuckets, detailCandidates } from '../src/n8n/collect.js';
+import { bucketKey, bucketsFrom, mergeBuckets, pruneRows, pruneBuckets, detailCandidates, ENOUGH_COVERAGE } from '../src/n8n/collect.js';
 
 const NOW = new Date('2026-10-04T12:30:00.000Z');
 const TZ = 'UTC';
@@ -674,4 +674,27 @@ test('oversized successes are skipped when cheap ones are available', () => {
   // filter runs, so dropping the oversized one leaves nine. Reaching further
   // back to top the sample up would buy a tenth funnel sample nobody needs.
   assert.equal(picked.length, 9);
+});
+
+test('once there is enough node data, stop paying to backfill more', () => {
+  // Lead Qualification Agent spent 21 seconds on EVERY pass fetching ten more
+  // historical successes it already had plenty of. Past enough coverage the
+  // funnel averages over them, the item series already has its shape, and
+  // each one costs a couple of seconds of n8n's time forever.
+  const old = (n) => Array.from({ length: n }, (_, i) => ({
+    id: `c${i}`, status: 'success', volumeSource: 'node-data', items: 5,
+    startedAt: new Date(Date.parse('2026-10-01T00:00:00Z') + i * 60000).toISOString(),
+  }));
+  const fresh = (n) => Array.from({ length: n }, (_, i) => exec(`n${i}`, 'success', 200 * 1024, i));
+
+  assert.equal(detailCandidates(fresh(4), 60).length, 4, 'building up: take them');
+  assert.equal(detailCandidates([...old(24), ...fresh(4)], 60).length, 4, 'not there yet: still take them');
+  assert.equal(detailCandidates([...old(30), ...fresh(4)], 60).length, 0, 'enough: stop');
+
+  // A failure is never subject to this. Each one carries its own error and
+  // its own failed node, so "we already have 30 of those" is not a reason.
+  assert.deepEqual(
+    detailCandidates([...old(30), exec('f1', 'error', 200 * 1024, 0)], 60).map((r) => r.id),
+    ['f1'],
+  );
 });

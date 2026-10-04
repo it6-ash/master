@@ -260,10 +260,27 @@ async function pool(items, width, fn) {
  * answer will not change, and retrying it every pass forever is how a
  * collector turns into a load problem.
  */
+/**
+ * How many executions need node data before a funnel is as good as it gets.
+ *
+ * Past this, sampling more successes buys nothing. The funnel averages over
+ * them, the item series already has the shape, and each one costs a couple of
+ * seconds of n8n's time — which is how Lead Qualification Agent spent 21
+ * seconds on every pass backfilling history it already had enough of, forever.
+ *
+ * Failures are never subject to this. Every one is read however many are
+ * already stored, because each has its own error and its own failed node.
+ */
+export const ENOUGH_COVERAGE = 25;
+
 export function detailCandidates(rows, budget, {
   successSample = 10, maxBytes = 8 * 1024 * 1024, maxOneBytes = 1024 * 1024,
 } = {}) {
   const want = rows.filter((r) => r.volumeSource !== 'node-data' && !r.detailTried);
+
+  // Enough successes already carry node data, so stop paying to backfill more.
+  const covered = rows.filter((r) => r.volumeSource === 'node-data' && r.status !== 'error').length;
+  const sample = covered >= ENOUGH_COVERAGE ? 0 : successSample;
 
   const failures = want.filter((r) => r.status === 'error')
     .sort((a, b) => String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
@@ -345,7 +362,7 @@ export function detailCandidates(rows, budget, {
   // current shape of a workflow rather than its history.
   return withinBudget(
     failures.slice(0, Math.max(0, budget)),
-    successes.slice(0, Math.max(0, Math.min(successSample, budget - Math.min(failures.length, budget)))),
+    successes.slice(0, Math.max(0, Math.min(sample, budget - Math.min(failures.length, budget)))),
   );
 }
 
