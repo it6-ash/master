@@ -260,11 +260,31 @@ async function pool(items, width, fn) {
  * answer will not change, and retrying it every pass forever is how a
  * collector turns into a load problem.
  */
-export function detailCandidates(rows, budget) {
+export function detailCandidates(rows, budget, { successSample = 10 } = {}) {
   const want = rows.filter((r) => r.volumeSource !== 'node-data' && !r.detailTried);
-  want.sort((a, b) => (a.status === 'error' ? 0 : 1) - (b.status === 'error' ? 0 : 1)
-    || String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
-  return want.slice(0, Math.max(0, budget));
+
+  const failures = want.filter((r) => r.status === 'error')
+    .sort((a, b) => String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
+  const successes = want.filter((r) => r.status !== 'error')
+    .sort((a, b) => String(b.startedAt ?? '').localeCompare(String(a.startedAt ?? '')));
+
+  // EVERY failure, then a small sample of successes.
+  //
+  // Reading the payload of every execution is not worth what it costs: on a
+  // high-volume workflow it is hundreds of megabytes a pass to count items
+  // that the hourly buckets already summarise. But a failure's payload is the
+  // only place the error message and the failed node exist, failures are a
+  // few percent of runs, and "it failed at the Cratio POST with HTTP 500" is
+  // the single most actionable thing on the page. So failures are read in
+  // full and successes are sampled — enough for a node funnel and a sense of
+  // item volume, without paying for all of it.
+  //
+  // The sample is the NEWEST successes, because a funnel describes the
+  // current shape of a workflow rather than its history.
+  return [
+    ...failures.slice(0, Math.max(0, budget)),
+    ...successes.slice(0, Math.max(0, Math.min(successSample, budget - Math.min(failures.length, budget)))),
+  ];
 }
 
 async function syncOne(workflow, instance, { retention, tz, now }) {

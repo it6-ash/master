@@ -3,13 +3,14 @@
   "_instances_comment": "The allowlist: a workflow may only name an instance declared here. TWO WAYS TO READ AN N8N. `source: sqlite` reads n8n's own database with a read-only SELECT over SSH — no API key to create or rotate, no public port, no n8n configuration at all, and the same SSH-plus-a-read-only-command idiom every other fact on this dashboard already arrives by (see kw-collect.sh). That is what this estate uses, because the public API is not available here. `source: api` is the REST API and stays for an n8n Cloud instance that has no database to reach; it needs apiKeyEnv and a baseUrl, and registry.js refuses a plain-HTTP baseUrl that is not loopback. publicUrl is only ever used to build clickable links on the dashboard.",
   "instances": {
     "n8n-main": {
-      "source": "sqlite",
+      "source": "api",
       "server": "srv1340120",
-      "container": "n8n-n8n-1",
-      "dbPath": "/home/node/.n8n/database.sqlite",
+      "baseUrl": "http://127.0.0.1:5678",
       "publicUrl": "https://n8n.srv1340120.hstgr.cloud",
-      "note": "n8n-n8n-1 on srv1340120. 135 workflows, ~12 active, a 2.5 GB SQLite. The box the dashboard itself runs on, so the collector reads it locally with no SSH hop at all. Needs `apt install -y sqlite3` on that box — a read-only client, it does not touch the database n8n is using except to read it. The host path is asked of `docker inspect` rather than assumed, because a named volume and a bind mount land in different places.",
-      "_sshHost": "Omitted on purpose: the dashboard runs on this same box, so this reads the file directly. Set sshHost/sshUser/sshKey for an instance on another machine."
+      "apiKeyEnv": "N8N_API_KEY_MAIN",
+      "note": "n8n-n8n-1 on srv1340120. 145 workflows, ~14 active. The dashboard runs on this same box, so the API is reached over LOOPBACK — no DNS, no certificate, no public route, and none of those can break the monitoring by breaking themselves.",
+      "_why_api_here": "The API is the better read for this instance, and measurably so. It hands back jsonSizeBytes with the metadata for free, where SQLite has no stored length and length(d.data) has to read every payload to count it — gigabytes of reading to produce one number per row. It unflattens the execution payload, where reading the table means decoding n8n's flatted encoding first. And a detail fetch is a loopback HTTP request of a few milliseconds rather than a `sqlite3` process spawn. Create the key in n8n: Settings -> n8n API.",
+      "_sqlite_fallback": "To go back to reading the database — no API key, no public port — set source:\"sqlite\", container:\"n8n-n8n-1\", dbPath:\"/home/node/.n8n/database.sqlite\" and drop baseUrl/apiKeyEnv. It needs `apt install -y sqlite3` on the box. Both drivers return identical shapes, so nothing downstream knows which answered."
     },
     "n8n-vfa2": {
       "source": "sqlite",
@@ -21,7 +22,7 @@
       "sshKey": "/root/.ssh/id_ed25519",
       "publicUrl": null,
       "enabled": false,
-      "_comment": "The SECOND n8n. 3 workflows, 1 active (RxfLvmFe4bAvfxEs, KW META Custom Audiences). Reading the database over SSH removes the whole reachability problem that the API approach had: srv1340120 already holds a key for this box — src/sync.js uses it on every pass — so no tunnel, no open port and no certificate are needed. Set enabled:true once `sqlite3` is installed there and the first `npm run wf-sync` has been watched.",
+      "_comment": "The SECOND n8n. 3 workflows, 1 active (RxfLvmFe4bAvfxEs, KW META Custom Audiences). Deliberately a DIFFERENT source from n8n-main, and the mix is the point: each instance uses whatever is actually appropriate for how it is reachable. n8n-main is on this box, so loopback HTTP is both fastest and private. This one is on another box with no vhost and no TLS, so an API call would either cross the public internet in clear text — which registry.js refuses — or need a tunnel to be kept alive. Reading its database over SSH needs neither: srv1340120 already holds a key for that box, src/sync.js uses it on every pass, and SSH is the encryption. Set enabled:true once `sqlite3` is installed there and the first pass has been watched.",
       "_exposure": "Still worth fixing, and now unrelated to this module: the collector found n8n-vfa2-n8n-1 published as 0.0.0.0:32769->5678/tcp — port 32769 on every interface, no vhost, no TLS. ufw being active on that box does NOT cover it, because docker writes its own iptables rules and publishes bypass ufw entirely. Change the compose port mapping to \"127.0.0.1:32769:5678\" and the exposure goes away without affecting anything local. Reading the database does not need that port at all."
     }
   },
