@@ -216,30 +216,42 @@ async function once() {
     }
   }
 
+  // How far the collection got. NOT a reason to stop: see the probe below.
+  let code = 0;
   if (collected === 0) {
     process.stdout.write(`${yellow('!')} Nothing collected; leaving data/ and dist/ alone.\n`);
-    return 1;
+    code = 1;
+  } else {
+    const ingest = await run(process.execPath, [abs('src', 'ingest', 'index.js')]);
+    code = ingest.code;
+    // After ingest, never before: a dump that has not been read yet is not spare.
+    if (code === 0 && !dryRun) for (const host of hosts) pruneRaw(host.id);
   }
-
-  const ingest = await run(process.execPath, [abs('src', 'ingest', 'index.js')]);
-  if (ingest.code !== 0) return ingest.code;
-
-  // After ingest, never before: a dump that has not been read yet is not spare.
-  if (!dryRun) for (const host of hosts) pruneRaw(host.id);
 
   // Probe from outside before building, so the page carries this run's result
   // rather than the previous one's. A failing check is a finding, not a broken
   // pass — check.js exits 0 either way and the build must still happen.
+  //
+  // AND IT RUNS EVEN IF THE COLLECTION FAILED, which is the whole point. This
+  // used to `return 1` above, so one unreachable box — or one bad ingest — took
+  // the 09:30 digest down with it, and the mail that would have said "the
+  // collection is broken" was the first thing the breakage silenced. The probe
+  // needs nothing from the servers: it asks the public internet, reads the
+  // hostname list from the last good pass, and posts to n8n over loopback.
   await run(process.execPath, [abs('src', 'check.js'), ...(dryRun ? ['--dry-run'] : [])]);
 
   // Then the n8n execution telemetry, for the same reason and with the same
   // contract: an unreachable n8n is a finding the page shows, not a broken
   // pass, so wf-sync exits 0 either way. It needs $N8N_API_KEY_* in the
   // environment; with none set it reports that and writes nothing, which is
-  // the correct behaviour on a laptop.
-  await run(process.execPath, [abs('src', 'n8n', 'collect.js'), ...(dryRun ? ['--dry-run'] : [])]);
+  // the correct behaviour on a laptop. Skipped on a failed pass: there is
+  // nothing fresh to attribute the executions to.
+  if (code === 0) await run(process.execPath, [abs('src', 'n8n', 'collect.js'), ...(dryRun ? ['--dry-run'] : [])]);
 
+  // Built even on a failed pass, because check.js just wrote a result and a
+  // page still showing yesterday's probe is the quiet kind of wrong.
   const build = await run(process.execPath, [abs('src', 'build.js')]);
+  if (code !== 0) return code;
 
   // Last, because the digest and the alerts describe what the pass just
   // collected. After the build, so a recipient clicking through to the
