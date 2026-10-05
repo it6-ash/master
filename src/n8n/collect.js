@@ -66,6 +66,20 @@ const dim = (s) => paint('2', s);
 
 export const RUNS_DIR = ['data', 'runs'];
 
+/**
+ * Is this failure worth trying again, or is it the answer?
+ *
+ * A 404 is an answer: n8n prunes executions on its own schedule, so an id
+ * that has gone will not come back and asking again every six hours forever
+ * is just load. A timeout is not an answer — it is one slow moment, and over
+ * a tunnel to another box they happen. Retiring an execution on the strength
+ * of one costs it its item count permanently.
+ */
+export function isTransient(error) {
+  return /timed out|timeout|aborted|ECONNRESET|ECONNREFUSED|EPIPE|ETIMEDOUT|EAI_AGAIN|socket hang up|unreachable|HTTP 5\d\d/i
+    .test(String(error?.message ?? error ?? ''));
+}
+
 /* ------------------------------------------------------------- buckets */
 
 const formatters = new Map();
@@ -502,7 +516,12 @@ async function syncOne(workflow, instance, { retention, tz, now }) {
     } catch (e) {
       // One bad execution must not fail the workflow.
       failures.push(`execution ${row.id}: ${e.message}`);
-      byId.set(row.id, { ...row, detailTried: true });
+      // A TRANSIENT failure is not an answer. Marking it detailTried retires
+      // the execution permanently on the strength of one slow moment — and
+      // over the tunnel to the second n8n, two executions timed out on their
+      // first collection and would have lost their item counts for good.
+      // Left unmarked, the next pass picks them up.
+      if (!isTransient(e)) byId.set(row.id, { ...row, detailTried: true });
     }
   });
 
@@ -627,9 +646,21 @@ export async function runSync({ now = new Date() } = {}) {
     return registry.errors.length ? 1 : 0;
   }
 
+  // "from 1 instance(s)" counted instances that HAVE monitored workflows, so a
+  // second instance that was correctly configured, reachable and enabled still
+  // read as absent — it simply had nothing registered against it yet. Two
+  // different facts; say both.
+  const used = new Set(monitored.map((w) => w.instance));
+  const idle = Object.keys(registry.instances).filter((id) => !used.has(id));
+
   process.stdout.write(`\n${dim(new Date(now).toISOString().replace('T', ' ').slice(0, 19))} `
     + `collecting ${monitored.length} workflow${monitored.length === 1 ? '' : 's'} `
-    + `from ${new Set(monitored.map((w) => w.instance)).size} instance(s), bucketed in ${tz}\n`);
+    + `from ${used.size} instance${used.size === 1 ? '' : 's'}, bucketed in ${tz}\n`
+    + (idle.length
+      ? dim(`  ${idle.join(', ')} ${idle.length === 1 ? 'is' : 'are'} configured and enabled `
+        + `but ${idle.length === 1 ? 'has' : 'have'} no registered workflows `
+        + '— npm run wf-add -- --discover\n')
+      : ''));
 
   /* One reachability check per instance, not per workflow. Thirteen workflows
      on a dead instance should report one outage, not thirteen. */

@@ -714,3 +714,26 @@ test('backfill stops once there is enough; NEW executions never do', () => {
     ['f1'],
   );
 });
+
+test('a timeout is retried; a 404 is not', async () => {
+  // Over the tunnel to the second n8n, two executions timed out on their
+  // first collection. Marking them detailTried retires an execution
+  // permanently on the strength of one slow moment, and it loses its item
+  // count for good. A 404 really is the answer — n8n prunes on its own
+  // schedule, so asking again every six hours forever is just load.
+  const { isTransient } = await import('../src/n8n/collect.js');
+
+  for (const msg of [
+    'The operation was aborted due to timeout',
+    'http://127.0.0.1:15678 unreachable: timed out after 30s',
+    'ECONNRESET',
+    'socket hang up',
+    'HTTP 502 — n8n is up but not ready',
+  ]) assert.equal(isTransient(new Error(msg)), true, msg);
+
+  for (const msg of [
+    'HTTP 404 — no such workflow or execution on this instance',
+    'HTTP 401 — the API key was rejected',
+    'unparseable reply from http://127.0.0.1:5678',
+  ]) assert.equal(isTransient(new Error(msg)), false, msg);
+});
