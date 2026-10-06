@@ -254,9 +254,11 @@ test('a spike has to double before it is worth saying', () => {
 });
 
 test('a runtime that has run away is its own anomaly', () => {
-  const base = baseline(historyBuckets(14, 400, { runs: 10, msSum: 10000 }), { now: NOW, ...ctx });
-  assert.equal(base.avgMs.median, 1000);
-  const got = anomalies({ items: 400, itemsCovered: 10, avgMs: 1480 }, base, { partialDay: 1 });
+  // Ten seconds, not one: a runtime alert needs a baseline slow enough for the
+  // increase to be worth somebody's attention. See the minMs floor below.
+  const base = baseline(historyBuckets(14, 400, { runs: 10, msSum: 100000 }), { now: NOW, ...ctx });
+  assert.equal(base.avgMs.median, 10000);
+  const got = anomalies({ items: 400, itemsCovered: 10, avgMs: 14800 }, base, { partialDay: 1 });
   assert.equal(got.length, 1);
   assert.equal(got[0].kind, 'runtime-up');
   assert.equal(got[0].pct, 48);
@@ -736,4 +738,19 @@ test('a timeout is retried; a 404 is not', async () => {
     'HTTP 401 — the API key was rejected',
     'unparseable reply from http://127.0.0.1:5678',
   ]) assert.equal(isTransient(new Error(msg)), false, msg);
+});
+
+test('a workflow whose normal run is under two seconds gets no runtime alert', () => {
+  // 0.658s -> 1.343s on WhatsApp Chat Agent mailed seven people a WARNING
+  // about 685 milliseconds. A real statistical outlier, an operational
+  // nothing — and the fastest way to teach people to filter the report.
+  const base = { ok: true, avgMs: { median: 658, mad: 40 }, items: null };
+  assert.deepEqual(anomalies({ avgMs: 1343, items: 0, itemsCovered: 0 }, base), []);
+
+  // The same proportional jump on a baseline that is actually slow still fires:
+  // 40% on top of twelve seconds is five seconds somebody waits for.
+  const slow = { ok: true, avgMs: { median: 12000, mad: 400 }, items: null };
+  const out = anomalies({ avgMs: 24000, items: 0, itemsCovered: 0 }, slow);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].kind, 'runtime-up');
 });

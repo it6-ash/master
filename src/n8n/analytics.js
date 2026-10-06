@@ -304,7 +304,9 @@ const OUTLIER_Z = 3.5;
  *   - a low-volume floor. A workflow whose normal day is three items has no
  *     meaningful distribution, and every z-score it produces is noise.
  */
-export function anomalies(stats, base, { dropPct = 40, minMedian = 20, partialDay = 1 } = {}) {
+export function anomalies(stats, base, {
+  dropPct = 40, minMedian = 20, partialDay = 1, minMs = 2000,
+} = {}) {
   const out = [];
   if (!base?.ok) return out;
 
@@ -329,7 +331,12 @@ export function anomalies(stats, base, { dropPct = 40, minMedian = 20, partialDa
     }
   }
 
-  if (base.avgMs && stats.avgMs) {
+  // The same low-volume floor the items branch has, for the same reason. A
+  // WhatsApp reply bot whose normal run is 0.658s doubled to 1.343s and mailed
+  // seven people a WARNING about 685 milliseconds. Statistically it is a real
+  // outlier; operationally it is nothing, and an alert nobody can act on is
+  // how a mail everybody reads becomes a mail everybody filters.
+  if (base.avgMs && stats.avgMs && base.avgMs.median >= minMs) {
     const z = modifiedZ(stats.avgMs, base.avgMs);
     const delta = ((stats.avgMs - base.avgMs.median) / base.avgMs.median) * 100;
     if (z !== null && z >= OUTLIER_Z && delta >= 40) {
