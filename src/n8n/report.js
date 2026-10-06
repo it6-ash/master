@@ -36,6 +36,33 @@ const dryRun = args.includes('--dry-run');
 const force = args.includes('--force') || args.includes('--force-report');
 const alertsOnly = args.includes('--alerts-only');
 
+/**
+ * --to a@b.com[,c@d.com] — send this run to these addresses instead of the
+ * configured list, and copy nobody.
+ *
+ * report.notify cannot be narrowed in config: the tracked file and the
+ * git-ignored override are merged as a UNION, on purpose, so that adding
+ * somebody in one place can never silently remove the people listed in the
+ * other. That guard is right for configuration and wrong for a test run,
+ * where mailing seven people to check a layout is how a report becomes a
+ * thing people filter.
+ *
+ * Deliberately a flag and not a config key. A flag lasts exactly one run; a
+ * "testing" key in a config file is still there in March, quietly sending the
+ * daily report to one person.
+ */
+const toIndex = args.indexOf('--to');
+const toOverride = toIndex !== -1
+  // An address must look like one. `--to --force` would otherwise swallow the
+  // next flag and send the report to "--force", and the run would report
+  // success because the webhook accepted it.
+  ? String(args[toIndex + 1] ?? '').split(',').map((s) => s.trim()).filter((s) => s.includes('@'))
+  : null;
+if (toOverride && !toOverride.length) {
+  process.stderr.write('--to needs at least one address, e.g. --to it6@kwgroup.in\n');
+  process.exit(2);
+}
+
 const TIMEOUT_MS = 20000;
 const STATE_FILE = ['data', 'n8n-alerts.json'];
 
@@ -358,7 +385,10 @@ export function alertHtml(alert, { at }) {
  * share one webhook, one credential and one Gmail node.
  */
 async function post(webhook, payload, { servers }) {
-  if (dryRun) return { sent: false, reason: 'dry run' };
+  // Name the recipients. A dry run exists to answer "what would happen", and
+  // who it goes to is half of that — especially with --to, where the whole
+  // point is confirming the narrowing took effect before a real send.
+  if (dryRun) return { sent: false, reason: `dry run · would go to ${payload.to || 'nobody'}` };
   if (!webhook) return { sent: false, reason: 'no webhook configured under report.webhook' };
 
   const attempt = async (url, via) => {
@@ -394,7 +424,7 @@ export async function runReport({ now = new Date() } = {}) {
   const report = registry.report ?? {};
   const alerts = report.alerts ?? {};
   const tz = report.timezone ?? 'Asia/Kolkata';
-  const recipients = [report.notify ?? []].flat().filter(Boolean);
+  const recipients = toOverride ?? [report.notify ?? []].flat().filter(Boolean);
 
   const reportable = registry.workflows.filter((w) => w.monitoring && w.reporting !== false);
   if (!reportable.length) {
@@ -422,7 +452,9 @@ export async function runReport({ now = new Date() } = {}) {
     subject,
     to: recipients.join(', '),
     toList: recipients,
-    cc: [report.cc ?? []].flat().filter(Boolean).join(', ') || undefined,
+    // --to copies nobody. A test run that still cc'd the configured list would
+    // defeat the entire point of the flag.
+    cc: toOverride ? undefined : ([report.cc ?? []].flat().filter(Boolean).join(', ') || undefined),
     at,
     html,
     healthy: totals.failed === 0 && totals.byHealth.HEALTHY === totals.workflows,

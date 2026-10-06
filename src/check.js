@@ -31,6 +31,18 @@ const noForms = args.includes('--no-forms');
 const forceForms = args.includes('--force-forms');
 const forceReport = args.includes('--force-report');
 
+// --to a@b.com[,c@d.com] — this run goes to these addresses and nobody else.
+// config.notify is merged as a union and so cannot be narrowed in config; see
+// the same flag in src/n8n/report.js for why this is a flag and not a key.
+const toIndex = args.indexOf('--to');
+const toOverride = toIndex !== -1
+  ? String(args[toIndex + 1] ?? '').split(',').map((s) => s.trim()).filter((s) => s.includes('@'))
+  : null;
+if (toOverride && !toOverride.length) {
+  process.stderr.write('--to needs at least one address, e.g. --to it6@kwgroup.in\n');
+  process.exit(2);
+}
+
 const color = process.stdout.isTTY && !process.env.NO_COLOR;
 const paint = (c, s) => (color ? `[${c}m${s}[0m` : s);
 const green = (s) => paint('32', s);
@@ -715,7 +727,7 @@ async function postReport(report, config, servers) {
 
   // `notify` takes one address or a list. Sent both ways because email nodes
   // differ: most want one comma-separated string, some want an array.
-  const recipients = [config.notify ?? []].flat().filter(Boolean);
+  const recipients = toOverride ?? [config.notify ?? []].flat().filter(Boolean);
 
   const send = (to) => fetch(to, {
       method: 'POST',
@@ -725,7 +737,8 @@ async function postReport(report, config, servers) {
         subject,
         to: recipients.join(', '),
         toList: recipients,
-        cc: [config.cc ?? []].flat().filter(Boolean).join(', ') || undefined,
+        // --to copies nobody, or the flag would not narrow anything.
+        cc: toOverride ? undefined : ([config.cc ?? []].flat().filter(Boolean).join(', ') || undefined),
         at: report.at,
         reason: report.why ?? null,
         healthy: failures.length === 0,
