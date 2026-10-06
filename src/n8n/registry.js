@@ -578,7 +578,7 @@ async function main() {
     }
     const target = argv.includes('--tracked') ? abs('config', 'n8n.example.json') : abs('config', 'n8n.json');
     for (const e of fresh) saveEntry(e, { file: target });
-    process.stdout.write(`\nRegistered ${fresh.length} workflow${fresh.length === 1 ? '' : 's'} in config/n8n.example.json.\n`
+    process.stdout.write(`\nRegistered ${fresh.length} workflow${fresh.length === 1 ? '' : 's'} in ${rel(target)}.\n`
       + '  No expected interval was set for any of them: this cannot know whether a workflow is a\n'
       + '  nightly cron or a webhook, and a wrong interval mails everybody about a workflow that is fine.\n'
       + '  Set one per workflow in the admin panel once you know its schedule.\n'
@@ -617,7 +617,7 @@ async function main() {
 
   const { replaced, file } = saveEntry(built.entry, argv.includes('--tracked')
     ? { file: abs('config', 'n8n.example.json') } : {});
-  process.stdout.write(`${replaced ? 'updated' : 'registered'} ${built.entry.id} in config/n8n.example.json\n`
+  process.stdout.write(`${replaced ? 'updated' : 'registered'} ${built.entry.id} in ${rel(file)}\n`
     + '  Collect it now:  npm run wf-sync\n');
 }
 

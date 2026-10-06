@@ -286,3 +286,54 @@ test('an unconfirmed failure is held back; with no list at all, everything repor
   assert.equal(checkIssues({ ...base, confirmed: {} })
     .filter((i) => i.rule === 'site-unreachable').length, 1);
 });
+
+/* ------------------------------------------- a broken lookup is not a loss */
+
+test('a lookup that returns HTTP 500 is unreachable, not a missing lead', () => {
+  // A re-import left the verification workflow's Cratio node without its
+  // credential. n8n answered 500 on every call, the body obviously did not
+  // contain the needle, and all five lead forms were reported as silently
+  // dropping every enquiry: five CRITICAL findings, none of them true, about
+  // the wrong system entirely.
+  //
+  // The distinction already existed in words — "being unable to see is not
+  // proof of loss" — and was only ever applied to the LEAD_ERROR marker, not
+  // to the status code, which is the commoner way for a lookup to fail.
+  const report = {
+    at: '2026-10-06T04:00:00Z', today: '2026-10-06', from: 'box',
+    sites: [], confirmed: [],
+    forms: [{
+      id: 'kwbluepearl', url: 'https://kwbluepearl.com/api/enquiry',
+      accepted: true, ok: false, status: 200,
+      verified: {
+        attempted: true, found: false, attempt: 1,
+        error: 'the lookup returned HTTP 500: Node "Search Cratio by mobile1" does not have access to the credential',
+      },
+    }],
+  };
+
+  const issues = checkIssues(report);
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].rule, 'crm-unreachable', 'the checker is broken, not the pipeline');
+  assert.equal(issues[0].severity, 'medium', 'medium: being unable to see is not proof of loss');
+  assert.match(issues[0].body, /may well be fine/);
+});
+
+test('a lookup that genuinely found nothing is still critical', () => {
+  // The guard above must not swallow the finding this check exists for: the
+  // page returns a cheerful 200, the salesperson never sees the lead, and
+  // nothing anywhere reports it.
+  const report = {
+    at: '2026-10-06T04:00:00Z', today: '2026-10-06', from: 'box',
+    sites: [], confirmed: [],
+    forms: [{
+      id: 'kwbluepearl', url: 'https://kwbluepearl.com/api/enquiry',
+      accepted: true, ok: false, status: 200,
+      verified: { attempted: true, found: false, attempt: 3, afterMs: 30000 },
+    }],
+  };
+
+  const issues = checkIssues(report);
+  assert.equal(issues[0].rule, 'lead-not-in-crm');
+  assert.equal(issues[0].severity, 'critical');
+});

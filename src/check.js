@@ -298,6 +298,29 @@ async function verifyLead(form, payload, { today }) {
       // this, a wrong API key or a renamed CRM field raises "the form accepted
       // a lead that never arrived" — critical, alarming, and about the wrong
       // system entirely.
+      //
+      // That principle was written for the LEAD_ERROR marker and never applied
+      // to the HTTP STATUS, which is the more common way for the lookup to
+      // fail. A re-import left the verification workflow's Cratio node without
+      // its credential, n8n answered 500 on every call, the body obviously did
+      // not contain the needle — and all five lead forms were reported as
+      // silently dropping every enquiry. Five critical findings, none of them
+      // true, about the wrong system entirely. Exactly the failure this
+      // function already had a paragraph about.
+      if (!res.ok) {
+        let why = text.slice(0, 160);
+        try {
+          const parsed = JSON.parse(text);
+          why = parsed.message ?? parsed.detail ?? parsed.error ?? why;
+        } catch { /* not JSON; the raw slice is the best available */ }
+        return {
+          attempted: true,
+          found: false,
+          attempt,
+          error: `the lookup returned HTTP ${res.status}: ${String(why).slice(0, 140)}`,
+        };
+      }
+
       const errorMatch = v.errorMatch ?? 'LEAD_ERROR';
       if (errorMatch && text.includes(errorMatch)) {
         // The sentence, not the envelope. Whoever reads the issue wants "you

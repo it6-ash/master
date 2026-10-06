@@ -46,7 +46,13 @@
       "position": [
         260,
         -200
-      ]
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "nqJxVp6RShmz4mnb",
+          "name": "Noreply1 - credential"
+        }
+      }
     },
     {
       "parameters": {
@@ -106,7 +112,13 @@
         -40,
         200
       ],
-      "notes": "Credential: Query Auth, name \"apikey\", value = your Cratio API key. Cratio takes the key as a query parameter, so it stays in n8n and out of this file. searchcondition uses the FIELD LABEL exactly as the CRM shows it — \"Mobile Number\", not \"Mobile\". `contains` on the last ten digits, because Cratio stores +919643330741 and the form sends the bare number. Searched by mobile rather than email: the @ in an email address collides with searchcondition's own separator."
+      "notes": "Credential: Query Auth, name \"apikey\", value = your Cratio API key. Cratio takes the key as a query parameter, so it stays in n8n and out of this file. searchcondition uses the FIELD LABEL exactly as the CRM shows it — \"Mobile Number\", not \"Mobile\". `contains` on the last ten digits, because Cratio stores +919643330741 and the form sends the bare number. Searched by mobile rather than email: the @ in an email address collides with searchcondition's own separator.",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "QkTFihaMfewkXBRM",
+          "name": "Query Auth account"
+        }
+      }
     },
     {
       "parameters": {
