@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   targetsFrom, testLead, checkIssues, shouldReport, localTime, shrinkIssue, confirmFailures, confirmedSet,
 } from '../src/check.js';
+import { formVerdict } from '../src/render/html.js';
 
 test('the report clock is the reader\'s, not the server\'s', () => {
   // srv1340120 runs Etc/UTC. A naive 09:30 would mail at 15:00 in Delhi, and
@@ -336,4 +337,39 @@ test('a lookup that genuinely found nothing is still critical', () => {
   const issues = checkIssues(report);
   assert.equal(issues[0].rule, 'lead-not-in-crm');
   assert.equal(issues[0].severity, 'critical');
+});
+
+test('a form that was accepted is never reported as rejected', () => {
+  // All five lead forms once read "rejected it — HTTP 200" on the dashboard.
+  // Two of them have no `expect` configured and so cannot fail on matching:
+  // they had been ACCEPTED, and it was the CRM lookup that failed. A 200 is
+  // not a rejection, and sending somebody to debug the form wastes the hour.
+  const accepted = { id: 'kwbluepearl', accepted: true, ok: false, status: 200,
+    verified: { attempted: true, found: false } };
+  const why = formVerdict(accepted);
+  assert.match(why, /accepted it/);
+  assert.doesNotMatch(why, /rejected/);
+  assert.doesNotMatch(why, /HTTP 200/);
+
+  // A lookup that could not run is a third state again, and names the reason.
+  const unreachable = { id: 'kwgroup', accepted: true, ok: false, status: 200,
+    verified: { attempted: true, found: false, error: 'the lookup returned HTTP 500' } };
+  assert.match(formVerdict(unreachable), /could not run — the lookup returned HTTP 500/);
+});
+
+test('a 200 without the expected string names the string it wanted', () => {
+  // The quiet drop: the visitor sees a thank-you, nothing is stored. "HTTP
+  // 200" alone describes this as a success.
+  const quiet = { id: 'kwbluepearldelhi', accepted: false, ok: false, status: 200,
+    expected: 'thank', matched: false };
+  const why = formVerdict(quiet);
+  assert.match(why, /without "thank"/);
+  assert.match(why, /HTTP 200/);
+
+  // A real rejection still reads as one.
+  assert.match(formVerdict({ id: 'x', accepted: false, ok: false, status: 403 }), /^rejected it — HTTP 403/);
+  // And a transport failure is neither.
+  assert.match(formVerdict({ id: 'x', ok: false, error: 'timed out' }), /could not be reached — timed out/);
+  // A healthy form says nothing at all.
+  assert.equal(formVerdict({ id: 'x', accepted: true, ok: true, status: 200, verified: { attempted: false } }), null);
 });

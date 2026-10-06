@@ -1735,6 +1735,35 @@ function renderAnalytics(wfa, { projects, workflows, standalone = false }) {
 /* ------------------------------------------------------ outside-in check */
 
 /**
+ * Why a lead form is not green.
+ *
+ * Three unrelated failures were all printing as "rejected it — HTTP 200",
+ * which is wrong twice over: a 200 is not a rejection, and a form whose lead
+ * went missing in the CRM was ACCEPTED by the site — the problem is further
+ * down the pipe, and sending somebody to look at the form wastes the hour.
+ *
+ * Nothing here is new information. checkIssues has told crm-unreachable apart
+ * from lead-not-in-crm since it was written, and submitForm records `accepted`
+ * separately from `ok`. This panel was the only place that threw it away.
+ *
+ * Returns null when the form is fine.
+ */
+export function formVerdict(f) {
+  if (f.error) return `could not be reached — ${f.error}`;
+  if (!f.accepted) {
+    // A site that answers 200 without the expected string is the quiet drop:
+    // the visitor sees a thank-you, nothing is stored. Naming the string that
+    // was missing is the difference between a report and a shrug.
+    return f.matched === false
+      ? `answered HTTP ${f.status} but without "${f.expected}" — a thank-you page that drops the lead looks exactly like this`
+      : `rejected it — HTTP ${f.status}`;
+  }
+  if (f.verified?.error) return `accepted it, but the CRM lookup could not run — ${f.verified.error}`;
+  if (f.verified?.found === false) return 'accepted it, but the lead never reached the CRM';
+  return null;
+}
+
+/**
  * What the public internet sees, which is not what the servers report.
  *
  * Everything else on this page is the estate describing itself: ports it has
@@ -1768,14 +1797,20 @@ function checksPanel(checks) {
     <figcaption>Outside-in checks</figcaption>
     <p class="chart-note">
       <strong>${sitesOk}/${sites}</strong> hostnames answered${forms.length
-    ? `, ${checks.summary.formsOk}/${forms.length} lead form${forms.length === 1 ? '' : 's'} accepted a test submission` : ''}.
+    ? `, ${checks.summary.formsAccepted ?? checks.summary.formsOk}/${forms.length} lead form${forms.length === 1 ? '' : 's'} accepted a test submission`
+      // Accepted and confirmed-in-the-CRM are different questions, and saying
+      // "0/5 accepted" about five forms that all accepted the lead sends
+      // somebody to debug the wrong system. Only mentioned when they disagree.
+      + ((checks.summary.formsAccepted ?? 0) > (checks.summary.formsOk ?? 0)
+        ? `, ${checks.summary.formsOk} of those confirmed in the CRM` : '') : ''}.
       Requested over the public internet at ${escapeHtml(String(checks.at ?? '').replace('T', ' ').slice(0, 16))} UTC, so this
       is the one panel that fails for DNS, certificate and form problems the servers themselves report as healthy.
       ${failed === 0 ? '' : `<strong>${failed} failing.</strong>`}
     </p>
-    ${forms.length ? `<p class="chart-note">${forms.map((f) => `${escapeHtml(f.id)}: ${f.ok
-    ? 'accepted the test lead'
-    : `<strong>rejected it — ${escapeHtml(f.error ?? `HTTP ${f.status}`)}</strong>`}`).join(' · ')}. Submissions are marked
+    ${forms.length ? `<p class="chart-note">${forms.map((f) => {
+    const why = formVerdict(f);
+    return `${escapeHtml(f.id)}: ${why ? `<strong>${escapeHtml(why)}</strong>` : 'accepted the test lead'}`;
+  }).join(' · ')}. Submissions are marked
       <code>${escapeHtml(String(forms[0]?.payload?.name ?? 'KW Estate monitor'))}</code> so they filter out of the CRM in one rule.</p>` : ''}
     <div class="table-wrap">
       <table class="renewal-table">
