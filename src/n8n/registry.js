@@ -24,7 +24,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 
-import { ROOT, abs, readJson } from '../lib/fsx.js';
+import { ROOT, abs, rel, readJson } from '../lib/fsx.js';
 
 /** The same id shape ingest/n8n-list.js accepts, so the two agree on what an id is. */
 export const WORKFLOW_ID_RE = /^[A-Za-z0-9_-]{8,36}$/;
@@ -306,6 +306,9 @@ const USAGE = `
     --checkpoint <node>  an n8n node name to track separately. Repeatable
     --description <text>
     --no-report          collect it, but leave it out of the email report
+    --tracked            write to config/n8n.example.json (the repo copy) instead
+                         of config/n8n.json. Use in a checkout you are going to
+                         commit; NEVER on the box, where pull.sh reverts it
     --list               print the registry and exit
     --dry-run            print the entry, write nothing
 `;
@@ -484,10 +487,22 @@ export function discoverFromInventory({ workflows, projects = {}, instances }) {
 }
 
 /**
- * Write the entry into the TRACKED file, merging over any existing id.
- * @returns {{ written: boolean, replaced: boolean }}
+ * Write the entry, merging over any existing id.
+ *
+ * Defaults to config/n8n.json, the GIT-IGNORED override, and that is not a
+ * detail. The tracked config/n8n.example.json is listed in pull.sh's
+ * CODE_PATHS, so every collection pass runs `git checkout origin/main --
+ * config` over it — three workflows registered on the box with --discover
+ * were silently reverted by the next pull, and the only symptom was a report
+ * covering thirteen workflows instead of sixteen. An untracked file cannot be
+ * clobbered by git, and the registry merge already lets it win.
+ *
+ * `--tracked` writes to the example file instead, which is the right thing in
+ * a repo checkout where the change is going to be committed and shipped.
+ *
+ * @returns {{ written: boolean, replaced: boolean, file: string }}
  */
-export function saveEntry(entry, { file = abs('config', 'n8n.example.json') } = {}) {
+export function saveEntry(entry, { file = abs('config', 'n8n.json') } = {}) {
   const current = readJson(file);
   const config = current.ok ? current.value : { instances: {}, workflows: [] };
   const list = config.workflows ?? [];
@@ -500,7 +515,7 @@ export function saveEntry(entry, { file = abs('config', 'n8n.example.json') } = 
   // Not serializeJson(): that sorts keys deep and would reflow this whole
   // hand-written file, _comment keys and all, into alphabetical order.
   fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
-  return { written: true, replaced };
+  return { written: true, replaced, file };
 }
 
 async function main() {
@@ -561,7 +576,8 @@ async function main() {
       process.stdout.write('\n--dry-run: nothing written\n');
       return;
     }
-    for (const e of fresh) saveEntry(e);
+    const target = argv.includes('--tracked') ? abs('config', 'n8n.example.json') : abs('config', 'n8n.json');
+    for (const e of fresh) saveEntry(e, { file: target });
     process.stdout.write(`\nRegistered ${fresh.length} workflow${fresh.length === 1 ? '' : 's'} in config/n8n.example.json.\n`
       + '  No expected interval was set for any of them: this cannot know whether a workflow is a\n'
       + '  nightly cron or a webhook, and a wrong interval mails everybody about a workflow that is fine.\n'
@@ -599,7 +615,8 @@ async function main() {
     return;
   }
 
-  const { replaced } = saveEntry(built.entry);
+  const { replaced, file } = saveEntry(built.entry, argv.includes('--tracked')
+    ? { file: abs('config', 'n8n.example.json') } : {});
   process.stdout.write(`${replaced ? 'updated' : 'registered'} ${built.entry.id} in config/n8n.example.json\n`
     + '  Collect it now:  npm run wf-sync\n');
 }
