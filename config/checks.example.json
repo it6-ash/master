@@ -64,11 +64,21 @@
     "https://kwdelhi6ghaziabad.com/commercial-shop-for-sale-delhi-ncr.html",
     "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
   ],
-  "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real lead into a real CRM, so each entry is a deliberate decision. All sixteen landing pages post to the same submit.php per domain, so two entries cover them — probing all sixteen pages above is what catches an individual page being down. `fields` maps the page's real field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain, because a submit.php that returns 200 and drops the lead is exactly the failure worth catching. Keep utm_source identical across forms — it is the single rule that filters every test lead out of the pipeline — and make utm_campaign per-site, because Campaign Name is a column in the Cratio list and two identical values there mean you cannot tell which landing domain the lead came from.",
+  "_forms_comment": "A form is submitted ONLY if it appears here. Every run posts a real lead into a real CRM, so each entry is a deliberate decision. `fields` maps the page's real field names to the placeholders name/email/phone/message; any other value is sent literally. `expect` is a string the response must contain, because a submit.php that returns 200 and drops the lead is exactly the failure worth catching. Keep utm_source identical across forms — it is the single rule that filters every test lead out of the pipeline — and make utm_campaign per-site, because Campaign Name is a column in the Cratio list and two identical values there mean you cannot tell which landing domain the lead came from.",
+  "_pages_comment": "`pages` submits the form once per landing page instead of once per domain. All sixteen pages post to the same submit.php, so two entries used to cover them — which proved the ENDPOINT worked and nothing about the pages. A page whose form markup is lost in an edit, or whose field names are renamed, serves a healthy 200, passes the uptime probe above, and loses every enquiry; posting straight to submit.php cannot see it, because it never goes through the page. These sixteen are where the paid traffic lands, so they are checked individually. Each page gets its own lp_url, utm_term and form id — utm_campaign stays per-site on purpose. Two consequences worth knowing: the daily run grows by the CRM verification wait per page (roughly ten minutes for sixteen), and if submit.php itself goes down every page on that domain reports separately, so one outage reads as eight or nine findings. Every page listed here must also appear in `extra` above, or it is submitted without ever being probed — test/check.test.js enforces that.",
   "forms": [
     {
       "id": "kwbluepearldelhi",
       "url": "https://kwbluepearldelhi.com/submit.php",
+      "pages": [
+        "https://kwbluepearldelhi.com/blue-pearl-karol-bagh.html",
+        "https://kwbluepearldelhi.com/buy-commercial-real-estate-delhi.html",
+        "https://kwbluepearldelhi.com/buy-property-in-delhi.html",
+        "https://kwbluepearldelhi.com/commercial-property-delhi.html",
+        "https://kwbluepearldelhi.com/commercial-property-investment-delhi.html",
+        "https://kwbluepearldelhi.com/pre-leased-commercial-property-delhi.html",
+        "https://kwbluepearldelhi.com/commercial-shops-for-sale-delhi.html"
+      ],
       "method": "POST",
       "encoding": "form",
       "marker": "KW Estate monitor",
@@ -105,6 +115,17 @@
     {
       "id": "kwdelhi6ghaziabad",
       "url": "https://kwdelhi6ghaziabad.com/submit.php",
+      "pages": [
+        "https://kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html",
+        "https://kwdelhi6ghaziabad.com/buy-commercial-property-in-delhi-ncr.html",
+        "https://kwdelhi6ghaziabad.com/commercial-property-investment-ghaziabad.html",
+        "https://kwdelhi6ghaziabad.com/commercial-investment-property-ghaziabad.html",
+        "https://kwdelhi6ghaziabad.com/commercial-real-estate-investment-ghaziabad.html",
+        "https://kwdelhi6ghaziabad.com/commercial-rental-property-for-sale-delhi-ncr.html",
+        "https://kwdelhi6ghaziabad.com/commercial-shops-for-sale-in-ghaziabad.html",
+        "https://kwdelhi6ghaziabad.com/commercial-shop-for-sale-delhi-ncr.html",
+        "https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html"
+      ],
       "method": "POST",
       "encoding": "form",
       "marker": "KW Estate monitor",

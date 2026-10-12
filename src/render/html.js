@@ -1764,6 +1764,27 @@ export function formVerdict(f) {
 }
 
 /**
+ * The lead-form line, which is only the forms that have something to say.
+ *
+ * Every landing page is checked individually now, so naming each healthy one
+ * meant nineteen repetitions of "accepted the test lead" — a wall of identical
+ * sentences with the single broken page buried somewhere inside it, which is
+ * the opposite of what the panel is for. A form with a verdict earns its own
+ * sentence; the rest are a count, which is all anyone wanted from them.
+ */
+export function formsNote(forms) {
+  const broken = forms.filter((f) => formVerdict(f));
+  const healthy = forms.length - broken.length;
+  return [
+    ...broken.map((f) => `${escapeHtml(f.id)}: <strong>${escapeHtml(formVerdict(f))}</strong>`),
+    // "19 others" when nothing is broken reads as though something is.
+    ...(healthy
+      ? [`${broken.length ? `${healthy} other${healthy === 1 ? '' : 's'}` : `all ${healthy}`} accepted the test lead`]
+      : []),
+  ].join(' · ');
+}
+
+/**
  * What the public internet sees, which is not what the servers report.
  *
  * Everything else on this page is the estate describing itself: ports it has
@@ -1807,10 +1828,7 @@ function checksPanel(checks) {
       is the one panel that fails for DNS, certificate and form problems the servers themselves report as healthy.
       ${failed === 0 ? '' : `<strong>${failed} failing.</strong>`}
     </p>
-    ${forms.length ? `<p class="chart-note">${forms.map((f) => {
-    const why = formVerdict(f);
-    return `${escapeHtml(f.id)}: ${why ? `<strong>${escapeHtml(why)}</strong>` : 'accepted the test lead'}`;
-  }).join(' · ')}. Submissions are marked
+    ${forms.length ? `<p class="chart-note">${formsNote(forms)}. Submissions are marked
       <code>${escapeHtml(String(forms[0]?.payload?.name ?? 'KW Estate monitor'))}</code> so they filter out of the CRM in one rule.</p>` : ''}
     <div class="table-wrap">
       <table class="renewal-table">

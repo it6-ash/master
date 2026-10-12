@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 
 import {
   targetsFrom, testLead, checkIssues, shouldReport, localTime, shrinkIssue, confirmFailures, confirmedSet,
+  expandPages,
 } from '../src/check.js';
-import { formVerdict } from '../src/render/html.js';
+import { formVerdict, formsNote } from '../src/render/html.js';
+import { abs, readJson } from '../src/lib/fsx.js';
 
 test('the report clock is the reader\'s, not the server\'s', () => {
   // srv1340120 runs Etc/UTC. A naive 09:30 would mail at 15:00 in Delhi, and
@@ -372,4 +374,105 @@ test('a 200 without the expected string names the string it wanted', () => {
   assert.match(formVerdict({ id: 'x', ok: false, error: 'timed out' }), /could not be reached — timed out/);
   // A healthy form says nothing at all.
   assert.equal(formVerdict({ id: 'x', accepted: true, ok: true, status: 200, verified: { attempted: false } }), null);
+});
+
+test('a form with a page list is submitted from every page', () => {
+  const [a, b] = expandPages({
+    id: 'kwdelhi6ghaziabad',
+    url: 'https://kwdelhi6ghaziabad.com/submit.php',
+    expect: 'thank',
+    fields: {
+      name: 'name',
+      utm_source: 'kw-estate-check',
+      utm_campaign: 'kw-estate-kwdelhi6ghaziabad',
+      utm_term: 'kwdelhi6ghaziabad.com',
+      lp_url: 'https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html',
+    },
+    pages: [
+      'https://kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html',
+      'https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html',
+    ],
+  });
+
+  // The id names the PAGE. "the kwdelhi6ghaziabad form is broken" about nine
+  // different pages names nothing, and that id is also the contact name in the
+  // CRM — it is the only place the answer to "which page" can be read.
+  assert.equal(a.id, 'kwdelhi6ghaziabad-best-commercial-shop-in-delhi-ncr');
+  assert.equal(b.id, 'kwdelhi6ghaziabad-kw-delhi-6-raj-nagar-extension');
+
+  // lp_url is the page that was posted FROM, not whichever one the config
+  // happened to name. It arrives in the CRM, so a stale value there is a lie
+  // about where the lead came from.
+  assert.equal(a.fields.lp_url, 'https://kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html');
+  assert.equal(b.fields.lp_url, 'https://kwdelhi6ghaziabad.com/kw-delhi-6-raj-nagar-extension.html');
+  assert.equal(a.fields.utm_term, 'kwdelhi6ghaziabad.com/best-commercial-shop-in-delhi-ncr.html');
+
+  // Campaign Name stays per-SITE: it is a column in the Cratio list, and the
+  // page already lives in utm_term next to it. utm_source is the filter rule
+  // that keeps every test lead out of the pipeline and must never vary.
+  assert.equal(a.fields.utm_campaign, 'kw-estate-kwdelhi6ghaziabad');
+  assert.equal(a.fields.utm_source, 'kw-estate-check');
+
+  // Same endpoint, same expectations — the pages share one submit.php.
+  assert.equal(a.url, b.url);
+  assert.equal(a.expect, 'thank');
+  assert.equal(a.pages, undefined);
+
+  // A form without a page list is left exactly as it was.
+  const plain = { id: 'kwgroup', url: 'https://kwgroup.in/api/enquiry' };
+  assert.deepEqual(expandPages(plain), [plain]);
+
+  // A typo must not take the daily check down with it. The bad page is dropped
+  // and the rest still submit; a thrown URL error here would mean no form on
+  // any site was checked, and the mail that would have said so is sent by the
+  // same run.
+  const survivors = expandPages({ id: 'x', url: 'u', pages: ['kwgroup.in/page.html', 'https://a.com/b.html'] });
+  assert.equal(survivors.length, 1);
+  assert.equal(survivors[0].id, 'x-b');
+});
+
+test('every page that is submitted to is also probed', () => {
+  // Two hand-maintained lists of sixteen URLs. A page added to `forms` but not
+  // to `extra` is submitted without anyone ever checking the page loads, so the
+  // first thing to break — the page itself — is the one thing not watched.
+  const config = readJson(abs('config', 'checks.example.json'));
+  assert.ok(config.ok, 'config/checks.example.json must parse');
+
+  const probed = new Set(config.value.extra ?? []);
+  const submitted = (config.value.forms ?? []).flatMap((f) => f.pages ?? []);
+  assert.ok(submitted.length >= 16, `expected the landing pages to be listed, got ${submitted.length}`);
+
+  for (const page of submitted) {
+    assert.ok(probed.has(page), `${page} is submitted to but missing from "extra", so it is never probed`);
+  }
+
+  // And the expansion is what the run will actually use: unique ids, one per
+  // page. A duplicated id would make lastSubmitted skip a real page all day.
+  const ids = (config.value.forms ?? []).flatMap(expandPages).map((f) => f.id);
+  assert.equal(new Set(ids).size, ids.length, `duplicate form ids: ${ids.join(', ')}`);
+});
+
+test('the dashboard names the broken form, not all nineteen healthy ones', () => {
+  const ok = (id) => ({ id, accepted: true, ok: true, status: 200, verified: { attempted: true, found: true } });
+  const dropped = { id: 'kwdelhi6ghaziabad-best-commercial-shop-in-delhi-ncr',
+    accepted: false, ok: false, status: 200, expected: 'thank', matched: false };
+
+  // Nineteen repetitions of the same sentence is where a real failure goes to
+  // hide. The broken page is named; the rest are a number.
+  const mixed = formsNote([ok('a'), dropped, ok('b'), ok('c')]);
+  assert.match(mixed, /best-commercial-shop-in-delhi-ncr: <strong>/);
+  assert.match(mixed, /3 others accepted the test lead/);
+  assert.equal(mixed.match(/accepted the test lead/g).length, 1);
+
+  // A healthy estate says so once, and does not call them "others" when there
+  // is nothing for them to be other than.
+  assert.equal(formsNote([ok('a'), ok('b')]), 'all 2 accepted the test lead');
+  assert.doesNotMatch(formsNote([ok('a'), ok('b')]), /other/);
+  assert.equal(formsNote([ok('a')]), 'all 1 accepted the test lead');
+
+  // One broken, one fine: singular, and still names the broken one.
+  assert.match(formsNote([dropped, ok('a')]), /1 other accepted the test lead$/);
+  // Everything broken: no trailing count at all.
+  assert.doesNotMatch(formsNote([dropped]), /accepted the test lead/);
+  assert.equal(formsNote([]), '');
 });

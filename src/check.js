@@ -203,6 +203,52 @@ async function probe(target, { attempts = 3, gapMs = 4000 } = {}) {
 /* ----------------------------------------------------------------- forms */
 
 /**
+ * One configured form, one submission per landing page.
+ *
+ * All sixteen ad landing pages post to the same submit.php per domain, so two
+ * form entries were enough to prove the ENDPOINT works — and nothing at all
+ * about the pages. A page whose form markup was lost in an edit, or whose field
+ * names were renamed, serves a healthy 200, sails through the uptime probe, and
+ * loses every enquiry: the submit.php check cannot see it, because it never goes
+ * through the page. Those sixteen pages are where the paid traffic lands.
+ *
+ * So `pages` expands one entry into one submission per page, each carrying that
+ * page's own lp_url and utm_term. utm_campaign is deliberately NOT touched —
+ * Campaign Name is a column in the Cratio list and belongs to the site; the page
+ * lives in utm_term, next to it.
+ *
+ * The id carries the page, because "the kwdelhi6ghaziabad form is broken" about
+ * nine different pages names nothing.
+ *
+ * The cost is real and deliberate: every page listed is a POST into a live CRM
+ * once a day, and the run grows by roughly the verification wait per page. They
+ * all submit config.phone, so Cratio updates ONE lead rather than sixteen.
+ */
+export function expandPages(form) {
+  if (!form.pages?.length) return [form];
+  const { pages, ...base } = form;
+
+  const out = [];
+  for (const page of pages) {
+    let parsed;
+    // A typo in the list must not take the whole daily check down with it. The
+    // other pages still submit, and the line below says which one was dropped —
+    // a page that silently stops being checked cannot be reported as failing.
+    try { parsed = new URL(page); } catch {
+      process.stderr.write(`! ${form.id}: "${page}" is not a URL — not submitted\n`);
+      continue;
+    }
+    const slug = parsed.pathname.replace(/\.html?$/i, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '');
+    out.push({
+      ...base,
+      id: [form.id, slug].filter(Boolean).join('-'),
+      fields: { ...form.fields, lp_url: page, utm_term: `${parsed.hostname}${parsed.pathname}` },
+    });
+  }
+  return out;
+}
+
+/**
  * A submission that is obviously a test at a glance in the CRM: same name
  * every time, a phone nobody can dial, and a plus-addressed email carrying the
  * date. Whoever works the leads must be able to filter these out in one rule.
@@ -859,7 +905,7 @@ export async function runChecks() {
     extra: config.extra ?? [],
     okStatus: config.okStatus ?? {},
   });
-  const forms = noForms ? [] : (config.forms ?? []);
+  const forms = noForms ? [] : (config.forms ?? []).flatMap(expandPages);
 
   process.stdout.write(`\n${dim(at.replace('T', ' ').slice(0, 19))} checking ${targets.length} hostname${targets.length === 1 ? '' : 's'}`
     + `${forms.length ? ` and ${forms.length} form${forms.length === 1 ? '' : 's'}` : ''}\n`);
