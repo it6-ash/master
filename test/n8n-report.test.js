@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { alertsFor, applyCooldown, digestDue, digestHtml, alertHtml } from '../src/n8n/report.js';
+import {
+  alertsFor, applyCooldown, digestDue, digestHtml, alertHtml, alertRecipients,
+} from '../src/n8n/report.js';
 import { overview } from '../src/n8n/analytics.js';
 
 const NOW = new Date('2026-10-04T04:30:00.000Z'); // 10:00 in Asia/Kolkata
@@ -312,4 +314,51 @@ test('HTML is escaped, because an n8n error message is remote text', () => {
   assert.doesNotMatch(html, /<script>alert/);
   assert.doesNotMatch(html, /<img src=x/);
   assert.match(html, /&lt;script&gt;/);
+});
+
+test('an anomaly goes to whoever triages it; an outage still goes to everybody', () => {
+  const everyone = ['it6@kwgroup.in', 'mdo60@kwgroup.in', 'sm3@kwgroup.in'];
+  const alerts = { ...ALERTS, notify: { anomaly: ['it6@kwgroup.in'] } };
+  const to = (kind) => alertRecipients({ kind }, { alerts, fallback: everyone });
+
+  // Routed by the name the config already uses to switch the kind on, not by
+  // the internal kind — nobody should need to know a drop is spelled
+  // "anomaly-volume-drop" to be able to route it.
+  assert.deepEqual(to('anomaly-volume-drop'), ['it6@kwgroup.in']);
+  assert.deepEqual(to('anomaly-volume-spike'), ['it6@kwgroup.in']);
+  assert.deepEqual(to('anomaly-runtime'), ['it6@kwgroup.in']);
+
+  // An outage is not a statistic. Nothing listed means the full list, so a
+  // kind added later mails everybody rather than silently nobody.
+  assert.deepEqual(to('failure'), everyone);
+  assert.deepEqual(to('stale'), everyone);
+  assert.deepEqual(to('zero-data'), everyone);
+
+  // No routing configured at all leaves every kind exactly as it was.
+  assert.deepEqual(alertRecipients({ kind: 'anomaly-volume-drop' }, { alerts: ALERTS, fallback: everyone }), everyone);
+  // An empty list is not a narrowing to nobody — that would silently stop the
+  // alert, which is the one outcome worse than mailing too many people.
+  assert.deepEqual(alertRecipients({ kind: 'failure' }, { alerts: { notify: { failure: [] } }, fallback: everyone }), everyone);
+});
+
+test('the cooldown must outlast the gap between passes', () => {
+  // It was 360 against a timer firing every 360 minutes, so every pass landed
+  // a minute past the window and nothing was ever held: one unchanged anomaly
+  // mailed four times a day to seven people, which is how the CRITICAL notice
+  // in the same thread stops being opened.
+  const raised = [{ key: 'k:anomaly-volume-spike', kind: 'anomaly-volume-spike', severity: 'warning', subject: 's', detail: 'd' }];
+  const run = (cooldownMin) => {
+    // The real schedule: deploy/kw-estate.timer, 00/6:07 UTC plus 09:30 IST.
+    let state = { sent: {} };
+    let mails = 0;
+    for (const t of ['00:07', '04:00', '06:07', '12:07', '18:07']) {
+      const r = applyCooldown(raised, state, { cooldownMin, now: new Date(`2026-10-11T${t}:30Z`) });
+      state = { sent: r.sent };
+      mails += r.due.length;
+    }
+    return mails;
+  };
+
+  assert.equal(run(360), 4, 'the old setting: a cooldown equal to the interval holds nothing');
+  assert.equal(run(1440), 1, 'once a day, whatever the timer does');
 });

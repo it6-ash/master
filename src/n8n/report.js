@@ -171,6 +171,37 @@ export function applyCooldown(raised, state, { cooldownMin = 360, now }) {
   return { due, held, sent };
 }
 
+/**
+ * Who hears about this alert.
+ *
+ * An anomaly is a statistic, not an outage. A workflow that normally moves six
+ * items moving twenty is "333% above normal" and also nothing at all; mailing
+ * seven people about it on every pass is how the CRITICAL notice sitting in the
+ * same thread stops being opened. So anomalies go to whoever triages them, and
+ * the digest carries them for everybody else at the reporting hour.
+ *
+ * A failure, a workflow that has stopped running, or one returning zero items
+ * is an outage. Those still go to the full list, immediately, by default.
+ *
+ * This NARROWS, which report.notify deliberately cannot do — there the tracked
+ * file and the override are unioned, so adding somebody in one place can never
+ * silently remove the people listed in the other. The key is nested inside
+ * `alerts`, which registry.js merges per-key rather than unioning, so it is the
+ * one place a narrower list survives the merge.
+ */
+export function alertRecipients(alert, { alerts = {}, fallback = [] }) {
+  const kind = String(alert.kind ?? '');
+  // Keyed by the names the config already uses for switching each kind on and
+  // off, not by the internal kind — nobody should have to know that a volume
+  // drop is spelled "anomaly-volume-drop" to be able to route it.
+  const family = kind.startsWith('anomaly-') ? 'anomaly'
+    : kind === 'zero-data' ? 'zeroData'
+      : kind;
+
+  const to = [alerts.notify?.[family] ?? []].flat().filter(Boolean);
+  return to.length ? to : fallback;
+}
+
 /* -------------------------------------------------------------- digest */
 
 /**
@@ -448,10 +479,10 @@ export async function runReport({ now = new Date() } = {}) {
   const state = stateFile.ok ? stateFile.value : { lastReportedOn: null, lastReportKind: null, sent: {} };
 
   const at = new Date(now).toISOString().replace('T', ' ').slice(0, 16);
-  const envelope = (subject, html) => ({
+  const envelope = (subject, html, to = recipients) => ({
     subject,
-    to: recipients.join(', '),
-    toList: recipients,
+    to: to.join(', '),
+    toList: to,
     // --to copies nobody. A test run that still cc'd the configured list would
     // defeat the entire point of the flag.
     cc: toOverride ? undefined : ([report.cc ?? []].flat().filter(Boolean).join(', ') || undefined),
@@ -482,13 +513,18 @@ export async function runReport({ now = new Date() } = {}) {
 
   let alertsSent = 0;
   for (const alert of due) {
+    // --to still wins over everything: a test run that quietly mailed the real
+    // anomaly list anyway would defeat the whole point of the flag.
+    const to = toOverride ?? alertRecipients(alert, { alerts, fallback: recipients });
     const payload = envelope(`KW Estate: ${alert.subject}`,
-      alertHtml({ ...alert, cooldownMin: alerts.cooldownMin ?? 360 }, { at }));
+      alertHtml({ ...alert, cooldownMin: alerts.cooldownMin ?? 360 }, { at }), to);
     const posted = await post(report.webhook, payload, { servers });
     sentAnything = sentAnything || posted.sent;
     if (posted.sent) alertsSent += 1;
+    // Naming the recipients, because a narrowed list is invisible otherwise —
+    // "alert sent" reads as "sent to everyone" and nobody checks.
     process.stdout.write(posted.sent
-      ? `${green('✓')} alert: ${alert.subject} ${dim(posted.via === 'configured URL' ? '' : `via ${posted.via}`)}\n`
+      ? `${green('✓')} alert: ${alert.subject} ${dim(`→ ${to.join(', ')}${posted.via === 'configured URL' ? '' : ` via ${posted.via}`}`)}\n`
       : `${red('✗')} alert not sent: ${alert.subject} — ${posted.reason ?? `HTTP ${posted.status} ${posted.reply}`}\n`);
 
     // A send that failed must be retried on the next pass, not swallowed by a

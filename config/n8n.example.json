@@ -178,14 +178,20 @@
       "anomalies": true,
       "charts": true
     },
-    "_alerts_comment": "Event-driven, not scheduled. cooldownMin is what stops one broken workflow mailing on every pass for a week — the same alert for the same workflow is held for this many minutes after it goes out.",
+    "_alerts_comment": "Event-driven, not scheduled. cooldownMin is what stops one broken workflow mailing on every pass for a week — the same alert for the same workflow is held for this many minutes after it goes out. It MUST be longer than the gap between passes, or it holds nothing: it was 360 against a timer firing every 360 minutes (deploy/kw-estate.timer, OnCalendar=00/6:07), so every pass landed a minute past the window and one unchanged anomaly mailed four times a day to seven people. 1440 means once a day per alert, whatever the timer does.",
+    "_alerts_notify_comment": "Who hears about each kind, by the same names used to switch them on above. Anything not listed goes to report.notify — a failure, a workflow that stopped running and one returning zero items are outages and still reach everybody the moment they happen. An anomaly is a statistic: six items becoming twenty is '333% above normal' and also nothing at all, and seven people being mailed that on every pass is how the CRITICAL notice in the same thread stops being read. Anomalies go to whoever triages them; everyone else gets them in the 09:40 digest, which has always listed them. This is the one list in the file that NARROWS — report.notify is unioned across the tracked file and the override on purpose, so it can never be cut down there; this key is nested inside `alerts`, which registry.js merges per-key.",
     "alerts": {
       "failure": true,
       "stale": true,
       "anomaly": true,
       "zeroData": true,
       "minAnomalyPct": 40,
-      "cooldownMin": 360
+      "cooldownMin": 1440,
+      "notify": {
+        "anomaly": [
+          "it6@kwgroup.in"
+        ]
+      }
     }
   },
   "_retention_comment": "Two tiers, because raw rows and aggregates have different lifetimes. rawDays/maxRows bound the per-execution table; hourly buckets survive far longer and are what the long-range charts and the baselines read. A workflow running every minute hits maxRows long before rawDays, which is the point: the aggregate keeps the history, the row list stays a readable size.",
