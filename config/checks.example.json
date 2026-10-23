@@ -21,9 +21,11 @@
   "timezone": "Asia/Kolkata",
   "alertOnNewFailures": true,
   "cc": [],
+  "_skip_comment": "Hostnames the probe must not report on. Unioned with the box's own checks.json, so adding one here reaches srv1340120 on the next pull — removing one does NOT, it has to come out of both files. A skipped host is invisible rather than red, so each needs a reason here: `_` is nginx's catch-all, not a hostname. srv1340120.hstgr.cloud is the box's provider-issued name, which nobody visits. offers.kwdelhi6.com is still in nginx on srv1900820 but has no DNS record — ENOTFOUND on every pass since the vhost was found — and is being dealt with outside this check; delete the line to start watching it again once it resolves.",
   "skip": [
     "_",
-    "srv1340120.hstgr.cloud"
+    "srv1340120.hstgr.cloud",
+    "offers.kwdelhi6.com"
   ],
   "_okStatus_comment": "Not everything behind a hostname is a website. An MCP server has no route at \"/\", so a bare GET is a correct 404 — the endpoint is healthy and the question was wrong. List the statuses that mean alive for those. 502 and a refused connection still fail, because those mean the thing behind nginx is genuinely gone.",
   "okStatus": {

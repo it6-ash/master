@@ -873,7 +873,12 @@ export function loadCheckConfig() {
   // The cost is that removing a recipient has to be done in BOTH files, which
   // is the rarer operation and fails loudly (they keep getting mail) rather
   // than silently (they never do).
-  for (const key of ['notify', 'cc']) {
+  // `skip` unions for the same reason: a host taken off the list here would
+  // otherwise keep being probed on the box, because the box's own `skip` wins
+  // the plain-key merge and nobody would see why. The cost runs the other way
+  // — un-skipping needs both files, and forgetting leaves a host unwatched —
+  // so the entry below it in checks.example.json says why each host is there.
+  for (const key of ['notify', 'cc', 'skip']) {
     const both = [...new Set([...[base.value[key] ?? []].flat(), ...[local.value[key] ?? []].flat()])];
     if (both.length) merged[key] = both.filter(Boolean);
   }
